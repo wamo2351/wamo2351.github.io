@@ -23,7 +23,9 @@
 
         /* --- 共通レイアウト --- */
         .layout-table {
-            width: 800px;
+            /* PCでの最大幅を維持しつつ、画面が狭くなってもはみ出さないように変更 */
+            max-width: 800px;
+            width: 95%;
             margin: 20px auto;
             border-collapse: collapse;
             transition: all 0.5s ease;
@@ -246,22 +248,122 @@
             text-shadow: 0 0 5px #000;
         }
 
+        /* ▼▼▼ ここから変更 ▼▼▼ */
         /* --- Back Diary / Puzzle Styles --- */
-        .back-diary-page { background-color: #000; color: #fff; font-family: 'MS Mincho', 'Hirino Mincho ProN', serif; padding: 50px; font-size: 16px; }
-        .back-diary-page h2 { text-align: center; font-size: 24px; margin-bottom: 40px; }
-        .back-diary-page .entry { margin-bottom: 30px; border-bottom: 1px dotted #555; padding-bottom: 20px; }
+        .back-diary-page { 
+            background-color: #fff; /* 背景を白に */
+            color: #333; /* 文字色をダークグレーに */
+            font-family: 'MS PGothic', 'ＭＳ Ｐゴシック', sans-serif; /* 他のページとフォントを合わせる */
+            padding: 50px; 
+            font-size: 16px; 
+        }
+        .back-diary-page a { color: #0000FF; } /* リンク色を設定 */
+        .back-diary-page a:visited { color: #800080; }
+
+        .back-diary-page h2 { 
+            text-align: center; 
+            font-size: 24px; 
+            margin-bottom: 40px; 
+            color: #000;
+        }
+        .back-diary-page .entry { 
+            margin-bottom: 30px; 
+            border-bottom: 1px dotted #aaa; /* 枠線の色を明るく */
+            padding-bottom: 20px; 
+        }
         .back-diary-page .entry-title { font-weight: bold; margin-bottom: 10px; }
-        .form-container { width: 400px; margin: 50px auto; padding: 30px; border: 1px solid #555; background: #111; text-align: center; }
-        .form-container input[type="text"], .form-container input[type="password"] { width: 80%; padding: 8px; margin: 10px 0; background: #333; border: 1px solid #666; color: #fff; }
-        .form-container button { padding: 10px 20px; background: #555; border: 1px solid #888; color: #fff; cursor: pointer; }
+
+        /* フォームのコンテナ（ウィンドウ風） */
+        .form-container { 
+            width: 400px; 
+            margin: 50px auto; 
+            padding: 30px; 
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #808080;
+            border-bottom: 2px solid #808080;
+            background: #c0c0c0; /* クラシックなウィンドウのグレー */
+            text-align: center; 
+            color: #000; /* 文字色を黒に */
+        }
+        /* フォーム内の入力欄 */
+        .form-container input[type="text"], .form-container input[type="password"] { 
+            width: 80%; 
+            padding: 8px; 
+            margin: 10px 0; 
+            background: #fff; /* 背景を白に */
+            border: 1px solid #808080; /* 枠線をグレーに */
+            border-top-color: #000;
+            border-left-color: #000;
+            color: #000; /* 文字色を黒に */
+        }
+        /* フォーム内のボタン */
+        .form-container button { 
+            padding: 8px 20px; 
+            background: #c0c0c0; /* 背景をグレーに */
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            color: #000; /* 文字色を黒に */
+            cursor: pointer; 
+        }
+        .form-container button:active {
+            border-top: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #fff;
+            border-bottom: 1px solid #fff;
+        }
         .error-message { color: red; margin-top: 10px; min-height: 1em; }
-        .file-manager { width: 600px; margin: 50px auto; border: 1px solid #555; background: #111; font-family: monospace; }
-        .file-manager-header { background: #333; padding: 10px; font-weight: bold; }
+
+        /* ファイルマネージャ */
+        .file-manager { 
+            width: 600px; 
+            margin: 50px auto; 
+            border: 1px solid #808080; 
+            background: #fff; /* 背景を白に */
+            font-family: monospace; 
+            color: #000; /* 文字色を黒に */
+        }
+        /* ファイルマネージャのヘッダー（タイトルバー風） */
+        .file-manager-header { 
+            background: #000080; /* Windowsのクラシックなタイトルバー色 */
+            color: #fff; /* 文字色を白に */
+            padding: 5px 10px; 
+            font-weight: bold; 
+        }
         .file-list { list-style: none; padding: 0; margin: 0; }
-        .file-list li { padding: 8px 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .file-list li:hover { background: #222; }
-        .file-actions button { background: none; border: 1px solid #555; color: #ccc; cursor: pointer; margin-left: 5px; font-size: 12px; }
-        #key-content { background: #000; color: #0f0; padding: 20px; margin: 20px; border: 1px solid #0f0; font-family: monospace; }
+        .file-list li { 
+            padding: 8px 10px; 
+            border-bottom: 1px solid #e0e0e0; /* 枠線を薄いグレーに */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .file-list li:hover { 
+            background: #d4e8ff; /* ホバー時の背景色 */
+        }
+        .file-actions button { 
+            background: #c0c0c0; /* ボタン背景色 */
+            border: 1px outset #fff;
+            color: #000; /* 文字色 */
+            cursor: pointer; 
+            margin-left: 5px; 
+            font-size: 12px; 
+        }
+        .file-actions button:active {
+            border-style: inset;
+        }
+        /* key.txtの中身は、ハッカー風の雰囲気を残すため黒背景＋緑文字を維持 */
+        #key-content { 
+            background: #000; 
+            color: #0f0; 
+            padding: 20px; 
+            margin: 20px; 
+            border: 1px solid #0f0; 
+            font-family: monospace; 
+        }
+        /* ▲▲▲ ここまで変更 ▲▲▲ */
         
         /* --- Ending Overlay --- */
         #ending-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; opacity: 0; transition: opacity 2s ease-in; pointer-events: none; }
@@ -315,14 +417,127 @@
             height: auto;
             padding: 10px 5px;
         }
+        
+        /* ▼▼▼ ここからスマホ対応用のスタイルを追加 ▼▼▼ */
+        @media screen and (max-width: 768px) {
+            body {
+                -webkit-text-size-adjust: 100%; /* iPhoneで文字が勝手に大きくなるのを防ぐ */
+            }
+
+            /* --- 共通レイアウト for Mobile --- */
+            .layout-table {
+                width: 100%; /* 幅を画面いっぱいに */
+                margin: 0;
+                border: none;
+                background-color: transparent; /* bodyの背景を活かす */
+            }
+            
+            /* テーブルレイアウトを解除し、各セクションを縦積みにする */
+            .header, .menu, .main-content, .footer {
+                display: block;
+                width: 100%;
+                box-sizing: border-box; /* paddingを含めて幅100%にする */
+            }
+
+            .normal-mode .header,
+            .normal-mode .menu,
+            .normal-mode .main-content {
+                background-color: #ffffff; /* スマホでは各セクションに背景色を再設定 */
+            }
+            .normal-mode .layout-table td {
+                border-bottom: 2px solid #6699cc;
+            }
+
+            .cursed-mode .header,
+            .cursed-mode .menu,
+            .cursed-mode .main-content {
+                background-color: #00001a;
+            }
+            .cursed-mode .layout-table td {
+                border-bottom: 1px solid #333366;
+            }
+            .layout-table tr:last-child td {
+                 border-bottom: none;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            .title-text {
+                font-size: 28px; /* タイトルを少し小さく */
+                letter-spacing: 1px;
+            }
+            .title-text .dolphin {
+                height: 50px; /* イルカの画像を小さく */
+            }
+
+            .menu {
+                width: auto; /* 幅指定を解除 */
+                padding: 15px;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            #welcome-title {
+                font-size: 18px;
+            }
+
+            .diary-title {
+                font-size: 16px;
+            }
+
+            /* --- Photo Album for Mobile --- */
+            .photo-gallery {
+                gap: 10px;
+            }
+            .photo-item {
+                width: calc(50% - 5px); /* 2列表示 (gapの半分を引く) */
+            }
+            .photo-item img {
+                height: 130px;
+            }
+            
+            /* --- Modal for Mobile --- */
+            .close-button {
+                top: 5px;
+                right: 10px;
+                font-size: 35px;
+                text-shadow: 0 0 5px black;
+            }
+
+            /* --- Puzzle Styles for Mobile --- */
+            .back-diary-page {
+                padding: 20px 15px;
+                font-size: 15px;
+            }
+            .form-container, .file-manager {
+                width: 90%;
+                margin: 30px auto;
+                padding: 20px;
+            }
+            .file-manager {
+                 font-size: 14px;
+            }
+            .file-list li { 
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+        /* ▲▲▲ ここまでスマホ対応用のスタイル ▲▲▲ */
+
     </style>
 </head>
 <body class="normal-mode">
 
+    <!-- ここから下のHTMLとJavaScriptは変更ありません -->
+    
     <div id="page-container">
         <!-- Main site pages -->
         <div id="top" class="page active">
-            <table class="layout-table" border="0" cellpadding="0">
+            <table class="layout-table" border="0" cellpadding="0" cellspacing="0">
                 <tr>
                     <td colspan="2" class="header">
                         <h1 class="title-text">
@@ -374,7 +589,7 @@
         
         <!-- Other Pages (Diary, Photo, etc.) -->
         <div id="diary" class="page">
-            <table class="layout-table" border="0" cellpadding="0">
+            <table class="layout-table" border="0" cellpadding="0" cellspacing="0">
                 <tr><td colspan="2" class="header"><h1 class="title-text">Diary</h1></td></tr>
                 <tr>
                     <td class="menu">
@@ -417,7 +632,7 @@
             </table>
         </div>
         <div id="photo" class="page">
-             <table class="layout-table" border="0" cellpadding="0">
+             <table class="layout-table" border="0" cellpadding="0" cellspacing="0">
                 <tr><td colspan="2" class="header"><h1 class="title-text">Photo</h1></td></tr>
                 <tr>
                     <td class="menu">
@@ -461,7 +676,7 @@
             </table>
         </div>
         <div id="bbs" class="page">
-            <table class="layout-table" border="0" cellpadding="0">
+            <table class="layout-table" border="0" cellpadding="0" cellspacing="0">
                 <tr><td colspan="2" class="header"><h1 class="title-text">BBS</h1></td></tr>
                 <tr>
                     <td class="menu">
@@ -487,7 +702,7 @@
             </table>
         </div>
         <div id="link" class="page">
-             <table class="layout-table" border="0" cellpadding="0">
+             <table class="layout-table" border="0" cellpadding="0" cellspacing="0">
                 <tr><td colspan="2" class="header"><h1 class="title-text">Link</h1></td></tr>
                 <tr>
                     <td class="menu">
@@ -835,7 +1050,7 @@
                 </p>
                 <form onsubmit="handleBbsSubmit(event)" style="text-align: center;">
                     <p>ハンドルネーム: <input type="text" id="bbs-name" placeholder="" size="20"></p>
-                    <textarea id="bbs-message" rows="2" cols="50" style="margin: 0 auto 10px;"></textarea><br>
+                    <textarea id="bbs-message" rows="2" cols="50" style="margin: 0 auto 10px; max-width: 90%;"></textarea><br>
                     <button type="submit">書き込む</button>
                     <p id="bbs-error" class="error-message"></p>
                 </form>`;
@@ -894,10 +1109,11 @@
                 const finalMessageContainer = document.createElement('div');
                 finalMessageContainer.style.textAlign = 'center';
                 finalMessageContainer.style.fontFamily = "'MS Mincho', 'Hirino Mincho ProN', serif";
-                finalMessageContainer.style.fontSize = '18px';
+                finalMessageContainer.style.fontSize = '16px';
                 finalMessageContainer.style.lineHeight = '2';
                 finalMessageContainer.style.opacity = '0';
                 finalMessageContainer.style.transition = 'opacity 2.5s ease-in';
+                finalMessageContainer.style.padding = '20px';
                 
                 // ハンドルネームが入力されていれば「〇〇さん」、なければ「あなた」とする
                 const handleName = userName ? userName.trim() : '';
