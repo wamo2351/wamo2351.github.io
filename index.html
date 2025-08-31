@@ -283,10 +283,9 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes zoomIn { from { transform: scale(0.8); } to { transform: scale(1); } }
         
-        /* ▼▼▼【CSS修正点】バナー風マーキーのデザイン ▼▼▼ */
         #marquee-container {
             padding: 4px;
-            margin-bottom: 15px; /* 下のメニューとの間隔 */
+            margin-bottom: 15px;
             transition: all 0.5s ease;
         }
         .normal-mode #marquee-container {
@@ -334,11 +333,9 @@
                 <tr>
                     <td class="menu">
                         <h3>MENU</h3>
-                        <!-- ▼▼▼【HTML修正点】marqueeをdivで囲み、バナースタイルを適用しやすくする ▼▼▼ -->
                         <div id="marquee-container">
                             <marquee id="marquee-welcome" behavior="scroll" direction="up" scrollamount="2">Welcome to AQUA MARINE DREAM!</marquee>
                         </div>
-                        <!-- ▲▲▲ 修正ここまで ▲▲▲ -->
                         <ul>
                             <li><a href="javascript:void(0);" onclick="showPage('top')">TOP</a></li>
                             <li><a href="javascript:void(0);" onclick="showPage('diary')">Diary</a></li>
@@ -575,7 +572,6 @@
                 bodyEl.className = 'cursed-mode';
                 showPage('top');
 
-                // ▼▼▼【JS修正点】マーキーを要素ごと書き換えて表示バグを修正 ▼▼▼
                 const marqueeContainer = document.getElementById('marquee-container');
                 if (marqueeContainer) {
                     // 新しいmarquee要素のHTML文字列を作成
@@ -584,10 +580,9 @@
                             繧｢繧ｯ繧｢繝槭Μ繝ｳ縺ｮ螟｢
                         </marquee>
                     `;
-                    // コンテナの中身を丸ごと入れ替えることで、要素を再生成しバグを回避
+                    // コンテナの中身を丸ごと入れ替える
                     marqueeContainer.innerHTML = newMarqueeHTML;
                 }
-                // ▲▲▲ 修正ここまで ▲▲▲
                 
                 document.getElementById('welcome-text').style.display = 'none';
                 document.getElementById('welcome-text-2').style.display = 'none';
@@ -717,8 +712,8 @@
                 }
             }
             const puzzleHTML = {
-                'password-form': `<div class="form-container"><h2>Protected Diary</h2><p>ヒント：わたしの一番の宝物</p><form onsubmit="checkSecretDiaryPassword(event)"><input type="password" id="secret-password" placeholder="パスワードを入力"><button type="submit">開く</button><p id="error-message-secret" class="error-message"></p></form><a href="javascript:void(0);" onclick="showPage('back-diary')">戻る</a></div>`,
-                'admin-login': `<div class="form-container"><h2>管理者ログイン</h2><form onsubmit="checkAdminLogin(event)"><input type="text" id="admin-id" placeholder="ID"><input type="password" id="admin-pass" placeholder="Password"><button type="submit">ログイン</button><p id="error-message-admin" class="error-message"></p></form><a href="javascript:void(0);" onclick="showPuzzle('secret-question')">パスワードをお忘れの方はこちら</a><br><a href="javascript:void(0);" onclick="showPage(adminLoginReturnPage || 'top')">戻る</a></div>`,
+                'password-form': `<div class="form-container"><h2>Protected Diary</h2><p>ヒント：わたしの一番の宝物</p><form onsubmit="checkSecretDiaryPassword(event)"><input type="text" id="secret-password" placeholder="パスワードを入力"><button type="submit">開く</button><p id="error-message-secret" class="error-message"></p></form><a href="javascript:void(0);" onclick="showPage('back-diary')">戻る</a></div>`,
+                'admin-login': `<div class="form-container"><h2>管理者ログイン</h2><form onsubmit="checkAdminLogin(event)"><input type="text" id="admin-id" placeholder="ID"><p id="error-message-admin-id" class="error-message"></p><input type="text" id="admin-pass" placeholder="Password"><p id="error-message-admin-pass" class="error-message"></p><button type="submit">ログイン</button><p id="error-message-admin" class="error-message"></p></form><a href="javascript:void(0);" onclick="showPuzzle('secret-question')">パスワードをお忘れの方はこちら</a><br><a href="javascript:void(0);" onclick="showPage(adminLoginReturnPage || 'top')">戻る</a></div>`,
                 'secret-question': `<div class="form-container"><h2>秘密の質問</h2><p>あなたの、たった一人の「親友」の名前は？</p><form onsubmit="checkSecretQuestion(event)"><input type="text" id="secret-answer" placeholder="答えを入力"><button type="submit">送信</button><p id="error-message-question" class="error-message"></p></form><a href="javascript:void(0);" onclick="showPuzzle('admin-login')">戻る</a></div>`,
                 'file-manager': `<div class="file-manager">
                     <div class="file-manager-header">/public_html/</div>
@@ -735,14 +730,81 @@
                     <a href="javascript:void(0);" onclick="showPage('back-diary')" style="display:block; text-align:center; padding:10px;">戻る</a>
                 </div>`
             };
+            
             if(puzzleHTML[pageId]) { 
-                const html = puzzleHTML[pageId];
-                document.getElementById(pageId).innerHTML = html;
+                const pageElement = document.getElementById(pageId);
+                if (pageElement) {
+                    pageElement.innerHTML = puzzleHTML[pageId];
+                }
             }
+            
+            // 管理者ログインフォームが表示された場合、入力値の検証イベントを設定
+            if (pageId === 'admin-login') {
+                const adminIdInput = document.getElementById('admin-id');
+                const adminPassInput = document.getElementById('admin-pass');
+                const errorIdEl = document.getElementById('error-message-admin-id');
+                const errorPassEl = document.getElementById('error-message-admin-pass');
+
+                const validateAndWarn = (inputEl, errorEl) => {
+                    if (/[^a-zA-Z0-9]/.test(inputEl.value)) {
+                        errorEl.textContent = '半角英数字で入力してください。';
+                    } else {
+                        errorEl.textContent = '';
+                    }
+                };
+                
+                if (adminIdInput && errorIdEl) {
+                    adminIdInput.addEventListener('input', () => validateAndWarn(adminIdInput, errorIdEl));
+                }
+                if (adminPassInput && errorPassEl) {
+                    adminPassInput.addEventListener('input', () => validateAndWarn(adminPassInput, errorPassEl));
+                }
+            }
+
             showPage(pageId);
         }
 
-        function checkAdminLogin(event) { event.preventDefault(); if (document.getElementById('admin-id').value.toLowerCase() === 'minato' && document.getElementById('admin-pass').value === '1028' && STATE.puzzles_unlocked.secret_question) { showPuzzle('file-manager'); } else { document.getElementById('error-message-admin').textContent = 'IDまたはパスワードが違います。'; } }
+        function checkAdminLogin(event) {
+            event.preventDefault();
+            const idInput = document.getElementById('admin-id');
+            const passInput = document.getElementById('admin-pass');
+            const idValue = idInput.value;
+            const passValue = passInput.value;
+            const errorIdEl = document.getElementById('error-message-admin-id');
+            const errorPassEl = document.getElementById('error-message-admin-pass');
+            const generalErrorEl = document.getElementById('error-message-admin');
+
+            // エラーメッセージをリセット
+            errorIdEl.textContent = '';
+            errorPassEl.textContent = '';
+            generalErrorEl.textContent = '';
+
+            let isValid = true;
+
+            // IDのバリデーション
+            if (/[^a-zA-Z0-9]/.test(idValue)) {
+                errorIdEl.textContent = '半角英数字で入力してください。';
+                isValid = false;
+            }
+
+            // パスワードのバリデーション
+            if (/[^a-zA-Z0-9]/.test(passValue)) {
+                errorPassEl.textContent = '半角英数字で入力してください。';
+                isValid = false;
+            }
+
+            // バリデーションエラーがあれば処理を中断
+            if (!isValid) {
+                return;
+            }
+
+            // ログイン情報のチェック
+            if (idValue.toLowerCase() === 'minato' && passValue === '1028' && STATE.puzzles_unlocked.secret_question) {
+                showPuzzle('file-manager');
+            } else {
+                generalErrorEl.textContent = 'IDまたはパスワードが違います。';
+            }
+        }
         function checkSecretQuestion(event) { event.preventDefault(); if (document.getElementById('secret-answer').value.toUpperCase() === 'AQUA') { STATE.puzzles_unlocked.secret_question = true; alert("パスワードをリセットしました。新しいパスワードは『1028』です。"); showPuzzle('admin-login'); } else { document.getElementById('error-message-question').textContent = '答えが違います。'; } }
         function checkSecretDiaryPassword(event) {
             event.preventDefault();
@@ -782,6 +844,7 @@
             event.preventDefault();
             if (!STATE.puzzles_unlocked.letter || STATE.endingTriggered) return;
 
+            const name = document.getElementById('bbs-name').value;
             const message = document.getElementById('bbs-message').value.trim();
             const errorEl = document.getElementById('bbs-error');
             errorEl.textContent = ''; 
@@ -801,13 +864,13 @@
 
             if (isValidMessage) {
                 STATE.endingTriggered = true;
-                triggerEnding(message);
+                triggerEnding(message, name);
             } else {
                 errorEl.textContent = 'どうか、温かい言葉を贈ってあげてください。';
             }
         }
         
-        function triggerEnding(userMessage) {
+        function triggerEnding(userMessage, userName) {
             window.onbeforeunload = null;
             const overlay = document.getElementById('ending-overlay');
             overlay.style.pointerEvents = 'auto';
@@ -815,7 +878,10 @@
 
             setTimeout(() => {
                 document.body.innerHTML = '';
+                // 背景スタイルをリセットして真っ白にする
+                document.body.className = '';
                 document.body.style.backgroundColor = '#fff';
+                document.body.style.backgroundImage = 'none';
                 document.body.style.color = '#333';
                 document.body.style.display = 'flex';
                 document.body.style.justifyContent = 'center';
@@ -831,12 +897,16 @@
                 finalMessageContainer.style.opacity = '0';
                 finalMessageContainer.style.transition = 'opacity 2.5s ease-in';
                 
+                // ハンドルネームが入力されていれば「〇〇さん」、なければ「あなた」とする
+                const handleName = userName ? userName.trim() : '';
+                const viewerName = handleName ? `${handleName}さん` : 'あなた';
+                
                 finalMessageContainer.innerHTML = `
                     <p>ありがとう。</p>
-                    <p>あなたの「${userMessage}」という言葉、<br>ちゃんと届いたよ。</p>
+                    <p>${viewerName}の「${userMessage}」という言葉、<br>ちゃんと届いたよ。</p>
                     <p>冷たくて暗いだけだと思っていたこの世界に、<br>小さな光が灯ったみたい。</p>
                     <p>これで、やっと安らかに眠れる。</p>
-                    <p>私のホームページを見てくれたのがあなたでよかった。</p>
+                    <p>私のホームページを見てくれたのが${viewerName}でよかった。</p>
                     <p>本当にごめんなさい。</p>
                     <p>そして、ありがとう。</p>
                     <br>
@@ -861,7 +931,7 @@
                 }
             };
 
-            // --- Photo Modal Logic ---
+            // Photo Modal Logic
             const photoImages = document.querySelectorAll('.photo-item img');
             const modalOverlay = document.getElementById('modal-overlay');
             const modalImage = document.getElementById('modal-image');
