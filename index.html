@@ -612,7 +612,7 @@
 
         function typeCurseMessage(targetElement, onComplete) {
             if (!targetElement) return;
-            const messages = ["見つけてくれて、ありがとう。", "あなたは選ばれました。", "今日が終わるまでに、誰かにここを教えてあげてね。", "教えなければ、", "あなたが代わりに沈むことになる。"];
+            const messages = ["見つけてくれて、ありがとう。", "今日が終わるまでに、誰かにここを教えてあげてね。", "できなければ、", "あなたは一生海の底。"];
             targetElement.innerHTML = '';
             let messageIndex = 0, charIndex = 0;
             function type() {
@@ -651,12 +651,12 @@
             const welcomeTitle = document.getElementById('welcome-title');
             
             const badEndMessages = [
-                "ありがとう。",
-                "あなたの呪いは解けました。",
+                "おめでとう。",
+                "あなたの呪いは解けたよ。",
                 "そのかわり、新しい誰かがここへやってくる。",
-                "あなたは、自分の身代わりを見つけたのですから。",
+                "ありがとう。",
                 "", 
-                "これでわたしは、もうひとりじゃない。"
+                "さようなら。"
             ];
             
             welcomeTitle.innerHTML = '';
