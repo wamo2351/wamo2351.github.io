@@ -75,10 +75,12 @@ textarea {
     <h1>ソースコード Markdown変換ツール</h1>
 
     <div class="actions">
+        <!-- ファイル複数選択 -->
         <input type="file" id="file-input" multiple style="display:none;">
         <button class="btn" onclick="fileInput.click()">📄 ファイルを選択</button>
 
-        <input type="file" id="folder-input" webkitdirectory style="display:none;">
+        <!-- フォルダ複数選択 ( multiple 属性を追加 ) -->
+        <input type="file" id="folder-input" webkitdirectory multiple style="display:none;">
         <button class="btn" onclick="folderInput.click()">📁 フォルダを選択</button>
 
         <button class="btn green" onclick="copyToClipboard()">結果をコピー</button>
@@ -86,17 +88,18 @@ textarea {
         <span id="status" class="status-msg"></span>
     </div>
 
-    <textarea id="output" placeholder="ファイルまたはフォルダを選択するとMarkdownが出力されます…" spellcheck="false"></textarea>
+    <textarea id="output" placeholder="ファイルまたはフォルダ（複数可）を選択するとMarkdownが出力されます…" spellcheck="false"></textarea>
 </div>
 
 <div class="modal" id="help-modal">
     <div class="modal-content">
         <h2>📘 使い方</h2>
         <ul>
-            <li><b>ファイル選択</b>：選択したテキストファイルを Markdown 化</li>
-            <li><b>フォルダ選択</b>：フォルダ構成（全ファイル名）＋テキストファイルを Markdown 化</li>
+            <li><b>ファイル選択</b>：選択したテキストファイルを Markdown 化（複数選択可）</li>
+            <li><b>フォルダ選択</b>：フォルダ構成（全ファイル名）＋テキストファイルを Markdown 化（複数選択可）</li>
         </ul>
         <p>※ バイナリファイルは本文には出力されません（名前のみ表示）</p>
+        <p><small>※ 複数フォルダの選択は、Chrome や Edge など対応しているブラウザでのみ動作します。</small></p>
         <button class="btn" onclick="closeHelp()">閉じる</button>
     </div>
 </div>
@@ -210,7 +213,7 @@ async function handleFiles(allFiles, showTree) {
     if (showTree) {
         result +=
 `## 📁 Folder Structure
-\`\`\`
+\`\`\`text
 ${buildTree(allFiles)}
 \`\`\`
 
