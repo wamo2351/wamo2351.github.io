@@ -8,47 +8,144 @@
 <style>
 body {
     font-family: sans-serif;
-    max-width: 900px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
     background-color: #f0f2f5;
 }
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
-h1 { margin-top: 0; color: #1a73e8; }
+h1 { margin: 0; color: #1a73e8; font-size: 24px; }
 .actions {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 15px;
+    align-items: center;
 }
 .btn {
     background: #1a73e8;
     color: white;
     border: none;
-    padding: 10px 18px;
+    padding: 8px 16px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 14px;
+    transition: 0.2s;
 }
+.btn:hover { background: #1557b0; }
 .btn.green { background: #34a853; }
+.btn.green:hover { background: #2b803e; }
 .btn.gray { background: #666; }
+.btn.gray:hover { background: #444; }
+.btn.red { background: #ea4335; }
+.btn.red:hover { background: #b3362a; }
+
+.status-msg { font-size: 14px; color: #666; font-weight: bold; }
+
+/* メインレイアウト */
+.main-wrapper {
+    display: flex;
+    gap: 20px;
+    height: calc(100vh - 120px);
+    min-height: 500px;
+}
+
+/* 左側：ツリービュー */
+.sidebar {
+    width: 350px;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+}
+.sidebar h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+}
+.tree-container {
+    flex: 1;
+    overflow-y: auto;
+    font-size: 14px;
+}
+.tree-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+}
+details { margin: 2px 0; }
+summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    padding: 4px 0;
+    font-weight: bold;
+    color: #444;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+    content: '▶';
+    font-size: 10px;
+    display: inline-block;
+    transition: 0.2s;
+    width: 14px;
+    text-align: center;
+    color: #888;
+}
+details[open] > summary::before { transform: rotate(90deg); }
+
+/* 右側：出力エリア */
+.content {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 textarea {
+    flex: 1;
     width: 100%;
-    height: 450px;
+    border: none;
     font-family: monospace;
     font-size: 13px;
-    padding: 12px;
-    border-radius: 6px;
+    padding: 20px;
     background: #2d2d2d;
     color: #f8f8f2;
     line-height: 1.5;
+    resize: none;
+    box-sizing: border-box;
 }
-.status-msg { font-size: 14px; color: #666; }
+
+/* ドラッグ＆ドロップのオーバーレイ */
+.drop-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 115, 232, 0.85);
+    color: white;
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    backdrop-filter: blur(4px);
+    pointer-events: none; /* 子要素の干渉を防ぐ */
+}
 
 /* Modal */
 .modal {
@@ -58,6 +155,7 @@ textarea {
     display: none;
     align-items: center;
     justify-content: center;
+    z-index: 1000;
 }
 .modal-content {
     background: white;
@@ -71,183 +169,413 @@ textarea {
 
 <body>
 
-<div class="card">
+<!-- ドラッグ＆ドロップ時のオーバーレイ -->
+<div id="drop-overlay" class="drop-overlay">
+    <div>📂 ここにファイルやフォルダをドロップして追加</div>
+</div>
+
+<div class="header">
     <h1>ソースコード Markdown変換ツール</h1>
-
     <div class="actions">
-        <!-- ファイル複数選択 -->
         <input type="file" id="file-input" multiple style="display:none;">
-        <button class="btn" onclick="fileInput.click()">📄 ファイルを選択</button>
+        <button class="btn" onclick="document.getElementById('file-input').click()">📄 ファイルを追加</button>
 
-        <!-- フォルダ複数選択 ( multiple 属性を追加 ) -->
         <input type="file" id="folder-input" webkitdirectory multiple style="display:none;">
-        <button class="btn" onclick="folderInput.click()">📁 フォルダを選択</button>
+        <button class="btn" onclick="document.getElementById('folder-input').click()">📁 フォルダを追加</button>
 
-        <button class="btn green" onclick="copyToClipboard()">結果をコピー</button>
-        <button class="btn gray" onclick="openHelp()">使い方</button>
+        <button class="btn red" onclick="clearAll()">🗑️ リセット</button>
+        <button class="btn green" onclick="copyToClipboard()">📋 結果をコピー</button>
+        <button class="btn gray" onclick="openHelp()">❓ 使い方</button>
         <span id="status" class="status-msg"></span>
     </div>
+</div>
 
-    <textarea id="output" placeholder="ファイルまたはフォルダ（複数可）を選択するとMarkdownが出力されます…" spellcheck="false"></textarea>
+<div class="main-wrapper">
+    <!-- 左側：ファイルツリー -->
+    <div class="sidebar">
+        <h3>📁 選択されたファイル</h3>
+        <div id="tree-container" class="tree-container">
+            <div style="color:#999; text-align:center; margin-top: 40px; line-height: 1.8;">
+                ファイルやフォルダを<br>ドラッグ＆ドロップ<br>または上のボタンから追加
+            </div>
+        </div>
+    </div>
+
+    <!-- 右側：Markdownプレビュー -->
+    <div class="content">
+        <textarea id="output" placeholder="ファイルを追加し、左側のツリーで必要なものにチェックを入れると、ここにMarkdownが出力されます…" spellcheck="false" readonly></textarea>
+    </div>
 </div>
 
 <div class="modal" id="help-modal">
     <div class="modal-content">
         <h2>📘 使い方</h2>
         <ul>
-            <li><b>ファイル選択</b>：選択したテキストファイルを Markdown 化（複数選択可）</li>
-            <li><b>フォルダ選択</b>：フォルダ構成（全ファイル名）＋テキストファイルを Markdown 化（複数選択可）</li>
+            <li><b>ファイルの追加</b>：ボタン、または<b>画面全体へのドラッグ＆ドロップ</b>で、ファイルやフォルダを何度も追加できます。</li>
+            <li><b>ファイルの除外</b>：左側のツリーに表示されたチェックボックスを外すことで、出力したくないフォルダやファイルを自由に除外できます。</li>
         </ul>
-        <p>※ バイナリファイルは本文には出力されません（名前のみ表示）</p>
-        <p><small>※ 複数フォルダの選択は、Chrome や Edge など対応しているブラウザでのみ動作します。</small></p>
+        <p>※ `.git` や `node_modules` などの不要なフォルダ、および `.env` などの機密ファイルは自動的に無視されます。<br>
+           ※ 画像などのバイナリファイルは構成ツリー（名前）にのみ出力され、中身の文字起こしはされません。</p>
         <button class="btn" onclick="closeHelp()">閉じる</button>
     </div>
 </div>
 
 <script>
-const fileInput = document.getElementById('file-input');
-const folderInput = document.getElementById('folder-input');
 const output = document.getElementById('output');
 const status = document.getElementById('status');
-const modal = document.getElementById('help-modal');
+const treeContainer = document.getElementById('tree-container');
+const dropOverlay = document.getElementById('drop-overlay');
 
-const IGNORE_DIRS = ['.git', 'node_modules', '.svn', '.idea'];
+// 除外設定（読み込み時に完全にスキップするもの）
+const IGNORE_DIRS = ['.git', 'node_modules', '.svn', '.idea', '__pycache__', 'dist', 'build'];
+const SENSITIVE_FILES = ['.env', '.env.local', '.env.development', '.env.production', '.env.test'];
+
+// バイナリ設定（ツリーには表示されるがテキストとしては読み込まない）
 const BINARY_EXTS = [
     'png','jpg','jpeg','gif','bmp','webp','ico',
     'pdf','zip','tar','gz','7z','rar',
     'exe','dll','so','dylib','mp3','mp4','mov','avi','wav'
 ];
-
-function openHelp(){ modal.style.display='flex'; }
-function closeHelp(){ modal.style.display='none'; }
-
 const TEXT_EXTS = [
-    // Programming
     'rs','swift','kt','java','go','c','h','cpp','hpp','cs',
-    'js','ts','py','rb','php',
-
-    // Web
-    'html','css','scss',
-
-    // Config / Data
-    'json','yaml','yml','toml','xml',
-
-    // Docs / Other
-    'md','txt','sql','sh','ps1'
+    'js','ts','py','rb','php','html','css','scss',
+    'json','yaml','yml','toml','xml','md','txt','sql','sh','ps1'
 ];
 
-const SENSITIVE_FILES = [
-    '.env',
-    '.env.local',
-    '.env.development',
-    '.env.production',
-    '.env.test'
-];
+function openHelp() { document.getElementById('help-modal').style.display='flex'; }
+function closeHelp() { document.getElementById('help-modal').style.display='none'; }
 
 function isTextFile(file) {
     const name = file.name.toLowerCase();
     const ext = name.includes('.') ? name.split('.').pop() : '';
-
-    // 🔒 機密ファイルは無条件で除外
-    if (SENSITIVE_FILES.includes(name)) return false;
-
-    // 明確なバイナリは除外
     if (BINARY_EXTS.includes(ext)) return false;
-
-    // 拡張子ベースでテキスト判定
     if (TEXT_EXTS.includes(ext)) return true;
-
-    // MIMEタイプが text/* の場合も許可
     if (file.type && file.type.startsWith('text')) return true;
-
     return false;
 }
 
 function lang(name) {
     const ext = name.toLowerCase().split('.').pop();
     const map = {
-        swift:'swift', kt:'kotlin', java:'java',
-        rs:'rust', go:'go',
+        swift:'swift', kt:'kotlin', java:'java', rs:'rust', go:'go',
         c:'c', h:'c', cpp:'cpp', hpp:'cpp', cs:'csharp',
-        js:'javascript', ts:'typescript',
-        py:'python', rb:'ruby', php:'php',
-        html:'html', css:'css', scss:'scss',
-        json:'json',
-        yaml:'yaml', yml:'yaml', toml:'toml',
-        md:'markdown', sql:'sql',
-        sh:'bash', ps1:'powershell',
-        txt:'text'
+        js:'javascript', ts:'typescript', py:'python', rb:'ruby', php:'php',
+        html:'html', css:'css', scss:'scss', json:'json',
+        yaml:'yaml', yml:'yaml', toml:'toml', md:'markdown', sql:'sql',
+        sh:'bash', ps1:'powershell', txt:'text'
     };
     return map[ext] || '';
 }
 
-function buildTree(files) {
-    const root = {};
-    files.forEach(f => {
-        const parts = f.webkitRelativePath
-            ? f.webkitRelativePath.split('/')
-            : [f.name];
+/* =========================================
+   1. データ構造とツリー管理
+========================================= */
+let globalRootNode = { name: "root", type: "dir", children: {}, checked: true };
+let generateTimeout = null;
 
-        parts.reduce((a,c)=>{
-            a[c]=a[c]||{};
-            return a[c];
-        }, root);
-    });
-
-    function render(node, indent='') {
-        return Object.keys(node).sort().map((k,i,a)=>{
-            const last=i===a.length-1;
-            return `${indent}${last?'└─':'├─'} ${k}\n${render(node[k], indent+(last?'   ':'│  '))}`;
-        }).join('');
-    }
-    return render(root);
+// パスが無視リストに含まれているか判定
+function isIgnoredPath(name) {
+    return IGNORE_DIRS.includes(name) || SENSITIVE_FILES.includes(name);
 }
 
-async function handleFiles(allFiles, showTree) {
-    const textFiles = allFiles.filter(isTextFile);
-
-    status.textContent = '処理中…';
-
-    let result = '';
-
-    if (showTree) {
-        result +=
-`## 📁 Folder Structure
-\`\`\`text
-${buildTree(allFiles)}
-\`\`\`
-
-`;
+// ファイル配列をツリーデータにマージ
+function addFilesToTree(files) {
+    let added = false;
+    files.forEach(f => {
+        const path = f.customPath || f.webkitRelativePath || f.name;
+        const parts = path.split('/').filter(p => p);
+        
+        let current = globalRootNode;
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            const isFile = (i === parts.length - 1);
+            if (!current.children[part]) {
+                current.children[part] = {
+                    name: part,
+                    type: isFile ? "file" : "dir",
+                    children: {},
+                    checked: true,
+                    file: isFile ? f : null,
+                    parent: current
+                };
+                added = true;
+            }
+            current = current.children[part];
+        }
+    });
+    
+    if (added) {
+        renderTreeUI();
+        triggerGenerate();
     }
+}
 
+/* =========================================
+   2. UIのレンダリング
+========================================= */
+function renderTreeUI() {
+    treeContainer.innerHTML = '';
+    const children = Object.values(globalRootNode.children).sort(sortNodes);
+    
+    if (children.length === 0) {
+        treeContainer.innerHTML = '<div style="color:#999; text-align:center; margin-top: 40px; line-height: 1.8;">ファイルやフォルダを<br>ドラッグ＆ドロップ<br>または上のボタンから追加</div>';
+        return;
+    }
+    
+    children.forEach(child => {
+        treeContainer.appendChild(createNodeElement(child));
+    });
+}
+
+function sortNodes(a, b) {
+    if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+    return a.name.localeCompare(b.name);
+}
+
+function createNodeElement(node) {
+    if (node.type === 'file') {
+        const div = document.createElement('div');
+        div.className = 'tree-item';
+        
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = node.checked;
+        cb.onchange = (e) => {
+            node.checked = e.target.checked;
+            updateParentCheckboxes(node);
+            triggerGenerate();
+        };
+        node.checkbox = cb;
+        
+        const label = document.createElement('span');
+        label.textContent = "📄 " + node.name;
+        
+        div.appendChild(cb);
+        div.appendChild(label);
+        return div;
+    } else {
+        const details = document.createElement('details');
+        details.open = true;
+        
+        const summary = document.createElement('summary');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = node.checked;
+        cb.onchange = (e) => {
+            setCheckboxesRecursive(node, e.target.checked);
+            updateParentCheckboxes(node);
+            triggerGenerate();
+        };
+        node.checkbox = cb;
+        
+        const label = document.createElement('span');
+        label.textContent = "📁 " + node.name;
+        
+        summary.appendChild(cb);
+        summary.appendChild(label);
+        details.appendChild(summary);
+        
+        const childrenContainer = document.createElement('div');
+        childrenContainer.style.paddingLeft = '22px';
+        
+        const children = Object.values(node.children).sort(sortNodes);
+        children.forEach(child => {
+            childrenContainer.appendChild(createNodeElement(child));
+        });
+        
+        details.appendChild(childrenContainer);
+        return details;
+    }
+}
+
+// 子要素のチェックボックスを一括変更
+function setCheckboxesRecursive(node, checked) {
+    node.checked = checked;
+    if (node.checkbox) {
+        node.checkbox.checked = checked;
+        node.checkbox.indeterminate = false;
+    }
+    Object.values(node.children).forEach(child => setCheckboxesRecursive(child, checked));
+}
+
+// 親要素のチェックボックス状態を自動更新（半選択状態など）
+function updateParentCheckboxes(node) {
+    let p = node.parent;
+    while (p && p.name !== "root") {
+        const children = Object.values(p.children);
+        const allChecked = children.every(c => c.checked);
+        const someChecked = children.some(c => c.checked || (c.checkbox && c.checkbox.indeterminate));
+        
+        p.checked = allChecked;
+        if (p.checkbox) {
+            p.checkbox.checked = allChecked;
+            p.checkbox.indeterminate = !allChecked && someChecked;
+        }
+        p = p.parent;
+    }
+}
+
+/* =========================================
+   3. Markdownの生成
+========================================= */
+function triggerGenerate() {
+    clearTimeout(generateTimeout);
+    generateTimeout = setTimeout(generateMarkdown, 300);
+}
+
+async function generateMarkdown() {
+    status.textContent = '生成中…';
+    const selectedFiles = [];
+    
+    function traverse(node, currentPath) {
+        if (node.type === 'file' && node.checked) {
+            selectedFiles.push({
+                file: node.file,
+                path: currentPath ? currentPath + '/' + node.name : node.name
+            });
+        } else if (node.type === 'dir' && (node.checked || (node.checkbox && node.checkbox.indeterminate))) {
+            const nextPath = currentPath ? currentPath + '/' + node.name : node.name;
+            Object.values(node.children).forEach(c => traverse(c, nextPath));
+        }
+    }
+    
+    Object.values(globalRootNode.children).forEach(c => traverse(c, ''));
+    
+    if (selectedFiles.length === 0) {
+        output.value = '';
+        status.textContent = '';
+        return;
+    }
+    
+    // フォルダ構成ツリーの生成
+    const treeRoot = {};
+    selectedFiles.forEach(sf => {
+        const parts = sf.path.split('/');
+        parts.reduce((a, c) => { a[c] = a[c] || {}; return a[c]; }, treeRoot);
+    });
+
+    function renderTreeText(node, indent='') {
+        return Object.keys(node).sort().map((k,i,a)=>{
+            const last = i === a.length - 1;
+            return `${indent}${last ? '└─' : '├─'} ${k}\n${renderTreeText(node[k], indent + (last ? '   ' : '│  '))}`;
+        }).join('');
+    }
+    
+    let result = `## 📁 Folder Structure\n\`\`\`text\n${renderTreeText(treeRoot)}\`\`\`\n\n`;
+    
+    // テキストファイルの結合
+    const textFiles = selectedFiles.filter(sf => isTextFile(sf.file));
+    
     if (textFiles.length) {
-        const contents = await Promise.all(textFiles.map(async f=>{
-            const text = await f.text();
-            const name = f.webkitRelativePath || f.name;
-            return `### File: ${name}\n\`\`\`${lang(f.name)}\n${text}\n\`\`\``;
+        const contents = await Promise.all(textFiles.map(async sf => {
+            const text = await sf.file.text();
+            return `### File: ${sf.path}\n\`\`\`${lang(sf.file.name)}\n${text}\n\`\`\``;
         }));
         result += `## 📄 Files\n${contents.join('\n\n')}`;
     } else {
         result += '_Markdown 化できるテキストファイルはありません_';
     }
-
+    
     output.value = result;
-    status.textContent = '完了！';
+    status.textContent = '✅ 完了！';
+    setTimeout(() => { if (status.textContent === '✅ 完了！') status.textContent = ''; }, 2000);
 }
 
-fileInput.addEventListener('change', e =>
-    handleFiles([...e.target.files], false)
-);
-folderInput.addEventListener('change', e =>
-    handleFiles([...e.target.files], true)
-);
+/* =========================================
+   4. ファイル入力処理
+========================================= */
+function handleInputFiles(e) {
+    const filesArray = [...e.target.files];
+    filesArray.forEach(f => {
+        if (!f.customPath) f.customPath = f.webkitRelativePath || f.name;
+    });
+    // 無視リストに該当しないものだけ追加
+    const validFiles = filesArray.filter(f => !f.customPath.split('/').some(isIgnoredPath));
+    addFilesToTree(validFiles);
+    e.target.value = ''; // 連続で同じファイルを選べるようにリセット
+}
+
+document.getElementById('file-input').addEventListener('change', handleInputFiles);
+document.getElementById('folder-input').addEventListener('change', handleInputFiles);
+
+function clearAll() {
+    globalRootNode = { name: "root", type: "dir", children: {}, checked: true };
+    renderTreeUI();
+    output.value = '';
+    status.textContent = '🗑️ リセットしました';
+    setTimeout(() => status.textContent = '', 2000);
+}
 
 async function copyToClipboard() {
     if (!output.value) return;
     await navigator.clipboard.writeText(output.value);
-    status.textContent = 'コピーしました！';
-    setTimeout(()=>status.textContent='',2000);
+    status.textContent = '📋 コピーしました！';
+    setTimeout(() => status.textContent = '', 2000);
 }
+
+/* =========================================
+   5. ドラッグ＆ドロップ処理
+========================================= */
+let dragCounter = 0; // 画面のチラツキを防ぐためのカウンター
+
+window.addEventListener('dragenter', e => {
+    e.preventDefault();
+    dragCounter++;
+    dropOverlay.style.display = 'flex';
+});
+window.addEventListener('dragleave', e => {
+    e.preventDefault();
+    dragCounter--;
+    if (dragCounter === 0) dropOverlay.style.display = 'none';
+});
+window.addEventListener('dragover', e => e.preventDefault());
+
+window.addEventListener('drop', async e => {
+    e.preventDefault();
+    dragCounter = 0;
+    dropOverlay.style.display = 'none';
+    status.textContent = '読み込み中…';
+    
+    const items = e.dataTransfer.items;
+    const files = [];
+    
+    const readEntry = async (entry, path = '') => {
+        if (isIgnoredPath(entry.name)) return; // 無視ディレクトリならスキップ
+        
+        if (entry.isFile) {
+            const file = await new Promise(resolve => entry.file(resolve));
+            file.customPath = path + file.name;
+            files.push(file);
+        } else if (entry.isDirectory) {
+            const dirReader = entry.createReader();
+            let allEntries = [];
+            // readEntries は一度に100件しか返さない場合があるためループ処理
+            const readDir = () => new Promise((resolve, reject) => {
+                dirReader.readEntries(entries => {
+                    if (entries.length === 0) resolve(allEntries);
+                    else {
+                        allEntries = allEntries.concat(entries);
+                        readDir().then(resolve).catch(reject);
+                    }
+                }, reject);
+            });
+            
+            await readDir();
+            for (let i = 0; i < allEntries.length; i++) {
+                await readEntry(allEntries[i], path + entry.name + '/');
+            }
+        }
+    };
+    
+    if (items) {
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i].webkitGetAsEntry();
+            if (item) await readEntry(item);
+        }
+    }
+    
+    addFilesToTree(files);
+});
 </script>
 
 </body>
