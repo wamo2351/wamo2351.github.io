@@ -144,7 +144,7 @@ textarea {
     font-size: 32px;
     font-weight: bold;
     backdrop-filter: blur(4px);
-    pointer-events: none; /* 子要素の干渉を防ぐ */
+    pointer-events: none;
 }
 
 /* Modal */
@@ -211,11 +211,11 @@ textarea {
     <div class="modal-content">
         <h2>📘 使い方</h2>
         <ul>
-            <li><b>ファイルの追加</b>：ボタン、または<b>画面全体へのドラッグ＆ドロップ</b>で、ファイルやフォルダを何度も追加できます。</li>
-            <li><b>ファイルの除外</b>：左側のツリーに表示されたチェックボックスを外すことで、出力したくないフォルダやファイルを自由に除外できます。</li>
+            <li><b>ファイルの追加</b>：ボタン、または<b>画面全体へのドラッグ＆ドロップ</b>で、ファイルやフォルダを追加します。</li>
+            <li><b>ファイルの除外</b>：左側のツリーのチェックを外すことで、出力したくないものを除外できます。</li>
         </ul>
-        <p>※ `.git` や `node_modules` などの不要なフォルダ、および `.env` などの機密ファイルは自動的に無視されます。<br>
-           ※ 画像などのバイナリファイルは構成ツリー（名前）にのみ出力され、中身の文字起こしはされません。</p>
+        <p>※ 画像やZIPなどのバイナリファイルは、文字化けを防ぐために中身（コード）は出力されません。<br>
+           ※ `.git` や `node_modules` など、システム系の一部のフォルダは自動的に無視されます。</p>
         <button class="btn" onclick="closeHelp()">閉じる</button>
     </div>
 </div>
@@ -226,45 +226,47 @@ const status = document.getElementById('status');
 const treeContainer = document.getElementById('tree-container');
 const dropOverlay = document.getElementById('drop-overlay');
 
-// 除外設定（読み込み時に完全にスキップするもの）
+// そもそもツリーに読み込ませない（完全無視する）フォルダとファイル
 const IGNORE_DIRS = ['.git', 'node_modules', '.svn', '.idea', '__pycache__', 'dist', 'build'];
 const SENSITIVE_FILES = ['.env', '.env.local', '.env.development', '.env.production', '.env.test'];
 
-// バイナリ設定（ツリーには表示されるがテキストとしては読み込まない）
+// ブラウザがフリーズする原因になる「明らかなバイナリファイル」の拡張子リスト
 const BINARY_EXTS = [
-    'png','jpg','jpeg','gif','bmp','webp','ico',
+    'png','jpg','jpeg','gif','bmp','webp','ico','svg',
     'pdf','zip','tar','gz','7z','rar',
-    'exe','dll','so','dylib','mp3','mp4','mov','avi','wav'
-];
-const TEXT_EXTS = [
-    'rs','swift','kt','java','go','c','h','cpp','hpp','cs',
-    'js','ts','py','rb','php','html','css','scss',
-    'json','yaml','yml','toml','xml','md','txt','sql','sh','ps1'
+    'exe','dll','so','dylib',
+    'mp3','mp4','mov','avi','wav','mkv',
+    'woff','woff2','ttf','eot'
 ];
 
 function openHelp() { document.getElementById('help-modal').style.display='flex'; }
 function closeHelp() { document.getElementById('help-modal').style.display='none'; }
 
+// コードを表示するファイルかどうかの判定（バイナリ以外はすべて許可）
 function isTextFile(file) {
     const name = file.name.toLowerCase();
     const ext = name.includes('.') ? name.split('.').pop() : '';
+    
+    // フリーズを防ぐため、明らかなバイナリファイルは除外
     if (BINARY_EXTS.includes(ext)) return false;
-    if (TEXT_EXTS.includes(ext)) return true;
-    if (file.type && file.type.startsWith('text')) return true;
-    return false;
+    
+    // それ以外のファイルは、チェックされていればすべてコードとして表示
+    return true;
 }
 
+// 拡張子からMarkdownの言語名を取得（シンタックスハイライト用）
 function lang(name) {
     const ext = name.toLowerCase().split('.').pop();
     const map = {
         swift:'swift', kt:'kotlin', java:'java', rs:'rust', go:'go',
         c:'c', h:'c', cpp:'cpp', hpp:'cpp', cs:'csharp',
-        js:'javascript', ts:'typescript', py:'python', rb:'ruby', php:'php',
+        js:'javascript', ts:'typescript', jsx:'jsx', tsx:'tsx', vue:'vue', svelte:'svelte',
+        py:'python', rb:'ruby', php:'php',
         html:'html', css:'css', scss:'scss', json:'json',
-        yaml:'yaml', yml:'yaml', toml:'toml', md:'markdown', sql:'sql',
+        yaml:'yaml', yml:'yaml', toml:'toml', xml:'xml', md:'markdown', sql:'sql',
         sh:'bash', ps1:'powershell', txt:'text'
     };
-    return map[ext] || '';
+    return map[ext] || ''; // 不明な場合は空文字を返す（通常のコードブロックになる）
 }
 
 /* =========================================
@@ -273,12 +275,10 @@ function lang(name) {
 let globalRootNode = { name: "root", type: "dir", children: {}, checked: true };
 let generateTimeout = null;
 
-// パスが無視リストに含まれているか判定
 function isIgnoredPath(name) {
     return IGNORE_DIRS.includes(name) || SENSITIVE_FILES.includes(name);
 }
 
-// ファイル配列をツリーデータにマージ
 function addFilesToTree(files) {
     let added = false;
     files.forEach(f => {
@@ -294,7 +294,7 @@ function addFilesToTree(files) {
                     name: part,
                     type: isFile ? "file" : "dir",
                     children: {},
-                    checked: true,
+                    checked: true, // 追加されたものはデフォルトでON
                     file: isFile ? f : null,
                     parent: current
                 };
@@ -388,7 +388,6 @@ function createNodeElement(node) {
     }
 }
 
-// 子要素のチェックボックスを一括変更
 function setCheckboxesRecursive(node, checked) {
     node.checked = checked;
     if (node.checkbox) {
@@ -398,7 +397,6 @@ function setCheckboxesRecursive(node, checked) {
     Object.values(node.children).forEach(child => setCheckboxesRecursive(child, checked));
 }
 
-// 親要素のチェックボックス状態を自動更新（半選択状態など）
 function updateParentCheckboxes(node) {
     let p = node.parent;
     while (p && p.name !== "root") {
@@ -464,16 +462,21 @@ async function generateMarkdown() {
     let result = `## 📁 Folder Structure\n\`\`\`text\n${renderTreeText(treeRoot)}\`\`\`\n\n`;
     
     // テキストファイルの結合
+    // チェックされていて、かつ「明らかなバイナリ」ではないものを抽出
     const textFiles = selectedFiles.filter(sf => isTextFile(sf.file));
     
     if (textFiles.length) {
         const contents = await Promise.all(textFiles.map(async sf => {
-            const text = await sf.file.text();
-            return `### File: ${sf.path}\n\`\`\`${lang(sf.file.name)}\n${text}\n\`\`\``;
+            try {
+                const text = await sf.file.text();
+                return `### File: ${sf.path}\n\`\`\`${lang(sf.file.name)}\n${text}\n\`\`\``;
+            } catch (e) {
+                return `### File: ${sf.path}\n_（読み込みエラー：テキストファイルとして解釈できませんでした）_\n`;
+            }
         }));
         result += `## 📄 Files\n${contents.join('\n\n')}`;
     } else {
-        result += '_Markdown 化できるテキストファイルはありません_';
+        result += '_出力対象のコードファイルがありません_';
     }
     
     output.value = result;
@@ -489,10 +492,9 @@ function handleInputFiles(e) {
     filesArray.forEach(f => {
         if (!f.customPath) f.customPath = f.webkitRelativePath || f.name;
     });
-    // 無視リストに該当しないものだけ追加
     const validFiles = filesArray.filter(f => !f.customPath.split('/').some(isIgnoredPath));
     addFilesToTree(validFiles);
-    e.target.value = ''; // 連続で同じファイルを選べるようにリセット
+    e.target.value = '';
 }
 
 document.getElementById('file-input').addEventListener('change', handleInputFiles);
@@ -516,7 +518,7 @@ async function copyToClipboard() {
 /* =========================================
    5. ドラッグ＆ドロップ処理
 ========================================= */
-let dragCounter = 0; // 画面のチラツキを防ぐためのカウンター
+let dragCounter = 0;
 
 window.addEventListener('dragenter', e => {
     e.preventDefault();
@@ -540,7 +542,7 @@ window.addEventListener('drop', async e => {
     const files = [];
     
     const readEntry = async (entry, path = '') => {
-        if (isIgnoredPath(entry.name)) return; // 無視ディレクトリならスキップ
+        if (isIgnoredPath(entry.name)) return;
         
         if (entry.isFile) {
             const file = await new Promise(resolve => entry.file(resolve));
@@ -549,7 +551,6 @@ window.addEventListener('drop', async e => {
         } else if (entry.isDirectory) {
             const dirReader = entry.createReader();
             let allEntries = [];
-            // readEntries は一度に100件しか返さない場合があるためループ処理
             const readDir = () => new Promise((resolve, reject) => {
                 dirReader.readEntries(entries => {
                     if (entries.length === 0) resolve(allEntries);
