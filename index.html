@@ -1,583 +1,188 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ソースコード Markdown変換ツール</title>
-
-<style>
-body {
-    font-family: sans-serif;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f0f2f5;
-}
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-h1 { margin: 0; color: #1a73e8; font-size: 24px; }
-.actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-.btn {
-    background: #1a73e8;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: 0.2s;
-}
-.btn:hover { background: #1557b0; }
-.btn.green { background: #34a853; }
-.btn.green:hover { background: #2b803e; }
-.btn.gray { background: #666; }
-.btn.gray:hover { background: #444; }
-.btn.red { background: #ea4335; }
-.btn.red:hover { background: #b3362a; }
-
-.status-msg { font-size: 14px; color: #666; font-weight: bold; }
-
-/* メインレイアウト */
-.main-wrapper {
-    display: flex;
-    gap: 20px;
-    height: calc(100vh - 120px);
-    min-height: 500px;
-}
-
-/* 左側：ツリービュー */
-.sidebar {
-    width: 350px;
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-}
-.sidebar h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 15px;
-    color: #333;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 8px;
-}
-.tree-container {
-    flex: 1;
-    overflow-y: auto;
-    font-size: 14px;
-}
-.tree-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 0;
-}
-details { margin: 2px 0; }
-summary {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    list-style: none;
-    padding: 4px 0;
-    font-weight: bold;
-    color: #444;
-}
-summary::-webkit-details-marker { display: none; }
-summary::before {
-    content: '▶';
-    font-size: 10px;
-    display: inline-block;
-    transition: 0.2s;
-    width: 14px;
-    text-align: center;
-    color: #888;
-}
-details[open] > summary::before { transform: rotate(90deg); }
-
-/* 右側：出力エリア */
-.content {
-    flex: 1;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-textarea {
-    flex: 1;
-    width: 100%;
-    border: none;
-    font-family: monospace;
-    font-size: 13px;
-    padding: 20px;
-    background: #2d2d2d;
-    color: #f8f8f2;
-    line-height: 1.5;
-    resize: none;
-    box-sizing: border-box;
-}
-
-/* ドラッグ＆ドロップのオーバーレイ */
-.drop-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26, 115, 232, 0.85);
-    color: white;
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: bold;
-    backdrop-filter: blur(4px);
-    pointer-events: none;
-}
-
-/* Modal */
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-.modal-content {
-    background: white;
-    max-width: 620px;
-    padding: 25px;
-    border-radius: 12px;
-    line-height: 1.7;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wamo</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        unity: '#222c37',
+                        steam: '#1b2838',
+                        accent: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* スムーズスクロール */
+        html { scroll-behavior: smooth; }
+    </style>
 </head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased">
 
-<body>
-
-<!-- ドラッグ＆ドロップ時のオーバーレイ -->
-<div id="drop-overlay" class="drop-overlay">
-    <div>📂 ここにファイルやフォルダをドロップして追加</div>
-</div>
-
-<div class="header">
-    <h1>ソースコード Markdown変換ツール</h1>
-    <div class="actions">
-        <input type="file" id="file-input" multiple style="display:none;">
-        <button class="btn" onclick="document.getElementById('file-input').click()">📄 ファイルを追加</button>
-
-        <input type="file" id="folder-input" webkitdirectory multiple style="display:none;">
-        <button class="btn" onclick="document.getElementById('folder-input').click()">📁 フォルダを追加</button>
-
-        <button class="btn red" onclick="clearAll()">🗑️ リセット</button>
-        <button class="btn green" onclick="copyToClipboard()">📋 結果をコピー</button>
-        <button class="btn gray" onclick="openHelp()">❓ 使い方</button>
-        <span id="status" class="status-msg"></span>
-    </div>
-</div>
-
-<div class="main-wrapper">
-    <!-- 左側：ファイルツリー -->
-    <div class="sidebar">
-        <h3>📁 選択されたファイル</h3>
-        <div id="tree-container" class="tree-container">
-            <div style="color:#999; text-align:center; margin-top: 40px; line-height: 1.8;">
-                ファイルやフォルダを<br>ドラッグ＆ドロップ<br>または上のボタンから追加
+    <!-- ナビゲーションバー -->
+    <nav class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <span class="font-bold text-lg tracking-wider">wamo</span>
+                </div>
+                <!-- メニュー -->
+                <div class="hidden md:flex space-x-8 text-sm font-medium">
+                    <a href="#products" class="hover:text-blue-400 transition">
+                        <span class="lang-ja">制作実績</span><span class="lang-en hidden">Products</span>
+                    </a>
+                    <a href="#about" class="hover:text-blue-400 transition">
+                        <span class="lang-ja">プロフィール</span><span class="lang-en hidden">About</span>
+                    </a>
+                    <a href="#support" class="hover:text-blue-400 transition">
+                        <span class="lang-ja">サポート</span><span class="lang-en hidden">Support</span>
+                    </a>
+                </div>
+                <!-- 言語切り替え -->
+                <div class="flex items-center space-x-4">
+                    <div class="inline-flex rounded-md shadow-sm text-xs" role="group">
+                        <button type="button" onclick="switchLanguage('ja')" id="btn-ja" class="px-3 py-1.5 rounded-l-md border border-slate-700 bg-slate-800 text-white font-medium hover:bg-slate-700 focus:z-10">JP</button>
+                        <button type="button" onclick="switchLanguage('en')" id="btn-en" class="px-3 py-1.5 rounded-r-md border-t border-b border-r border-slate-700 bg-slate-900 text-slate-400 font-medium hover:bg-slate-700 focus:z-10">EN</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <!-- 右側：Markdownプレビュー -->
-    <div class="content">
-        <textarea id="output" placeholder="ファイルを追加し、左側のツリーで必要なものにチェックを入れると、ここにMarkdownが出力されます…" spellcheck="false" readonly></textarea>
-    </div>
-</div>
+    <!-- プロダクト一覧（アセット ＆ 自作ゲーム） -->
+    <section id="products" class="py-20 bg-slate-900/10">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl font-bold text-white">
+                    <span class="lang-ja">プロダクト</span><span class="lang-en hidden">Products</span>
+                </h2>
+                <p class="text-slate-400 mt-4">
+                    <span class="lang-ja">現在配信中、および開発中のタイトル一覧です。</span>
+                    <span class="lang-en hidden">List of active assets and games in development.</span>
+                </p>
+            </div>
 
-<div class="modal" id="help-modal">
-    <div class="modal-content">
-        <h2>📘 使い方</h2>
-        <ul>
-            <li><b>ファイルの追加</b>：ボタン、または<b>画面全体へのドラッグ＆ドロップ</b>で、ファイルやフォルダを追加します。</li>
-            <li><b>ファイルの除外</b>：左側のツリーのチェックを外すことで、出力したくないものを除外できます。</li>
-        </ul>
-        <p>※ 画像やZIPなどのバイナリファイルは、文字化けを防ぐために中身（コード）は出力されません。<br>
-           ※ `.git` や `node_modules` など、システム系の一部のフォルダは自動的に無視されます。</p>
-        <button class="btn" onclick="closeHelp()">閉じる</button>
-    </div>
-</div>
+            <!-- グリッドレイアウト -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- プロダクト -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between">
+                    <div>
+                        <div class="relative">
+                            <img src="https://via.placeholder.com/800x450" alt="Asset Image" class="w-full h-52 object-cover">
+                            <span class="absolute top-4 left-4 bg-emerald-500 text-slate-950 text-xs font-bold px-2.5 py-1 rounded">Unity Asset</span>
+                        </div>
+                        <div class="p-6 space-y-3">
+                            <h3 class="text-2xl font-bold text-white">EZVHS</h3>
+                            <p class="text-slate-400 text-sm">
+                                <span class="lang-ja">Unityでの開発プロセスを劇的に効率化する、高機能エディタ拡張アセット。</span>
+                                <span class="lang-en hidden">A high-performance editor extension asset to optimize your Unity workflow.</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <a href="https://assetstore.unity.com/" target="_blank" rel="noopener noreferrer" 
+                           class="w-full inline-flex justify-center bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-sm font-semibold transition">
+                            <span class="lang-ja">Asset Store で見る</span><span class="lang-en hidden">View on Asset Store</span>
+                        </a>
+                    </div>
+                </div>
 
-<script>
-const output = document.getElementById('output');
-const status = document.getElementById('status');
-const treeContainer = document.getElementById('tree-container');
-const dropOverlay = document.getElementById('drop-overlay');
+            </div>
+        </div>
+    </section>
 
-// そもそもツリーに読み込ませない（完全無視する）フォルダとファイル
-const IGNORE_DIRS = ['.git', 'node_modules', '.svn', '.idea', '__pycache__', 'dist', 'build'];
-const SENSITIVE_FILES = ['.env', '.env.local', '.env.development', '.env.production', '.env.test'];
+    <!-- プロフィール（About）セクション -->
+    <section id="about" class="py-20 border-t border-slate-900">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                <div class="flex justify-center">
+                    <div class="w-32 h-32 bg-slate-800 rounded-full border border-slate-700 flex items-center justify-center text-4xl">🕹️</div>
+                </div>
+                <div class="md:col-span-2 space-y-4 text-center md:text-left">
+                    <h2 class="text-3xl font-bold text-white">
+                        <span class="lang-ja">プロフィール</span><span class="lang-en hidden">About Me</span>
+                    </h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        <span class="lang-ja">日本の個人ゲームデベロッパーです。ゲーム制作や、便利ツールの開発を行っています。皆様の開発の助けになるような成果物をお届けします。</span>
+                        <span class="lang-en hidden">Indie game developer based in Japan. Specializing in game development and creating handy tools.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-// ブラウザがフリーズする原因になる「明らかなバイナリファイル」の拡張子リスト
-const BINARY_EXTS = [
-    'png','jpg','jpeg','gif','bmp','webp','ico','svg',
-    'pdf','zip','tar','gz','7z','rar',
-    'exe','dll','so','dylib',
-    'mp3','mp4','mov','avi','wav','mkv',
-    'woff','woff2','ttf','eot'
-];
+    <!-- サポート・問い合わせ -->
+    <section id="support" class="py-20 border-t border-slate-900 bg-slate-900/10">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold text-white mb-6">
+                <span class="lang-ja">サポート ＆ お問い合わせ</span><span class="lang-en hidden">Support & Contact</span>
+            </h2>
+            <p class="text-slate-400 max-w-lg mx-auto mb-8">
+                <span class="lang-ja">アセットの不具合報告や、ゲームに関するお問い合わせはこちらの窓口より受け付けております。</span>
+                <span class="lang-en hidden">If you have any bug reports or inquiries regarding our assets or games, please contact us.</span>
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://x.com/wamo2351" 
+                   class="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 px-6 py-3 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+                    <span class="lang-ja">Xアカウント</span><span class="lang-en hidden">X account</span>
+                </a>
+                <a href="https://discord.gg/nGvquzgGpp" target="_blank" rel="noopener noreferrer" 
+                   class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-sm font-semibold transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                    💬 Discord Server
+                </a>
+            </div>
+        </div>
+    </section>
 
-function openHelp() { document.getElementById('help-modal').style.display='flex'; }
-function closeHelp() { document.getElementById('help-modal').style.display='none'; }
+    <!-- フッター -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-500 text-xs space-y-4">
+            <p>© 2026 Studio Name / Creator Name. All rights reserved.</p>
+            <p>
+                Unity, Unity logos, and other Unity trademarks are trademarks or registered trademarks of Unity Technologies or its affiliates. Steam is a trademark of Valve Corporation.
+            </p>
+        </div>
+    </footer>
 
-// コードを表示するファイルかどうかの判定（バイナリ以外はすべて許可）
-function isTextFile(file) {
-    const name = file.name.toLowerCase();
-    const ext = name.includes('.') ? name.split('.').pop() : '';
-    
-    // フリーズを防ぐため、明らかなバイナリファイルは除外
-    if (BINARY_EXTS.includes(ext)) return false;
-    
-    // それ以外のファイルは、チェックされていればすべてコードとして表示
-    return true;
-}
+    <!-- 言語切り替え用 JavaScript -->
+    <script>
+        function switchLanguage(lang) {
+            localStorage.setItem('preferred-language', lang);
 
-// 拡張子からMarkdownの言語名を取得（シンタックスハイライト用）
-function lang(name) {
-    const ext = name.toLowerCase().split('.').pop();
-    const map = {
-        swift:'swift', kt:'kotlin', java:'java', rs:'rust', go:'go',
-        c:'c', h:'c', cpp:'cpp', hpp:'cpp', cs:'csharp',
-        js:'javascript', ts:'typescript', jsx:'jsx', tsx:'tsx', vue:'vue', svelte:'svelte',
-        py:'python', rb:'ruby', php:'php',
-        html:'html', css:'css', scss:'scss', json:'json',
-        yaml:'yaml', yml:'yaml', toml:'toml', xml:'xml', md:'markdown', sql:'sql',
-        sh:'bash', ps1:'powershell', txt:'text'
-    };
-    return map[ext] || ''; // 不明な場合は空文字を返す（通常のコードブロックになる）
-}
+            const jaElements = document.querySelectorAll('.lang-ja');
+            const enElements = document.querySelectorAll('.lang-en');
 
-/* =========================================
-   1. データ構造とツリー管理
-========================================= */
-let globalRootNode = { name: "root", type: "dir", children: {}, checked: true };
-let generateTimeout = null;
+            if (lang === 'ja') {
+                jaElements.forEach(el => el.classList.remove('hidden'));
+                enElements.forEach(el => el.classList.add('hidden'));
+                
+                document.getElementById('btn-ja').className = "px-3 py-1.5 rounded-l-md border border-slate-700 bg-slate-800 text-white font-medium hover:bg-slate-700 focus:z-10";
+                document.getElementById('btn-en').className = "px-3 py-1.5 rounded-r-md border-t border-b border-r border-slate-700 bg-slate-900 text-slate-400 font-medium hover:bg-slate-700 focus:z-10";
+            } else {
+                jaElements.forEach(el => el.classList.add('hidden'));
+                enElements.forEach(el => el.classList.remove('hidden'));
 
-function isIgnoredPath(name) {
-    return IGNORE_DIRS.includes(name) || SENSITIVE_FILES.includes(name);
-}
-
-function addFilesToTree(files) {
-    let added = false;
-    files.forEach(f => {
-        const path = f.customPath || f.webkitRelativePath || f.name;
-        const parts = path.split('/').filter(p => p);
-        
-        let current = globalRootNode;
-        for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
-            const isFile = (i === parts.length - 1);
-            if (!current.children[part]) {
-                current.children[part] = {
-                    name: part,
-                    type: isFile ? "file" : "dir",
-                    children: {},
-                    checked: true, // 追加されたものはデフォルトでON
-                    file: isFile ? f : null,
-                    parent: current
-                };
-                added = true;
+                document.getElementById('btn-ja').className = "px-3 py-1.5 rounded-l-md border border-slate-700 bg-slate-900 text-slate-400 font-medium hover:bg-slate-700 focus:z-10";
+                document.getElementById('btn-en').className = "px-3 py-1.5 rounded-r-md border-t border-b border-r border-slate-700 bg-slate-800 text-white font-medium hover:bg-slate-700 focus:z-10";
             }
-            current = current.children[part];
         }
-    });
-    
-    if (added) {
-        renderTreeUI();
-        triggerGenerate();
-    }
-}
 
-/* =========================================
-   2. UIのレンダリング
-========================================= */
-function renderTreeUI() {
-    treeContainer.innerHTML = '';
-    const children = Object.values(globalRootNode.children).sort(sortNodes);
-    
-    if (children.length === 0) {
-        treeContainer.innerHTML = '<div style="color:#999; text-align:center; margin-top: 40px; line-height: 1.8;">ファイルやフォルダを<br>ドラッグ＆ドロップ<br>または上のボタンから追加</div>';
-        return;
-    }
-    
-    children.forEach(child => {
-        treeContainer.appendChild(createNodeElement(child));
-    });
-}
-
-function sortNodes(a, b) {
-    if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
-    return a.name.localeCompare(b.name);
-}
-
-function createNodeElement(node) {
-    if (node.type === 'file') {
-        const div = document.createElement('div');
-        div.className = 'tree-item';
-        
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = node.checked;
-        cb.onchange = (e) => {
-            node.checked = e.target.checked;
-            updateParentCheckboxes(node);
-            triggerGenerate();
-        };
-        node.checkbox = cb;
-        
-        const label = document.createElement('span');
-        label.textContent = "📄 " + node.name;
-        
-        div.appendChild(cb);
-        div.appendChild(label);
-        return div;
-    } else {
-        const details = document.createElement('details');
-        details.open = true;
-        
-        const summary = document.createElement('summary');
-        const cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = node.checked;
-        cb.onchange = (e) => {
-            setCheckboxesRecursive(node, e.target.checked);
-            updateParentCheckboxes(node);
-            triggerGenerate();
-        };
-        node.checkbox = cb;
-        
-        const label = document.createElement('span');
-        label.textContent = "📁 " + node.name;
-        
-        summary.appendChild(cb);
-        summary.appendChild(label);
-        details.appendChild(summary);
-        
-        const childrenContainer = document.createElement('div');
-        childrenContainer.style.paddingLeft = '22px';
-        
-        const children = Object.values(node.children).sort(sortNodes);
-        children.forEach(child => {
-            childrenContainer.appendChild(createNodeElement(child));
-        });
-        
-        details.appendChild(childrenContainer);
-        return details;
-    }
-}
-
-function setCheckboxesRecursive(node, checked) {
-    node.checked = checked;
-    if (node.checkbox) {
-        node.checkbox.checked = checked;
-        node.checkbox.indeterminate = false;
-    }
-    Object.values(node.children).forEach(child => setCheckboxesRecursive(child, checked));
-}
-
-function updateParentCheckboxes(node) {
-    let p = node.parent;
-    while (p && p.name !== "root") {
-        const children = Object.values(p.children);
-        const allChecked = children.every(c => c.checked);
-        const someChecked = children.some(c => c.checked || (c.checkbox && c.checkbox.indeterminate));
-        
-        p.checked = allChecked;
-        if (p.checkbox) {
-            p.checkbox.checked = allChecked;
-            p.checkbox.indeterminate = !allChecked && someChecked;
-        }
-        p = p.parent;
-    }
-}
-
-/* =========================================
-   3. Markdownの生成
-========================================= */
-function triggerGenerate() {
-    clearTimeout(generateTimeout);
-    generateTimeout = setTimeout(generateMarkdown, 300);
-}
-
-async function generateMarkdown() {
-    status.textContent = '生成中…';
-    const selectedFiles = [];
-    
-    function traverse(node, currentPath) {
-        if (node.type === 'file' && node.checked) {
-            selectedFiles.push({
-                file: node.file,
-                path: currentPath ? currentPath + '/' + node.name : node.name
-            });
-        } else if (node.type === 'dir' && (node.checked || (node.checkbox && node.checkbox.indeterminate))) {
-            const nextPath = currentPath ? currentPath + '/' + node.name : node.name;
-            Object.values(node.children).forEach(c => traverse(c, nextPath));
-        }
-    }
-    
-    Object.values(globalRootNode.children).forEach(c => traverse(c, ''));
-    
-    if (selectedFiles.length === 0) {
-        output.value = '';
-        status.textContent = '';
-        return;
-    }
-    
-    // フォルダ構成ツリーの生成
-    const treeRoot = {};
-    selectedFiles.forEach(sf => {
-        const parts = sf.path.split('/');
-        parts.reduce((a, c) => { a[c] = a[c] || {}; return a[c]; }, treeRoot);
-    });
-
-    function renderTreeText(node, indent='') {
-        return Object.keys(node).sort().map((k,i,a)=>{
-            const last = i === a.length - 1;
-            return `${indent}${last ? '└─' : '├─'} ${k}\n${renderTreeText(node[k], indent + (last ? '   ' : '│  '))}`;
-        }).join('');
-    }
-    
-    let result = `## 📁 Folder Structure\n\`\`\`text\n${renderTreeText(treeRoot)}\`\`\`\n\n`;
-    
-    // テキストファイルの結合
-    // チェックされていて、かつ「明らかなバイナリ」ではないものを抽出
-    const textFiles = selectedFiles.filter(sf => isTextFile(sf.file));
-    
-    if (textFiles.length) {
-        const contents = await Promise.all(textFiles.map(async sf => {
-            try {
-                const text = await sf.file.text();
-                return `### File: ${sf.path}\n\`\`\`${lang(sf.file.name)}\n${text}\n\`\`\``;
-            } catch (e) {
-                return `### File: ${sf.path}\n_（読み込みエラー：テキストファイルとして解釈できませんでした）_\n`;
-            }
-        }));
-        result += `## 📄 Files\n${contents.join('\n\n')}`;
-    } else {
-        result += '_出力対象のコードファイルがありません_';
-    }
-    
-    output.value = result;
-    status.textContent = '✅ 完了！';
-    setTimeout(() => { if (status.textContent === '✅ 完了！') status.textContent = ''; }, 2000);
-}
-
-/* =========================================
-   4. ファイル入力処理
-========================================= */
-function handleInputFiles(e) {
-    const filesArray = [...e.target.files];
-    filesArray.forEach(f => {
-        if (!f.customPath) f.customPath = f.webkitRelativePath || f.name;
-    });
-    const validFiles = filesArray.filter(f => !f.customPath.split('/').some(isIgnoredPath));
-    addFilesToTree(validFiles);
-    e.target.value = '';
-}
-
-document.getElementById('file-input').addEventListener('change', handleInputFiles);
-document.getElementById('folder-input').addEventListener('change', handleInputFiles);
-
-function clearAll() {
-    globalRootNode = { name: "root", type: "dir", children: {}, checked: true };
-    renderTreeUI();
-    output.value = '';
-    status.textContent = '🗑️ リセットしました';
-    setTimeout(() => status.textContent = '', 2000);
-}
-
-async function copyToClipboard() {
-    if (!output.value) return;
-    await navigator.clipboard.writeText(output.value);
-    status.textContent = '📋 コピーしました！';
-    setTimeout(() => status.textContent = '', 2000);
-}
-
-/* =========================================
-   5. ドラッグ＆ドロップ処理
-========================================= */
-let dragCounter = 0;
-
-window.addEventListener('dragenter', e => {
-    e.preventDefault();
-    dragCounter++;
-    dropOverlay.style.display = 'flex';
-});
-window.addEventListener('dragleave', e => {
-    e.preventDefault();
-    dragCounter--;
-    if (dragCounter === 0) dropOverlay.style.display = 'none';
-});
-window.addEventListener('dragover', e => e.preventDefault());
-
-window.addEventListener('drop', async e => {
-    e.preventDefault();
-    dragCounter = 0;
-    dropOverlay.style.display = 'none';
-    status.textContent = '読み込み中…';
-    
-    const items = e.dataTransfer.items;
-    const files = [];
-    
-    const readEntry = async (entry, path = '') => {
-        if (isIgnoredPath(entry.name)) return;
-        
-        if (entry.isFile) {
-            const file = await new Promise(resolve => entry.file(resolve));
-            file.customPath = path + file.name;
-            files.push(file);
-        } else if (entry.isDirectory) {
-            const dirReader = entry.createReader();
-            let allEntries = [];
-            const readDir = () => new Promise((resolve, reject) => {
-                dirReader.readEntries(entries => {
-                    if (entries.length === 0) resolve(allEntries);
-                    else {
-                        allEntries = allEntries.concat(entries);
-                        readDir().then(resolve).catch(reject);
-                    }
-                }, reject);
-            });
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('preferred-language');
+            const browserLang = navigator.language || navigator.userLanguage;
+            const defaultLang = browserLang.startsWith('ja') ? 'ja' : 'en';
             
-            await readDir();
-            for (let i = 0; i < allEntries.length; i++) {
-                await readEntry(allEntries[i], path + entry.name + '/');
-            }
-        }
-    };
-    
-    if (items) {
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i].webkitGetAsEntry();
-            if (item) await readEntry(item);
-        }
-    }
-    
-    addFilesToTree(files);
-});
-</script>
-
+            const activeLang = savedLang || defaultLang;
+            switchLanguage(activeLang);
+        });
+    </script>
 </body>
 </html>
