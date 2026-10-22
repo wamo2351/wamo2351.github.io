@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ボクセル四駆</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+/* 方眼ノートに蛍光マーカーで描くガレージ。手前の画面は紙、サーキットは暗めの路面。 */
+:root{
+  --bg:#E8EAE4; --paper:#FBFBF6; --card:#FFFFFF; --ink:#142033; --ink2:#566277;
+  --line:#DCE0E5; --line2:#BAC2CD; --accent:#F0480A; --accent-ink:#FFFFFF; --accent-soft:#FFE3D6;
+  --cool:#0E7C86; --body:#2F6FE0; --wing:#F4B400; --lead:#5C6573;
+  --good:#16945A; --warn:#C98100; --bad:#D22F3D;
+  --track:#C9CED6; --wall:#142033; --chassis:#3A4250; --tire:#1B1F27; --rim:#C7CDD6;
+  --grass:#DDE6D3; --shadow:0 1px 0 rgba(20,32,51,.08), 0 6px 18px -8px rgba(20,32,51,.25);
+  --f-d:"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif;
+  --f-b:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+  --f-m:"DotGothic16","Hiragino Sans","Yu Gothic",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E151F; --paper:#121C29; --card:#17222F; --ink:#E8EDF4; --ink2:#9BA9BC;
+  --line:#223246; --line2:#33475F; --accent:#FF6A2B; --accent-ink:#1A0B03; --accent-soft:#3A2013;
+  --cool:#3FC0CB; --body:#5B9BFF; --wing:#FFCB2E; --lead:#8E99AA;
+  --good:#3CC884; --warn:#F0B33A; --bad:#FF6B76;
+  --track:#2B394B; --wall:#E8EDF4; --chassis:#6A7587; --tire:#05080C; --rim:#8D98A8;
+  --grass:#142235; --shadow:0 1px 0 rgba(0,0,0,.4), 0 8px 22px -10px rgba(0,0,0,.7);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E151F; --paper:#121C29; --card:#17222F; --ink:#E8EDF4; --ink2:#9BA9BC;
+  --line:#223246; --line2:#33475F; --accent:#FF6A2B; --accent-ink:#1A0B03; --accent-soft:#3A2013;
+  --cool:#3FC0CB; --body:#5B9BFF; --wing:#FFCB2E; --lead:#8E99AA;
+  --good:#3CC884; --warn:#F0B33A; --bad:#FF6B76;
+  --track:#2B394B; --wall:#E8EDF4; --chassis:#6A7587; --tire:#05080C; --rim:#8D98A8;
+  --grass:#142235; --shadow:0 1px 0 rgba(0,0,0,.4), 0 8px 22px -10px rgba(0,0,0,.7);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-b);font-size:15px;line-height:1.55;
+  padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));
+  padding-top:max(8px,env(safe-area-inset-top,0px));padding-bottom:max(14px,env(safe-area-inset-bottom,0px))}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.app{max-width:1200px;margin:0 auto}
+
+/* ヘッダー */
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px 24px;flex-wrap:wrap;margin-bottom:16px}
+.logo{margin:0;font-family:var(--f-d);font-weight:400;font-size:clamp(28px,5.4vw,42px);line-height:1.05;letter-spacing:.02em}
+.logo span{background:linear-gradient(transparent 58%,var(--accent) 58% 92%,transparent 92%);padding:0 .08em}
+.tag{margin:6px 0 0;color:var(--ink2);font-size:13px}
+.tabs{display:flex;gap:6px;background:var(--card);padding:5px;border-radius:12px;box-shadow:var(--shadow)}
+.tab{border:0;background:transparent;padding:9px 16px;border-radius:8px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tab:disabled{opacity:.4;cursor:not-allowed}
+
+/* 共通パネル */
+.panel{background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow);min-width:0}
+.panel h2{margin:0 0 10px;font-size:13px;letter-spacing:.12em;color:var(--ink2);font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sp{flex:1}
+.seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 11px;border-radius:8px;font-weight:700;font-size:14px;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.sw{width:14px;height:14px;border-radius:4px;border:2px solid var(--ink);display:inline-block}
+.btn{border:2px solid var(--ink);background:var(--card);padding:7px 13px;border-radius:10px;font-weight:700;font-size:14px}
+.btn:hover{background:var(--bg)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.go{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);padding:13px 18px;font-size:17px;width:100%;
+  font-family:var(--f-d);font-weight:400;letter-spacing:.06em;box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+.btn.go:active{transform:translateY(3px);box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+.btn.go:disabled{background:var(--line2);border-color:var(--line2);color:var(--ink2);box-shadow:none}
+.chip{border:2px solid var(--line2);background:transparent;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700}
+.chip:hover{border-color:var(--ink)}
+.small{font-size:12px;color:var(--ink2)}
+kbd{font-family:var(--f-m);font-size:11px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;padding:0 4px}
+
+/* ガレージ */
+.g-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px;align-items:start}
+.g-main{display:grid;gap:12px;min-width:0}
+.g-side{display:grid;gap:12px;min-width:0;position:sticky;top:10px}
+.cv-card{background:var(--paper);border-radius:14px;padding:10px 10px 8px;box-shadow:var(--shadow);border:2px solid var(--ink);min-width:0}
+.cv-wrap{overflow:hidden;border-radius:6px}
+#ed{display:block;touch-action:none;cursor:crosshair;min-width:520px}
+.cv-foot{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--ink2);margin-top:6px;font-family:var(--f-m)}
+.pan{width:100%;margin:6px 0 0}
+.slider{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 260px}
+.slider input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+.val{font-family:var(--f-m);font-size:16px;min-width:5.5ch;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--accent);width:18px;height:18px}
+
+.slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:52vh;overflow:auto}
+.saveRow{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.saveRow .btn{width:auto;flex:none;white-space:nowrap}
+.saveRow input{flex:1;min-width:0;border:2px solid var(--line2);background:var(--card);color:var(--ink);border-radius:8px;padding:5px 9px;font-size:14px;font-weight:700}
+.slot .inf{display:grid;gap:4px}
+.slot .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot{border:2px dashed var(--line2);border-radius:10px;padding:6px;display:grid;gap:5px;min-width:0}
+.slot.full{border-style:solid;border-color:var(--line2)}
+.slot canvas{width:100%;height:auto;display:block;background:var(--paper);border-radius:5px}
+.slot .nm{font-size:12px;font-weight:700;text-align:center}
+.slot .bt{display:flex;gap:4px}
+.slot .bt button{flex:1;padding:3px 0;font-size:12px;border-radius:7px;border:1.5px solid var(--ink);background:var(--card);font-weight:700}
+.slot .bt button:disabled{opacity:.35;cursor:not-allowed}
+
+/* 車検 */
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.checks li{display:flex;gap:9px;align-items:baseline;font-size:14px}
+.checks .mk{font-family:var(--f-m);width:1.4em;flex:none;text-align:center;font-weight:700}
+.checks .ok .mk{color:var(--good)} .checks .ng .mk{color:var(--bad)}
+.checks .ng{color:var(--bad);font-weight:700}
+.checks .nm{flex:1;min-width:0}
+.checks .nv{font-family:var(--f-m);white-space:nowrap}
+.wmeter{position:relative;height:30px;margin:12px 0 4px;background:var(--bg);border-radius:8px;overflow:hidden}
+.wmeter .zone{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--good) 28%,transparent)}
+.wmeter .fill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);opacity:.9;transition:width .12s}
+.wmeter .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-m);font-size:15px;color:#fff;mix-blend-mode:difference}
+.wscale{display:flex;justify-content:space-between;font-family:var(--f-m);font-size:11px;color:var(--ink2)}
+
+/* 風洞データ */
+.gauges{display:grid;gap:11px}
+.gg{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:baseline}
+.gg .t{font-size:13px;font-weight:700}
+.gg .n{font-family:var(--f-m);font-size:14px}
+.gg .bar{grid-column:1/-1;height:9px;background:var(--bg);border-radius:5px;position:relative;overflow:hidden}
+.gg .bar i{position:absolute;top:0;bottom:0;border-radius:5px}
+.gg .bar .mid{position:absolute;left:50%;top:0;bottom:0;width:2px;background:var(--line2)}
+.gg .h{grid-column:1/-1;font-size:11.5px;color:var(--ink2);line-height:1.4}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--ink2);margin-top:8px}
+.legend b{display:inline-block;width:12px;height:4px;vertical-align:middle;margin-right:4px;border-radius:2px}
+
+/* サーキット */
+.r-grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:10px;height:100%;min-height:0}
+.r-main{display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0;height:100%}
+.map-card{position:relative;background:var(--grass);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;border:2px solid var(--ink)}
+#map{display:block;width:100%;height:auto}
+.cd{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-family:var(--f-d);font-size:clamp(64px,16vw,150px);color:var(--accent);
+  text-shadow:0 4px 0 var(--ink),0 0 0 var(--ink);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill}
+.side-card{background:var(--paper);border-radius:14px;border:2px solid var(--ink);overflow:hidden;box-shadow:var(--shadow)}
+#sideCv{display:block;width:100%;height:auto}
+.live{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:7px 12px;background:var(--card);flex:none}
+.lv{display:grid;gap:2px;min-width:0}
+.lv .t{font-size:11px;color:var(--ink2);font-weight:700}
+.lv .n{font-family:var(--f-m);font-size:17px;line-height:1.1}
+.lv .bar{height:6px;background:var(--bg);border-radius:4px;overflow:hidden}
+.lv .bar i{display:block;height:100%;width:0;background:var(--ink);border-radius:4px}
+.badge{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.badge span{background:var(--ink);color:var(--bg);font-family:var(--f-m);font-size:13px;padding:2px 9px;border-radius:999px}
+.r-side{display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0;height:100%;overflow:hidden}
+.r-side .panel{padding:11px 13px}
+.ctrl{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ctrl .btn{flex:1 1 auto;padding:6px 10px;font-size:13px}
+.btn.start-main{padding:11px 14px;font-size:16.5px;width:100%}
+.race-start-box{padding-bottom:10px;margin-bottom:10px;border-bottom:2px dashed var(--line)}
+.mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);background:var(--bg);border-radius:10px;padding:3px;gap:3px}
+.mode-tabs button{border:0;background:transparent;padding:7px 4px;border-radius:8px;font-weight:700;font-size:12.5px;color:var(--ink2);text-align:center;line-height:1.25}
+.mode-tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.cpu-box{display:grid;gap:8px;margin-top:9px}
+.cpu-field{display:grid;gap:4px}
+.cpu-field>label,.p2p-lbl{font-size:11.5px;font-weight:700;color:var(--ink2)}
+.cpu-row{display:flex;align-items:center;gap:6px}
+.cpu-row label{font-size:12px;font-weight:700;color:var(--ink2);white-space:nowrap}
+.cpu-row select,.cpu-row input,.cpu-field select{flex:1;min-width:0;width:100%;border:2px solid var(--line2);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 9px;font-size:13px;font-weight:700}
+.mode-sub{background:var(--bg);border-radius:10px;padding:8px 9px;display:grid;gap:6px;border:1.5px solid var(--line)}
+.mode-sub .cpu-row input{background:var(--card)}
+.btn.act{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.act:hover{opacity:.9}
+.code-box{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line2);display:grid;gap:6px}
+.code-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.code-row input{flex:1;min-width:0;border:2px solid var(--line2);background:var(--bg);color:var(--ink);border-radius:8px;padding:5px 9px;font-size:13px;font-family:var(--f-m)}
+.nat-warn{margin-top:5px;padding:6px 8px;border-radius:7px;background:color-mix(in srgb,var(--bad) 14%,var(--bg));border:1.5px solid var(--bad);color:var(--bad);font-size:11.5px;line-height:1.4;font-weight:700}
+.nat-warn[hidden]{display:none}
+.res-overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(14,21,31,.55);backdrop-filter:blur(3px);z-index:10;padding:14px}
+.res-overlay[hidden]{display:none}
+.results{width:min(480px,94%);max-height:92%;overflow:auto;border:2px solid var(--ink);box-shadow:0 16px 40px -10px rgba(0,0,0,.6)}
+.res-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.results h3{margin:0;font-family:var(--f-d);font-weight:400;font-size:20px}
+.rtable{width:100%;border-collapse:collapse;font-size:13.5px}
+.rtable td{padding:5px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.rtable td:first-child{font-family:var(--f-d);width:2em}
+.rtable td.t{font-family:var(--f-m);text-align:right;white-space:nowrap}
+.rtable tr.me td{background:var(--accent-soft)}
+.advice{margin:8px 0 0;padding:9px 11px;border-radius:10px;background:var(--bg);font-size:12.5px;line-height:1.5}
+.advice b{display:block;margin-bottom:3px}
+.advice ul{margin:4px 0 0;padding-left:1.2em}
+.toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:20;max-width:92vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:900px){
+  .g-grid,.r-grid{grid-template-columns:minmax(0,1fr)}
+  .g-side{position:static}
+}
+@media (max-width:520px){
+  .slots{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .seg button{padding:7px 9px}
+  .live .n{font-size:17px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---- v3: 3Dエディタ ---- */
+.views{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:12px;align-items:start}
+.vcard{background:var(--paper);border-radius:14px;padding:10px;box-shadow:var(--shadow);border:2px solid var(--ink);min-width:0}
+.vhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.vhead h3{margin:0;font-size:13px;letter-spacing:.1em;color:var(--ink2);font-weight:700}
+.vtabs{display:flex;background:var(--bg);border-radius:9px;padding:2px;gap:2px}
+.vtabs button{border:0;background:transparent;padding:5px 12px;border-radius:7px;font-weight:700;font-size:13px;color:var(--ink2)}
+.vtabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.v3wrap{position:relative;border-radius:8px;overflow:hidden;background:var(--bg);aspect-ratio:4/3;min-height:240px}
+#v3{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.v3tip{position:absolute;left:8px;bottom:64px;right:8px;font-size:11px;color:var(--ink2);pointer-events:none;text-shadow:0 0 4px var(--bg),0 0 4px var(--bg)}
+.v3btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.v3btns .chip{padding:3px 10px;font-size:12px}
+.opt{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:10px}
+.opt .slider{flex:1 1 220px}
+.opt select{border:2px solid var(--line2);background:var(--card);border-radius:8px;padding:4px 8px;font-weight:700;font-size:13px}
+.colrow{margin-top:10px;gap:10px;align-items:center}
+.collbl{font-weight:700;font-size:13px}
+.swatches{display:grid;grid-template-columns:repeat(13,1fr);gap:4px;width:100%}
+.swb{width:100%;aspect-ratio:1;border-radius:6px;border:1.5px solid var(--line2);padding:0;cursor:pointer}
+.swb[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--card),0 0 0 3.5px var(--ink);z-index:1}
+.v3bar{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:6px;flex-wrap:wrap;z-index:4}
+.edit-mode-seg{display:none;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(4px);border:2px solid var(--ink);border-radius:999px;padding:2px;gap:2px;box-shadow:var(--shadow)}
+.mode-pill{border:0;background:transparent;color:var(--ink);padding:3px 11px;font-size:12.5px;font-weight:700;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:3px;touch-action:manipulation}
+.mode-pill.act{background:var(--ink);color:var(--bg)}
+.mode-pill#bModeBreak.act{background:var(--bad);color:#fff}
+.btn.go.ng{background:var(--line2);border-color:var(--line2);color:var(--ink2);box-shadow:none}
+.btn.go.wait{background:var(--line2);border-color:var(--line2);color:var(--ink2);box-shadow:none}
+.tab.disabled{opacity:.5;cursor:not-allowed}
+.vbtn{border:2px solid var(--line2);background:var(--card);color:var(--ink);border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700;cursor:pointer}
+.vbtn[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.cross{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);pointer-events:none;display:none}
+.cross::before,.cross::after{content:"";position:absolute;background:#fff;mix-blend-mode:difference}
+.cross::before{left:10px;top:0;width:2px;height:22px}.cross::after{top:10px;left:0;height:2px;width:22px}
+.hotbar{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;display:flex;gap:3px;padding:4px;background:rgba(20,32,51,.78);border-radius:10px;width:min(96%,480px)}
+.hb{flex:1 1 0;min-width:0;aspect-ratio:1;border:2px solid rgba(255,255,255,.3);border-radius:6px;background:rgba(255,255,255,.1);position:relative;padding:0;display:grid;place-items:center;cursor:pointer;color:#fff}
+.hb[aria-pressed="true"]{border-color:#fff;background:rgba(255,255,255,.3);box-shadow:0 0 0 2px rgba(255,255,255,.45)}
+.hb .hs{width:52%;aspect-ratio:1;border-radius:4px;border:2px solid rgba(0,0,0,.5);display:block}
+.hb .hs.fe{box-shadow:inset 0 0 0 2px rgba(255,255,255,.4),inset -3px -3px 0 rgba(0,0,0,.25)}
+.hb .hs.pk{border:2px dashed #fff}
+.hb .hn{position:absolute;left:3px;top:1px;font-size:10px;font-weight:700}
+.hb .hl{position:absolute;right:3px;bottom:1px;font-size:9px;font-weight:700}
+.v3wrap.max{position:fixed;inset:0;z-index:60;border-radius:0;aspect-ratio:auto;min-height:0}
+.nowebgl{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:16px;color:var(--ink2);font-size:13px}
+
+/* ---- v3: 3Dレース ---- */
+.stage{position:relative;background:var(--bg);border-radius:14px;overflow:hidden;border:2px solid var(--ink);box-shadow:var(--shadow);flex:1 1 0;min-height:200px}
+#rc{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+.stage .cd{position:absolute}
+.camb{position:absolute;right:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.camb button{border:2px solid var(--ink);background:var(--card);border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700}
+.camb button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.live{border-radius:14px;margin-top:0;box-shadow:var(--shadow)}
+.stage-tip{position:absolute;left:10px;bottom:8px;font-size:11px;color:var(--ink2);pointer-events:none;text-shadow:0 0 4px var(--bg),0 0 4px var(--bg)}
+@media (max-width:900px){.views{grid-template-columns:minmax(0,1fr)}}
+
+/* ---- v6: 1画面に収める ---- */
+.app.fit{max-width:none;height:calc(100dvh - 16px);display:flex;flex-direction:column}
+body:has(.app.fit){overflow:hidden}
+body{padding-block:8px}
+.top{margin-bottom:8px;align-items:center}
+.brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+.app.fit .logo{font-size:26px}
+.app.fit .tag{display:none}
+.tabs{padding:3px}.tab{padding:6px 14px;font-size:14px}
+.hdr-tools{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+.hdr-tools[hidden]{display:none}
+.btn.sm{padding:4px 10px;font-size:13px;border-radius:8px}
+.dd{position:relative}
+.ddp{position:absolute;right:0;top:calc(100% + 6px);z-index:40;width:min(420px,90vw);box-shadow:0 14px 34px -10px rgba(0,0,0,.45);border:2px solid var(--ink)}
+.ddp.wide{width:min(620px,92vw)}
+.ddp[hidden]{display:none}
+.goBox{display:flex;align-items:center;gap:10px}
+.goBox .btn.go{width:auto;padding:7px 22px;font-size:15px;box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+#goHint{max-width:240px;line-height:1.25;text-align:right}
+#garage{flex:1;min-height:0}
+#race{flex:1;min-height:0;overflow:hidden}
+.g-fit{height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:10px;min-height:0}
+.g-side{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0;overflow:auto}
+.panel.slim{padding:8px 10px}
+.panel.slim h2{margin:0 0 6px;font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.legend2{font-weight:400;letter-spacing:0;font-size:11px;margin-left:auto}
+.legend2 b{display:inline-block;width:12px;height:4px;vertical-align:middle;margin:0 3px 0 6px;border-radius:2px}
+.seg.sm button{padding:4px 8px;font-size:12.5px}
+.toggle.sm{font-size:13px}.toggle.sm input{width:16px;height:16px}
+.vcard.grow{flex:1 1 0;min-height:0;display:flex;flex-direction:column;padding:8px}
+.cvbox{flex:1 1 0;min-height:0;overflow:hidden;display:grid;place-items:start center}
+.vcard.grow .vhead{margin-bottom:4px}
+.opt{margin-top:6px;gap:4px 14px}
+.opt[hidden]{display:none}
+.opt .slider{flex:1 1 150px}
+.opt label{font-weight:700;font-size:12.5px;white-space:nowrap}
+.sm-l{font-weight:700;font-size:12.5px}
+.val{font-size:14px;min-width:4.5ch}
+.cv-foot{margin-top:4px}
+.gauges{grid-template-columns:1fr;gap:8px}
+.g-side .gg .h{display:block;font-size:11px;color:var(--ink2);line-height:1.35}
+.gg .t{font-size:12px}.gg .n{font-size:12.5px}
+.gg .bar{height:7px}
+.g-right{display:flex;flex-direction:column;min-height:0;min-width:0;padding:8px}
+.g-right .v3wrap{flex:1 1 0;min-height:0;aspect-ratio:auto}
+.v3btns{align-items:center;margin-top:6px}
+.inspect{position:absolute;top:8px;right:8px;width:290px;max-width:50%;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(4px);border:2px solid var(--ink);border-radius:12px;padding:8px 10px;box-shadow:var(--shadow);color:var(--ink);z-index:5}
+.inspect-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
+.inspect-hdr h2{margin:0;font-size:12px;letter-spacing:.12em;color:var(--ink2);display:flex;align-items:center;gap:6px}
+.inspect-tag{font-family:var(--f-m);font-size:11.5px;background:var(--ink);color:var(--bg);padding:1px 6px;border-radius:4px;font-weight:700;display:none}
+.inspect-btn{padding:2px 7px;font-size:11px;display:none}
+.inspect .wmeter{height:22px;margin:4px 0 2px}
+.inspect .wmeter .lbl{font-size:13px}
+.inspect .wscale{font-size:10px}
+.inspect .checks{margin-top:6px;gap:3px}
+.inspect .checks li{font-size:12px;gap:6px}
+.pop{position:absolute;left:50%;transform:translateX(-50%);bottom:76px;width:min(94%,430px);background:var(--card);color:var(--ink);border:2px solid var(--ink);border-radius:12px;padding:10px;z-index:6;box-shadow:0 14px 34px -10px rgba(0,0,0,.5);display:grid;gap:8px}
+.pop[hidden]{display:none}
+.pophead{display:flex;justify-content:space-between;align-items:center}
+.pophead b{font-size:13px}
+.popRow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.popRow[hidden]{display:none}
+.popRow>button:not(.vbtn){border:2px solid var(--line2);background:var(--bg);border-radius:9px;padding:4px 9px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px}
+.popRow>button[aria-pressed="true"]{border-color:var(--ink);background:var(--card);box-shadow:0 0 0 2px var(--accent-soft)}
+.popRow.shapes>button{flex-direction:column;gap:0;padding:3px 6px;font-size:11px;min-width:64px}
+.popRow canvas{display:block}
+.hb canvas{display:block;max-width:100%;max-height:100%}
+.hotbar{padding:4px;gap:3px}
+.hb .hn{text-shadow:0 0 3px #000}
+
+/* ---- v8: おじゃまアイテム ---- */
+#itemPanel{flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:auto}
+.items{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.items button{border:2px solid var(--line2);background:var(--bg);border-radius:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.items button span{font-size:10.5px;color:var(--ink2)}
+.items button[aria-pressed="true"]{border-color:var(--ink);background:var(--card);box-shadow:0 0 0 2px var(--accent-soft)}
+.items button:disabled{opacity:.5;cursor:not-allowed}
+.ih{margin:0 0 6px;font-size:13px;color:var(--ink)}
+.itemInfo{margin:7px 0 0;line-height:1.45;font-size:12px}
+.itemInfo b{font-weight:700}
+.mini-wrap{position:absolute;left:10px;top:10px;width:min(240px,36%);display:flex;flex-direction:column;gap:5px;z-index:3;pointer-events:none}
+#mini{width:100%;height:auto;aspect-ratio:300/190;display:block;border-radius:10px;background:color-mix(in srgb,var(--card) 82%,transparent);outline:2px solid var(--ink);outline-offset:-2px;pointer-events:auto}
+#mini.aim{outline:3px solid var(--accent);cursor:crosshair;box-shadow:0 0 0 4px var(--accent-soft)}
+.mini-lap{background:color-mix(in srgb,var(--card) 88%,transparent);border:2px solid var(--ink);border-radius:8px;padding:3px 10px;font-family:var(--f-d);font-size:14px;color:var(--ink);display:flex;justify-content:space-between;align-items:baseline;box-shadow:var(--shadow)}
+.mini-lap span:first-child{font-family:var(--f-b);font-size:11.5px;font-weight:700;color:var(--ink2)}
+#aimBanner{position:absolute;left:50%;bottom:32px;transform:translateX(-50%);max-width:75%;text-align:center;background:var(--accent);color:#fff;font-weight:700;font-size:13px;padding:6px 14px;border-radius:999px;z-index:4;box-shadow:var(--shadow);pointer-events:none}
+#aimBanner[hidden]{display:none}
+#bItem{position:absolute;right:12px;bottom:36px;width:auto;padding:10px 18px;font-size:15px;z-index:3}
+#bItem[hidden]{display:none}
+/* ---- レスポンシブ対応 ---- */
+@media (max-width:900px){
+  body:has(.app.fit){overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+  .app.fit{height:auto;min-height:100dvh;display:flex;flex-direction:column}
+  #garage,#race{flex:none;overflow:visible}
+  .g-fit,.r-grid{display:flex;flex-direction:column;gap:10px;height:auto}
+  .g-side,.r-side{margin-top:2px;overflow:visible;height:auto}
+  .g-right{padding:8px}
+  .g-right .v3wrap{aspect-ratio:1/1;min-height:260px;max-height:50vh;border-radius:12px}
+  .r-main{flex:none;height:auto;gap:6px}
+  .stage{aspect-ratio:16/11;min-height:220px;max-height:44vh;border-radius:12px;flex:none}
+  .r-side{display:flex;flex-direction:column;gap:8px}
+  #itemPanel{order:-1;flex:none;height:auto;overflow:visible}
+  #p2pPanel{order:1;flex:none;height:auto;overflow:visible}
+  .res-overlay{position:fixed;inset:0;z-index:100;padding:12px}
+  .results{width:min(480px,94%);max-height:86vh}
+}
+
+@media (max-width:768px){
+  .edit-mode-seg{display:flex}
+  #bFP{display:none}
+  .inspect{width:auto;max-width:85%;padding:6px 9px}
+  .inspect-tag,.inspect-btn{display:inline-block}
+  .inspect.collapsed-mobile .inspect-body{display:none}
+  .inspect.collapsed-mobile{width:auto;max-width:none;background:color-mix(in srgb,var(--card) 96%,transparent)}
+  input[type="text"],select{font-size:16px!important}
+}
+
+@media (max-width:640px){
+  .top{gap:6px 10px;margin-bottom:6px}
+  .brand .logo{font-size:22px}
+  .tabs{padding:3px;gap:2px}
+  .tab{padding:6px 11px;font-size:13px}
+  .hdr-tools{width:100%;margin-left:0;justify-content:space-between;gap:6px}
+  #goHint{display:none}
+  .ddp{position:fixed;top:56px;left:8px;right:8px;width:auto;max-width:none;max-height:80vh;overflow-y:auto;z-index:100}
+  .v3bar{left:6px;top:6px;gap:4px}
+  .v3bar .vbtn{padding:2px 7px;font-size:11px}
+  .v3btns{justify-content:center;gap:4px;margin-top:6px}
+  .v3btns .chip{padding:4px 8px;font-size:11.5px;min-height:32px}
+  .hotbar{bottom:6px;width:min(98%,400px);padding:3px;gap:3px}
+  .hb{min-height:40px}
+  .pop{bottom:56px;width:min(96%,370px);max-height:62vh;overflow-y:auto;padding:8px}
+  .swatches{grid-template-columns:repeat(7,1fr);gap:5px}
+  .swb{min-height:34px}
+  .mini-wrap{width:min(140px,34%);top:6px;left:6px;gap:3px}
+  .mini-lap{font-size:11px;padding:2px 6px}
+  .camb{top:6px;right:6px;gap:4px}
+  .camb button{padding:2px 8px;font-size:11px}
+  .stage-tip{font-size:10px;bottom:5px;left:6px}
+  .live{padding:5px 8px;gap:6px}
+  .lv .n{font-size:14px}
+  .lv .t{font-size:10px}
+  .mode-tabs button{font-size:11.5px;padding:6px 2px}
+  .items{grid-template-columns:repeat(4,1fr);gap:4px}
+  .items button{padding:5px 2px;font-size:11.5px}
+  .items button span{font-size:9.5px}
+  .btn.start-main{padding:10px 12px;font-size:15px}
+}
+
+/* スマホ横向き（画面高さが低い場合）：2ペイン分割を維持 */
+@media (max-height:520px) and (orientation:landscape){
+  body:has(.app.fit){overflow:hidden}
+  .app.fit{height:100dvh;display:flex;flex-direction:column}
+  .edit-mode-seg{display:flex}
+  #bFP{display:none}
+  body{padding-block:4px}
+  .top{margin-bottom:4px;padding-bottom:2px}
+  .brand .logo{font-size:18px}
+  .tabs{padding:2px}.tab{padding:4px 9px;font-size:12px}
+  .btn.sm{padding:3px 7px;font-size:11.5px}
+  .g-fit{display:grid;grid-template-columns:1.3fr 1fr;gap:8px;height:100%;min-height:0}
+  .r-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;height:100%;min-height:0}
+  .g-right,.r-main{height:100%;min-height:0}
+  .g-side,.r-side{height:100%;min-height:0;overflow-y:auto;margin-top:0}
+  .g-right .v3wrap,.stage{flex:1 1 0;min-height:0;aspect-ratio:auto}
+  #itemPanel{order:0}
+  #p2pPanel{order:0}
+  .res-overlay{position:absolute;inset:0}
+  .results{max-height:92%}
+}
+
+/* ---- v9: オンライン対戦 ---- */
+.p2p-box{display:grid;gap:8px;margin-top:9px}
+.p2p-row{display:flex;gap:6px;align-items:center}
+.p2p-row input{flex:1;min-width:90px;border:2px solid var(--line2);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 9px;font-size:13px;font-weight:700}
+.p2p-status{padding:7px 10px;border-radius:8px;background:var(--bg);border:1.5px solid var(--line);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.p2p-dot{width:9px;height:9px;border-radius:50%;background:var(--line2);display:inline-block;flex:none}
+.p2p-dot.wait{background:var(--warn);animation:pulse 1s infinite}
+.p2p-dot.ok{background:var(--good)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+</head>
+<body>
+<div class="app fit" id="app">
+  <header class="top">
+    <div class="brand">
+      <h1 class="logo"><span>ボクセル四駆</span></h1>
+      <p class="tag">ブロックを積んで、世界にひとつのマシンを作って、レースで走らせよう。</p>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="画面">
+      <button class="tab" role="tab" id="tabG" aria-selected="true">ガレージ</button>
+      <button class="tab" role="tab" id="tabR" aria-selected="false">サーキット</button>
+    </nav>
+    <button class="btn sm" id="bSound" aria-pressed="true" title="効果音のON/OFF">🔊 音 ON</button>
+    <div class="hdr-tools" id="hdrTools">
+      <div class="dd"><button class="btn sm" id="ddPreB" aria-expanded="false">サンプル ▾</button>
+        <div class="ddp panel" id="ddPre" hidden><h2>サンプルを読み込む</h2><div class="chips" id="presets"></div><p class="small" id="presetNote" style="margin:8px 0 0"></p></div></div>
+      <div class="dd"><button class="btn sm" id="ddSlotB" aria-expanded="false">マイガレージ ▾</button>
+        <div class="ddp panel wide" id="ddSlot" hidden>
+          <h2>マイガレージ（このブラウザに保存）</h2>
+          <div class="saveRow"><input type="text" id="carName" maxlength="24" placeholder="機体の名前" aria-label="機体の名前"><button class="btn sm go" id="bSaveCar">名前をつけて保存</button></div>
+          <div class="slots" id="slots"></div>
+          <div class="code-box">
+            <h2>機体コードでやりとり（通信なし・コピペ用）</h2>
+            <div class="code-row">
+              <button class="btn sm" id="bCopyCurCode">今の機体コードをコピー</button>
+              <input type="text" id="importCodeInp" placeholder="機体コード (VX6-...) を貼り付け" aria-label="機体コード">
+              <button class="btn sm" id="bLoadCode">ガレージに読込</button>
+              <button class="btn sm" id="bSaveCode">一覧に追加</button>
+            </div>
+          </div>
+        </div></div>
+      <div class="goBox"><span class="small" id="goHint"></span><button class="btn go" id="goRace">レースへ</button></div>
+    </div>
+  </header>
+
+  <section id="garage" aria-label="ガレージ">
+    <div class="g-fit">
+      <div class="g-right vcard">
+        <div class="v3wrap" id="v3wrap"><canvas id="v3" aria-label="3Dビュー"></canvas>
+          <div class="v3bar">
+            <div class="edit-mode-seg" id="editModeSeg" role="radiogroup" aria-label="ブロック操作モード">
+              <button class="mode-pill act" id="bModePlace" data-m="place" aria-pressed="true">＋ 置く</button>
+              <button class="mode-pill" id="bModeBreak" data-m="break" aria-pressed="false">✕ 壊す</button>
+            </div>
+            <button class="vbtn" id="symBtn" aria-pressed="false" title="M キーでも切り替え">左右対称 OFF</button>
+            <button class="vbtn" id="bMax">大きく</button>
+            <button class="vbtn" id="bFP" aria-pressed="false">一人称で歩く</button>
+          </div>
+          <div class="inspect collapsed-mobile" id="inspect" aria-label="車検">
+            <div class="inspect-hdr" id="inspectHdr">
+              <h2>車検 <span class="inspect-tag" id="inspectTag">--g</span></h2>
+              <button class="vbtn inspect-btn" id="bInspectTgl" aria-expanded="false" title="車検の詳細を開閉">詳細 ▾</button>
+            </div>
+            <div class="inspect-body" id="inspectBody">
+              <div class="wmeter" id="wmeter"><div class="zone" id="wzone"></div><div class="fill" id="wfill"></div><div class="lbl" id="wlbl">0 g</div></div>
+              <div class="wscale"><span>50g</span><span>70g〜140g</span><span>160g</span></div>
+              <ul class="checks" id="checks"></ul>
+            </div>
+          </div>
+          <div class="cross" id="cross"></div>
+          <div class="v3tip" id="v3tip"></div>
+          <div class="pop" id="pop" hidden role="dialog" aria-label="アイテムの設定">
+            <div class="pophead"><b id="popTitle"></b><button class="vbtn" id="popClose" aria-label="閉じる">×</button></div>
+            <div class="popRow" id="popRotRow"><canvas id="popIcon" aria-hidden="true"></canvas><button class="vbtn" id="popRot" title="Rキー">向きを回す (R)</button><span class="small" id="popInfo"></span></div>
+            <div class="popRow"><div class="swatches" id="swatches" role="group" aria-label="色のパレット（全36色＋標準色）"></div></div>
+          </div>
+          <div class="hotbar" id="hotbar" role="toolbar" aria-label="アイテム欄（1〜6）。クリックで色と形を変更"></div>
+        </div>
+        <div class="v3btns" id="v3btns">
+          <button class="chip" data-cam="iso">斜め</button><button class="chip" data-cam="side">真横</button><button class="chip" data-cam="top">真上</button><button class="chip" data-cam="front">正面</button><button class="chip" data-cam="rear">うしろ</button>
+          <span class="sp"></span>
+          <button class="chip" id="bUndo" title="Ctrl+Z">もどす</button><button class="chip" id="bRedo" title="Ctrl+Y">やり直し</button><button class="chip" id="bClear">全部消す</button>
+        </div>
+      </div>
+      <div class="g-side">
+        <div class="panel slim">
+          <h2>風洞データ（秒速4m）<span class="legend2"><b style="background:var(--accent)"></b>抵抗 <b style="background:var(--cool)"></b>下向き <b style="background:var(--bad)"></b>浮く</span></h2>
+          <div class="gauges" id="gauges"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="race" aria-label="サーキット" hidden>
+    <div class="r-grid">
+      <div class="r-main">
+        <div class="stage">
+          <canvas id="rc" aria-label="3Dコース"></canvas>
+          <div class="cd" id="cd"></div>
+          <div class="camb" id="camb">
+            <button data-c="chase" aria-pressed="false">追従</button><button data-c="over" aria-pressed="true">全体</button>
+          </div>
+          <div class="aimBanner" id="aimBanner" hidden></div>
+          <div class="mini-wrap">
+            <canvas id="mini" aria-label="コース全体図（おじゃまアイテムの場所を決める）"></canvas>
+            <div class="mini-lap" id="miniLap"><span>周回</span><span id="miniLapTxt">1 / 4 周目</span></div>
+          </div>
+          <button class="btn go" id="bItem" disabled hidden>おじゃま発動！</button>
+          <div class="stage-tip">ドラッグでカメラを回す ・ ホイールでズーム</div>
+          <div class="res-overlay" id="results" hidden>
+            <div class="panel results">
+              <div class="res-head">
+                <h3 id="resTitle">結果</h3>
+                <button class="vbtn" id="resClose" aria-label="閉じる">× 閉じる</button>
+              </div>
+              <table class="rtable" id="resTable"></table>
+              <div class="advice" id="advice"></div>
+              <div class="res-actions" style="margin-top:12px;display:flex;gap:8px">
+                <button class="btn go" id="bResRestart" style="flex:1;padding:11px 16px;font-size:16px">もう一度レース！</button>
+                <button class="btn" id="bResGarage" style="padding:11px 16px;font-size:14px">ガレージへ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="live">
+          <div class="lv"><span class="t">スピード</span><span class="n" id="lvV">0 km/h</span><span class="bar"><i id="lvVb"></i></span></div>
+          <div class="lv"><span class="t">横転ゲージ</span><span class="n" id="lvT">0%</span><span class="bar"><i id="lvTb"></i></span></div>
+          <div class="lv"><span class="t">接地の強さ</span><span class="n" id="lvG">1.00G</span><span class="bar"><i id="lvGb"></i></span></div>
+        </div>
+      </div>
+      <div class="r-side">
+        <div class="panel" id="p2pPanel">
+          <h2 class="ih">対戦相手・モード選択</h2>
+          <div class="mode-tabs" id="modeSeg" role="radiogroup" aria-label="対戦モード">
+            <button data-m="cpu" aria-pressed="true">CPU対戦</button>
+            <button data-m="word" aria-pressed="false">合言葉マッチ</button>
+            <button data-m="rand" aria-pressed="false">ランダムマッチ</button>
+          </div>
+          <div class="cpu-box" id="cpuBox">
+            <div class="cpu-field">
+              <label for="cpuSelect">対戦相手のマシン</label>
+              <select id="cpuSelect" aria-label="対戦相手のマシンを選ぶ"></select>
+            </div>
+            <div class="mode-sub">
+              <span class="p2p-lbl">機体コード（文字列）のマシンと対戦</span>
+              <div class="cpu-row">
+                <input type="text" id="cpuCodeInp" placeholder="相手のコード (VX6-...) を貼り付け" aria-label="対戦相手の機体コード">
+                <button class="btn sm act" id="bCpuCodeApply">相手に設定</button>
+              </div>
+            </div>
+          </div>
+          <div class="p2p-box" id="p2pBox" hidden>
+            <div class="cpu-row">
+              <label for="p2pNick">あなたの名前</label>
+              <input type="text" id="p2pNick" maxlength="12" placeholder="あなたの名前" value="レーサー">
+            </div>
+            <div class="cpu-field">
+              <label class="p2p-lbl">対戦ルール</label>
+              <div class="mode-tabs" id="p2pItemRule" role="radiogroup" aria-label="アイテムルール" style="grid-template-columns:1fr 1fr">
+                <button data-rule="on" aria-pressed="true">アイテムあり</button>
+                <button data-rule="off" aria-pressed="false">アイテムなし</button>
+              </div>
+            </div>
+            <div class="mode-sub" id="p2pWordRow">
+              <span class="p2p-lbl">友達と同じ合言葉を入れて接続</span>
+              <div class="p2p-row">
+                <input type="text" id="p2pWord" maxlength="20" placeholder="合言葉を入力（例: 4wd-123）">
+                <button class="btn sm act" id="bP2pJoin">接続する</button>
+              </div>
+            </div>
+            <div class="mode-sub" id="p2pRandRow" hidden>
+              <span class="p2p-lbl">待機中のプレイヤーと自動マッチング</span>
+              <button class="btn sm act" id="bP2pRand" style="width:100%">ランダム対戦相手を探す</button>
+            </div>
+            <div class="p2p-status">
+              <span style="display:flex;align-items:center;gap:6px"><i class="p2p-dot" id="p2pDot"></i><span id="p2pStatTxt">未接続</span></span>
+              <button class="btn sm" id="bP2pLeave" hidden>切断</button>
+            </div>
+            <div class="nat-warn" id="natWarn" hidden></div>
+          </div>
+        </div>
+        <div class="panel" id="itemPanel">
+          <div class="race-start-box">
+            <button class="btn go start-main" id="bStart">レース開始！</button>
+          </div>
+          <h2 class="ih">おじゃまアイテム <span class="small">レース前に1つ選ぶ・使えるのは1回だけ</span></h2>
+          <div class="items" id="itemSeg" role="radiogroup" aria-label="おじゃまアイテム">
+            <button data-k="" aria-pressed="true"><b>なし</b><span>使わない</span></button>
+            <button data-k="fan" aria-pressed="false"><b>強力ファン</b><span>向かい風1秒</span></button>
+            <button data-k="mag" aria-pressed="false"><b>磁石</b><span>磁場を1秒</span></button>
+            <button data-k="bar" aria-pressed="false"><b>バリケード</b><span>障害物を1秒</span></button>
+          </div>
+          <p class="small itemInfo" id="itemInfo"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="module">
+import { joinRoom } from 'https://esm.run/trystero/nostr';
+window.TrysteroJoinRoom = joinRoom;
+</script>
+<script src="game.js"></script>
+</body>
+</html>
