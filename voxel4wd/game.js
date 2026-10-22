@@ -1039,7 +1039,13 @@ function renderPop() {
   $('popRot').disabled = (sl.sh || 'cube') === 'cube';
   document.querySelectorAll('#swatches .swb').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === sl.col)));
 }
-function openPop(on) { const p = $('pop'); if (!p) return; p.hidden = !on; if (on) renderPop(); }
+function openPop(on) { const p = $('pop'); if (!p) return; p.hidden = !on; if (on) { renderPop(); openHelp(false); } }
+function openHelp(on) {
+  const p = $('helpPop'); if (!p) return;
+  p.hidden = !on;
+  const b = $('bHelp'); if (b) b.setAttribute('aria-expanded', String(on));
+  if (on) openPop(false);
+}
 function syncS() { const sl = curSlot(); S.mat = sl.m; S.col = sl.col; }
 function selectSlot(i, pop) {
   S.slot = i; S.lastBlock = i;
@@ -1057,7 +1063,14 @@ function rotateSlot(dir) {
   PALETTE.forEach((h, i) => mk(i + 1, `色 #${i + 1} (${h})`, h));
   $('popRot').onclick = () => rotateSlot(1);
   $('popClose').onclick = () => openPop(false);
-  document.addEventListener('pointerdown', e => { const p = $('pop'); if (!p.hidden && !p.contains(e.target) && !$('hotbar').contains(e.target)) openPop(false); }, true);
+  if ($('bHelp')) $('bHelp').onclick = () => { const p = $('helpPop'); openHelp(p ? p.hidden : true); };
+  if ($('helpClose')) $('helpClose').onclick = () => openHelp(false);
+  document.addEventListener('pointerdown', e => {
+    const p = $('pop');
+    if (!p.hidden && !p.contains(e.target) && !$('hotbar').contains(e.target)) openPop(false);
+    const hp = $('helpPop'), hb = $('bHelp');
+    if (hp && !hp.hidden && !hp.contains(e.target) && (!hb || !hb.contains(e.target))) openHelp(false);
+  }, true);
 })();
 renderHotbar(); selectSlot(0, false);
 
@@ -1078,7 +1091,11 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (k.length === 1 && k >= '1' && k <= '6') selectSlot(+k - 1);
   else if (k === 'm') setSym(!S.sym);
-  else if (k === 'escape') { if (V.fp) toggleFP(false); else if (V.max) toggleMax(false); }
+  else if (k === 'escape') {
+    const hp = $('helpPop');
+    if (hp && !hp.hidden) { openHelp(false); return; }
+    if (V.fp) toggleFP(false); else if (V.max) toggleMax(false);
+  }
   else if (k === ' ' || k === 'shift') { V.keys.add(k); if (k === ' ' && (V.fp || V.max)) e.preventDefault(); }
   else if (k === 'r') rotateSlot(e.shiftKey ? -1 : 1);
   else if (k === 'c') openPop($('pop').hidden);
@@ -1087,7 +1104,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ===== 3Dビュー ===== */
-const V = { ok: false, theta: 0.75, phi: 1.0, dist: 62, target: null, car: null, arrows: null, ghost: null, plane: null, cg: null, pend: null, ptrs: new Map(), moved: false, pinch0: 0, down: null, keys: new Set(), tap: 'place', touchMode: 'place', hit: null, fill: null, lastE: null, hold: null, aim: null, fp: false, max: false, pos: null, yaw: 0, pitch: 0, locked: false, noLock: false };
+const V = { ok: false, theta: 0.75, phi: 1.0, dist: 62, target: null, car: null, arrows: null, ghost: null, plane: null, cg: null, pend: null, ptrs: new Map(), moved: false, pinch0: 0, down: null, keys: new Set(), joy: { x: 0, y: 0, my: 0 }, tap: 'place', touchMode: 'place', hit: null, fill: null, lastE: null, hold: null, aim: null, fp: false, max: false, pos: null, yaw: 0, pitch: 0, locked: false, noLock: false };
 const cv3 = $('v3');
 vReady = true;
 
@@ -1138,6 +1155,7 @@ function init3d() {
       }
     };
   }
+  initVirtualPad();
 }
 function fail3d(msg) {
   const d = document.createElement('div'); d.className = 'nowebgl'; d.textContent = msg; cv3.parentElement.appendChild(d);
@@ -1157,7 +1175,7 @@ function placeCam() {
   V.cam.lookAt(V.target);
 }
 const CAMS = { iso: [0.75, 1.0, 62], side: [Math.PI / 2, Math.PI / 2, 66], top: [Math.PI / 2, 0.02, 74], front: [0, Math.PI / 2, 60], rear: [Math.PI, Math.PI / 2, 60] };
-document.querySelectorAll('#v3btns [data-cam]').forEach(b => b.onclick = () => { const c = CAMS[b.dataset.cam]; V.theta = c[0]; V.phi = c[1]; V.dist = c[2]; });
+document.querySelectorAll('#v3btns [data-cam]').forEach(b => b.onclick = () => { if (V.fp) toggleFP(false); const c = CAMS[b.dataset.cam]; V.theta = c[0]; V.phi = c[1]; V.dist = c[2]; });
 
 function rebuild3d() {
   if (!V.ok) return;
@@ -1343,43 +1361,148 @@ function tryLock() {
 document.addEventListener('pointerlockchange', () => { V.locked = document.pointerLockElement === cv3; if (V.locked) V.noLock = false; else stopHold(); updTip(); });
 document.addEventListener('pointerlockerror', () => { V.noLock = true; updTip(); });
 function updTip() {
-  $('v3tip').textContent = V.fp
-    ? (V.locked ? 'WASD 歩く ・ Space 上へ ・ Shift 下へ ・ 左クリック 壊す ・ 右クリック 使う ・ 1〜6 / ホイール アイテム ・ Esc でカーソルを出す'
-      : V.noLock ? 'ドラッグで見回す ・ WASD 歩く ・ Space 上へ ・ Shift 下へ ・ 左クリック 壊す ・ 右クリック 使う ・ 1〜6 アイテム'
-        : '画面をクリックすると視点が固定されます（マイクラと同じ）')
-    : 'スマホ：上の「＋置く」「✕壊す」でモード切替、タップで実行！ PC：ドラッグ回転 ・ 左クリック壊す ・ 右クリック置く';
+  const el = $('v3tip');
+  if (el) el.textContent = '';
 }
 function toggleMax(on) {
   V.max = on; $('v3wrap').classList.toggle('max', on); $('bMax').textContent = on ? '小さく' : '大きく';
   document.body.style.overflow = on ? 'hidden' : ''; layout3d();
 }
+const isMobileScreen = () => window.innerWidth <= 768 || (window.innerHeight <= 520 && window.innerWidth <= 920) || ('ontouchstart' in window && window.innerWidth <= 900);
+
 function toggleFP(on) {
   if (!V.ok || V.fp === on) return;
   V.fp = on; V.keys.clear(); stopHold();
   V.cam.fov = on ? 75 : 40; V.cam.near = on ? 0.1 : 0.5; V.cam.updateProjectionMatrix();
   $('cross').style.display = on ? 'block' : 'none';
-  $('bFP').textContent = on ? '外から見る' : '一人称で歩く'; $('bFP').setAttribute('aria-pressed', String(on));
+  const fpUi = $('fpTouchUi'); if (fpUi) fpUi.classList.toggle('active', on);
+  $('bFP').textContent = on ? '全体視点' : '一人称'; $('bFP').setAttribute('aria-pressed', String(on));
   if (on) {
     { const o = new THREE.Vector3().subVectors(V.cam.position, V.target); o.setLength(Math.min(o.length(), 16)); V.pos = V.target.clone().add(o); }
     const d = new THREE.Vector3().subVectors(V.target, V.pos);
     V.yaw = Math.atan2(-d.x, -d.z); V.pitch = clamp(Math.asin(d.y / d.length()), -1.2, 1.2);
     if (V.pos.y < 2) V.pos.y = 6;
-    toggleMax(true);
+    if (!isMobileScreen()) toggleMax(true);
   } else {
     try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
     V.hit.visible = V.hit2.visible = V.fill.visible = V.fill2.visible = V.ghost.visible = V.ghost2.visible = false;
-    toggleMax(false);
+    if (!isMobileScreen()) toggleMax(false);
   }
   updTip();
 }
 function moveFP(dt) {
-  if (!V.keys.size) return;
+  const hasKey = V.keys.size > 0;
+  const hasJoy = V.joy && (V.joy.x !== 0 || V.joy.y !== 0 || V.joy.my !== 0);
+  if (!hasKey && !hasJoy) return;
   const sp = 11 * dt, fx = -Math.sin(V.yaw), fz = -Math.cos(V.yaw), rx = Math.cos(V.yaw), rz = -Math.sin(V.yaw);
   let mx = 0, mz = 0, my = 0;
   if (V.keys.has('w')) { mx += fx; mz += fz; } if (V.keys.has('s')) { mx -= fx; mz -= fz; }
   if (V.keys.has('d')) { mx += rx; mz += rz; } if (V.keys.has('a')) { mx -= rx; mz -= rz; }
   if (V.keys.has(' ') || V.keys.has('e')) my += 1; if (V.keys.has('shift') || V.keys.has('q')) my -= 1;
-  V.pos.x = clamp(V.pos.x + mx * sp, -25, CX + 25); V.pos.z = clamp(V.pos.z + mz * sp, -25, CZ + 25); V.pos.y = clamp(V.pos.y + my * sp, 0.6, 40);
+  if (hasJoy) {
+    if (V.joy.x || V.joy.y) {
+      mx += rx * V.joy.x + fx * (-V.joy.y);
+      mz += rz * V.joy.x + fz * (-V.joy.y);
+    }
+    if (V.joy.my) {
+      my += V.joy.my;
+    }
+  }
+  if (mx !== 0 || mz !== 0 || my !== 0) {
+    V.pos.x = clamp(V.pos.x + mx * sp, -25, CX + 25);
+    V.pos.z = clamp(V.pos.z + mz * sp, -25, CZ + 25);
+    V.pos.y = clamp(V.pos.y + my * sp, 0.6, 40);
+  }
+}
+function doPlaceFP() {
+  const a = aim(null);
+  if (!a || !a.sup) { SFX.error(); toast('置く場所がありません（車体のブロックに向けてね）'); return; }
+  if (!a.put) { SFX.error(); toast('ここには置けません'); return; }
+  commit3d('place', a);
+  showAim(null);
+}
+function doBreakFP() {
+  const a = aim(null);
+  if (!a || !a.hit) { SFX.error(); toast('壊すブロックがありません（壊したいブロックに向けてね）'); return; }
+  if (!a.mine) { SFX.error(); toast('基本パーツは壊せません'); return; }
+  commit3d('break', a);
+  showAim(null);
+}
+function setupRepeat(btn, action) {
+  if (!btn) return;
+  let timer = null, interval = null;
+  const start = e => {
+    e.preventDefault(); e.stopPropagation();
+    try { btn.setPointerCapture(e.pointerId); } catch (_) {}
+    action();
+    timer = setTimeout(() => {
+      interval = setInterval(action, 180);
+    }, 350);
+  };
+  const stop = e => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    clearTimeout(timer); clearInterval(interval);
+  };
+  btn.addEventListener('pointerdown', start);
+  btn.addEventListener('pointerup', stop);
+  btn.addEventListener('pointercancel', stop);
+  btn.addEventListener('contextmenu', e => e.preventDefault());
+}
+function initVirtualPad() {
+  const pad = $('vPad'), stick = $('vStick');
+  if (pad && stick) {
+    let activePtr = null, centerX = 0, centerY = 0;
+    const maxR = 28;
+    const onDown = e => {
+      e.preventDefault(); e.stopPropagation();
+      activePtr = e.pointerId;
+      try { pad.setPointerCapture(e.pointerId); } catch (_) {}
+      const r = pad.getBoundingClientRect();
+      centerX = r.left + r.width / 2;
+      centerY = r.top + r.height / 2;
+      update(e.clientX, e.clientY);
+    };
+    const onMove = e => {
+      if (e.pointerId !== activePtr) return;
+      e.preventDefault(); e.stopPropagation();
+      update(e.clientX, e.clientY);
+    };
+    const onUp = e => {
+      if (e.pointerId !== activePtr) return;
+      e.preventDefault(); e.stopPropagation();
+      activePtr = null;
+      stick.style.transform = 'translate(0px, 0px)';
+      V.joy.x = 0; V.joy.y = 0;
+    };
+    function update(cx, cy) {
+      const dx = cx - centerX, dy = cy - centerY;
+      const dist = Math.hypot(dx, dy);
+      const r = Math.min(dist, maxR);
+      const ang = dist > 0 ? Math.atan2(dy, dx) : 0;
+      const kx = Math.cos(ang) * r, ky = Math.sin(ang) * r;
+      stick.style.transform = `translate(${kx.toFixed(1)}px, ${ky.toFixed(1)}px)`;
+      V.joy.x = kx / maxR;
+      V.joy.y = ky / maxR;
+    }
+    pad.addEventListener('pointerdown', onDown);
+    pad.addEventListener('pointermove', onMove);
+    pad.addEventListener('pointerup', onUp);
+    pad.addEventListener('pointercancel', onUp);
+    pad.addEventListener('contextmenu', e => e.preventDefault());
+  }
+  const setupHold = (id, val) => {
+    const b = $(id); if (!b) return;
+    const s = e => { e.preventDefault(); e.stopPropagation(); try { b.setPointerCapture(e.pointerId); } catch (_) {} V.joy.my = val; b.classList.add('act'); };
+    const e = ev => { if (ev) { ev.preventDefault(); ev.stopPropagation(); } V.joy.my = 0; b.classList.remove('act'); };
+    b.addEventListener('pointerdown', s);
+    b.addEventListener('pointerup', e);
+    b.addEventListener('pointercancel', e);
+    b.addEventListener('contextmenu', ev => ev.preventDefault());
+  };
+  setupHold('bFlyUp', 1);
+  setupHold('bFlyDown', -1);
+  setupRepeat($('bActPlace'), doPlaceFP);
+  setupRepeat($('bActBreak'), doBreakFP);
 }
 $('bFP').onclick = () => toggleFP(!V.fp);
 $('bMax').onclick = () => { if (V.fp) toggleFP(false); else toggleMax(!V.max); };
@@ -1393,7 +1516,7 @@ cv3.addEventListener('pointerdown', e => {
   V.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); V.lastE = e;
   V.down = { x: e.clientX, y: e.clientY, b: e.button, touch: e.pointerType !== 'mouse', rep: false }; V.moved = false;
   if (V.ptrs.size === 2) { const [a, b] = [...V.ptrs.values()]; V.pinch0 = Math.hypot(a.x - b.x, a.y - b.y); V.moved = true; stopHold(); return; }
-  const down = V.down, kind = actionFor(V.down); if (kind === 'break' || down.touch) startHold('break');
+  const down = V.down, kind = actionFor(V.down); if (!V.fp && (kind === 'break' || down.touch)) startHold('break');
 });
 cv3.addEventListener('pointermove', e => {
   V.lastE = e;
@@ -1401,10 +1524,15 @@ cv3.addEventListener('pointermove', e => {
   const p = V.ptrs.get(e.pointerId);
   if (p) {
     const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+    if (V.fp) {
+      V.moved = true;
+      lookBy(dx * 1.6, dy * 1.6);
+      return;
+    }
     if (V.ptrs.size === 2 && !V.fp) { const [a, b] = [...V.ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (V.pinch0) V.dist = clamp(V.dist * V.pinch0 / d, 22, 150); V.pinch0 = d; return; }
     if (V.down && !V.down.rep && (V.moved || Math.hypot(e.clientX - V.down.x, e.clientY - V.down.y) > (V.down.touch ? 15 : 5))) {
       V.moved = true; stopHold();
-      if (V.fp) lookBy(dx * 2, dy * 2); else { V.theta -= dx * 0.008; V.phi = clamp(V.phi - dy * 0.008, 0.02, Math.PI - 0.05); }
+      V.theta -= dx * 0.008; V.phi = clamp(V.phi - dy * 0.008, 0.02, Math.PI - 0.05);
       V.hit.visible = V.hit2.visible = V.fill.visible = V.fill2.visible = V.ghost.visible = V.ghost2.visible = false; return;
     }
   }
@@ -1418,6 +1546,7 @@ function up3d(e) {
   V.down = null;
   const repeated = d.rep; stopHold();
   if (repeated || V.moved) return;
+  if (V.fp && d.touch) return;
   commit3d(actionFor(d), aim(e)); showAim(e);
 }
 cv3.addEventListener('pointerup', up3d);
@@ -2634,7 +2763,12 @@ function showTab(which) {
   $('garage').hidden = !g; $('race').hidden = g;
   $('app').classList.add('fit'); $('hdrTools').hidden = !g;
   $('tabG').setAttribute('aria-selected', String(g)); $('tabR').setAttribute('aria-selected', String(!g));
-  if (g) { layout3d(); markDirty(); } else { enterRace(); }
+  if (g) {
+    layout3d(); markDirty();
+    if (isMobileScreen() && !V.fp) toggleFP(true);
+  } else {
+    enterRace();
+  }
   window.scrollTo({ top: 0 });
 }
 $('tabG').onclick = () => showTab('g');
@@ -2649,6 +2783,7 @@ readTheme();
 { const p = PRE.find(x => x.id === 'std'); S.g = p.fn(); $('presetNote').textContent = p.name + '：' + p.note; }
 init3d(); init3dRace();
 changed(); updUndo(); renderSlots(); layout3d();
+if (isMobileScreen()) toggleFP(true);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(markDirty);
 requestAnimationFrame(loopEd); requestAnimationFrame(loopRace);
 })();
