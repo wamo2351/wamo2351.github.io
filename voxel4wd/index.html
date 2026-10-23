@@ -488,7 +488,7 @@ body{padding-block:8px}
   .mini-lap{font-size:11px;padding:2px 6px}
   .camb{top:7px;right:7px;gap:4px;z-index:4}
   .camb button{padding:4px 9px;font-size:11.5px}
-  #aimBanner{top:50px;left:50%;transform:translateX(-50%);max-width:86%;font-size:12px;padding:5px 12px;white-space:nowrap;z-index:6}
+  #aimBanner{top:auto;bottom:12px;left:50%;transform:translateX(-50%);max-width:calc(100% - 24px);font-size:12px;font-weight:700;padding:5px 14px;white-space:nowrap;z-index:6}
   #bItem{right:10px;bottom:10px;padding:9px 18px;font-size:14.5px;font-weight:700;z-index:5}
 
   /* サーキット下部：レース開始ボタンとおじゃまアイテム */
@@ -545,6 +545,7 @@ body{padding-block:8px}
   .help-pop{top:30px;left:8px;right:8px;transform:none;width:auto;max-height:calc(100% - 38px);padding:8px;z-index:40}
   .help-mobile-only{display:block!important}
   .help-pc-only{display:none!important}
+  #aimBanner{top:auto;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;padding:3px 12px;z-index:6}
   #itemPanel{order:0}
   #p2pPanel{order:0}
   .res-overlay{position:absolute;inset:0}
@@ -555,7 +556,8 @@ body{padding-block:8px}
 .p2p-box{display:grid;gap:8px;margin-top:9px}
 .p2p-row{display:flex;gap:6px;align-items:center}
 .p2p-row input{flex:1;min-width:90px;border:2px solid var(--line2);background:var(--card);color:var(--ink);border-radius:8px;padding:6px 9px;font-size:13px;font-weight:700}
-.p2p-status{padding:7px 10px;border-radius:8px;background:var(--bg);border:1.5px solid var(--line);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.p2p-status{padding:7px 10px;border-radius:8px;background:var(--bg);border:1.5px solid var(--line);font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;justify-content:space-between;flex-wrap:wrap}
+.p2p-status>span{display:flex;align-items:center;gap:6px;min-width:0;flex:1 1 auto;word-break:break-all}
 .p2p-dot{width:9px;height:9px;border-radius:50%;background:var(--line2);display:inline-block;flex:none}
 .p2p-dot.wait{background:var(--warn);animation:pulse 1s infinite}
 .p2p-dot.ok{background:var(--good)}

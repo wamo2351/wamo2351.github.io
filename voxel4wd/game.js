@@ -1847,7 +1847,7 @@ function setP2pStatus(txt, state) {
 }
 function disconnectP2P(silent) {
   clearTimeout(NET.waitTimer);
-  if (NET.room) { try { NET.room.leave(); } catch (_) {} NET.room = null; }
+  if (NET.room) { const r = NET.room; NET.room = null; try { r.leave(); } catch (_) {} }
   NET.sendAct = null; NET.peerId = null;
   NET.connected = false; NET.isHost = false; NET.oppCar = null; NET.myReady = false; NET.oppReady = false;
   setP2pStatus('未接続', '');
@@ -1878,10 +1878,34 @@ function connectRoom(roomName, labelTxt) {
   }
   disconnectP2P(true);
   setP2pStatus(`${labelTxt}で待機・検索中...`, 'wait');
-  const room = window.TrysteroJoinRoom({ appId: APP_ID }, roomName);
-  NET.room = room;
-  const [sendMsg, onMsg] = room.makeAction('v4wd');
-  NET.sendAct = sendMsg;
+
+  let room;
+  try {
+    room = window.TrysteroJoinRoom({ appId: APP_ID }, roomName);
+    NET.room = room;
+  } catch (err) {
+    console.error('TrysteroJoinRoom error:', err);
+    setP2pStatus('通信の初期化に失敗しました', '');
+    disconnectP2P();
+    return;
+  }
+
+  let sendMsg, onMsg;
+  try {
+    const act = room.makeAction('v4wd');
+    if (Array.isArray(act)) {
+      sendMsg = act[0]; onMsg = act[1];
+    } else if (act && typeof act === 'object') {
+      sendMsg = act[0] || act.send || act.sendMessage;
+      onMsg = act[1] || act.on || act.listen || act.onMessage;
+    }
+    NET.sendAct = typeof sendMsg === 'function' ? sendMsg : null;
+  } catch (err) {
+    console.error('makeAction error:', err);
+    setP2pStatus('通信アクション作成に失敗しました', '');
+    disconnectP2P();
+    return;
+  }
 
   // 一定時間経っても直接通信(NAT越え)または相手が見つからない場合の案内
   NET.waitTimer = setTimeout(() => {
@@ -1907,7 +1931,7 @@ function connectRoom(roomName, labelTxt) {
   });
 
   room.onPeerLeave(peerId => {
-    if (NET.peerId === peerId) {
+    if (NET.peerId && peerId && NET.peerId === peerId) {
       const wasTrying = !NET.oppCar;
       disconnectP2P();
       if (wasTrying) {
@@ -1918,39 +1942,41 @@ function connectRoom(roomName, labelTxt) {
     }
   });
 
-  onMsg((data, peerId) => {
-    if (!data || typeof data !== 'object') return;
-    if (NET.peerId && NET.peerId !== peerId) return;
-    if (!NET.peerId) { NET.peerId = peerId; NET.connected = true; }
+  if (typeof onMsg === 'function') {
+    onMsg((data, peerId) => {
+      if (!data || typeof data !== 'object') return;
+      if (NET.peerId && NET.peerId !== peerId) return;
+      if (!NET.peerId) { NET.peerId = peerId; NET.connected = true; }
 
-    if (data.type === 'hello') {
-      clearTimeout(NET.waitTimer);
-      showNatWarn('');
-      const firstHello = !NET.oppCar;
-      NET.oppCar = data.car;
-      const myT = myCarPayload().tieBreaker, opT = data.car.tieBreaker || 0;
-      NET.isHost = myT !== opT ? myT > opT : String(peerId) > 'm';
-      setP2pStatus(`対戦相手：${data.car.name}（接続完了・${R.p2pRule === 'off' ? 'アイテムなし' : 'アイテムあり'}）`, 'ok');
-      if (firstHello) {
-        SFX.match();
-        toast(`${data.car.name} とマッチングしました！`);
-        sendP2P({ type: 'hello', car: myCarPayload() });
+      if (data.type === 'hello') {
+        clearTimeout(NET.waitTimer);
+        showNatWarn('');
+        const firstHello = !NET.oppCar;
+        NET.oppCar = data.car;
+        const myT = myCarPayload().tieBreaker, opT = data.car.tieBreaker || 0;
+        NET.isHost = myT !== opT ? myT > opT : String(peerId) > 'm';
+        setP2pStatus(`対戦相手：${data.car.name}（接続完了・${R.p2pRule === 'off' ? 'アイテムなし' : 'アイテムあり'}）`, 'ok');
+        if (firstHello) {
+          SFX.match();
+          toast(`${data.car.name} とマッチングしました！`);
+          sendP2P({ type: 'hello', car: myCarPayload() });
+        }
+        setupRaceCars();
+        updStartBtn();
+      } else if (data.type === 'item_sel') {
+        if (NET.oppCar) NET.oppCar.itemKind = data.itemKind;
+      } else if (data.type === 'ready') {
+        NET.oppReady = true;
+        if (data.car) { NET.oppCar = data.car; setupRaceCars(); }
+        toast(`${NET.oppCar ? NET.oppCar.name : '相手'} がスタート準備完了！`);
+        checkBothReady();
+      } else if (data.type === 'start') {
+        beginOnlineRace();
+      } else if (data.type === 'fire_item') {
+        if (data.ev) applyOnlineEvent(data.ev, false);
       }
-      setupRaceCars();
-      updStartBtn();
-    } else if (data.type === 'item_sel') {
-      if (NET.oppCar) NET.oppCar.itemKind = data.itemKind;
-    } else if (data.type === 'ready') {
-      NET.oppReady = true;
-      if (data.car) { NET.oppCar = data.car; setupRaceCars(); }
-      toast(`${NET.oppCar ? NET.oppCar.name : '相手'} がスタート準備完了！`);
-      checkBothReady();
-    } else if (data.type === 'start') {
-      beginOnlineRace();
-    } else if (data.type === 'fire_item') {
-      if (data.ev) applyOnlineEvent(data.ev, false);
-    }
-  });
+    });
+  }
 }
 
 function joinWordMatch() {
@@ -2581,11 +2607,19 @@ function updItemUi() {
   if (isNoItemMatch) {
     $('itemInfo').innerHTML = '<b>【アイテムなしルール】</b><br><span class="small" style="color:var(--ink2)">対戦モードで「アイテムなし」が設定されているため、アイテムは選択・使用できません。純粋なマシン性能と走りで競い合います！</span>';
   } else {
-    $('itemInfo').innerHTML = R.itemKind ? ITEMS[R.itemKind].text + '<br><span class="small">効くのは<b>指定した場所だけ</b>（コース全体ではありません）。そこを通る全車に効くので自分も注意！レース中に<b>コースの好きな場所をクリック</b>（3D画面でも全体図でもOK）するとその場所で発動します。1回だけなので、タイミングと場所を考えて！</span>' : '使わない場合は「なし」。アイテムを選んでおくと、レース中にコース上の好きな場所をクリックして1回だけ発動できます。';
+    const actText = isMobileScreen() ? 'タップ' : 'クリック';
+    $('itemInfo').innerHTML = R.itemKind ? ITEMS[R.itemKind].text + `<br><span class="small">効くのは<b>指定した場所だけ</b>（コース全体ではありません）。そこを通る全車に効くので自分も注意！レース中に<b>コースの好きな場所を${actText}</b>（3D画面でも全体図でもOK）するとその場所で発動します。1回だけなので、タイミングと場所を考えて！</span>` : `使わない場合は「なし」。アイテムを選んでおくと、レース中にコース上の好きな場所を${actText}して1回だけ発動できます。`;
   }
   $('bItem').hidden = true;
   $('mini').classList.toggle('aim', R.targeting);
-  const ban = $('aimBanner'); if (ban) { ban.hidden = !R.targeting; if (R.targeting) ban.textContent = (R.itemKind && ITEMS[R.itemKind]) ? ITEMS[R.itemKind].name + '：コースの好きな場所をクリックで発動！' : ''; }
+  const ban = $('aimBanner');
+  if (ban) {
+    ban.hidden = !R.targeting;
+    if (R.targeting) {
+      const actWord = isMobileScreen() ? 'タップ' : 'クリック';
+      ban.textContent = (R.itemKind && ITEMS[R.itemKind]) ? `${ITEMS[R.itemKind].name}：コース上を${actWord}で発動！` : '';
+    }
+  }
   if (R.lastAim !== R.targeting) { R.lastAim = R.targeting; if (R.mctx) layoutMini(); }
 }
 $('itemSeg').addEventListener('click', e => {
