@@ -904,7 +904,7 @@ function buildCarGroup(g, opt) {
     const sp2 = sp.clone(); sp2.rotation.z = Math.PI / 2;
     wg.add(t, r, sp, sp2); wg.position.set(w.cx, w.cy, zc); grp.add(wg); wheels.push(wg);
   }
-  grp.userData = { wheels, geo };
+  grp.userData = { wheels, geo, bodyMesh: mesh };
   return grp;
 }
 function disposeGroup(grp) {
@@ -953,6 +953,7 @@ $('bClear').onclick = () => { pushUndo(); S.g = T.newGrid(); S.c = newColors(); 
 
 const KD = T.PHYS.KD, KL = T.PHYS.KL, QREF = 0.6 * 16;
 function changed() {
+  planKey = '';
   S.ver = (S.ver || 0) + 1; S.an = T.analyze(S.g, S.s); updateSide(); markDirty(); updTabs();
 }
 function gauge(t, n, bar, h) { return `<div class="gg"><span class="t">${t}</span><span class="n">${n}</span><span class="bar">${bar}</span><span class="h">${h}</span></div>`; }
@@ -1203,10 +1204,12 @@ function voxelRay(o, d) {
   for (let n = 0; n < 220; n++) {
     if (c[0] < -1 || c[1] < -1 || c[2] < -1 || c[0] > NX || c[1] > NY || c[2] > NZ) return null;
     if (T.inGrid(c[0], c[1], c[2])) {
-      const k = idx(c[0], c[1], c[2]);
-      if (S.g[k] > 0 || T.isFrame(T.LOCK[k]) || T.LOCK[k] === T.L_FLOOR) {
-        const nn = lastAx < 0 ? null : [0, 0, 0]; if (nn) nn[lastAx] = -step[lastAx];
-        return { hit: c.slice(), prev: prev ? prev.slice() : null, n: nn, p: P.map((v, i) => i === lastAx ? c[i] + (step[i] > 0 ? 0 : 1) : O[i] + D[i] * tEnter), dir: [D[0], D[2]] };
+      const k = idx(c[0], c[1], c[2]), lk = T.LOCK[k];
+      if (S.g[k] > 0 || lk === T.L_CHASSIS || lk === T.L_AXLE) {
+        if (lastAx >= 0) {
+          const nn = [0, 0, 0]; nn[lastAx] = -step[lastAx];
+          return { hit: c.slice(), prev: prev ? prev.slice() : null, n: nn, p: P.map((v, i) => i === lastAx ? c[i] + (step[i] > 0 ? 0 : 1) : O[i] + D[i] * tEnter), dir: [D[0], D[2]] };
+        }
       }
     }
     prev = c.slice();
@@ -1216,9 +1219,38 @@ function voxelRay(o, d) {
   return null;
 }
 function rayAt(e) {
-  const r = cv3.getBoundingClientRect(); let nx = e ? ((e.clientX - r.left) / r.width) * 2 - 1 : 0, ny = e ? -((e.clientY - r.top) / r.height) * 2 + 1 : 0;
+  const r = cv3.getBoundingClientRect();
+  let nx = e ? ((e.clientX - r.left) / r.width) * 2 - 1 : 0;
+  let ny = e ? -((e.clientY - r.top) / r.height) * 2 + 1 : 0;
   if (V.fp) { nx = 0; ny = 0; }
-  const rc = new THREE.Raycaster(); rc.setFromCamera({ x: nx, y: ny }, V.cam); return voxelRay(rc.ray.origin, rc.ray.direction);
+  const rc = new THREE.Raycaster();
+  rc.setFromCamera({ x: nx, y: ny }, V.cam);
+
+  if (V.car && V.car.userData && V.car.userData.bodyMesh) {
+    const hits = rc.intersectObject(V.car.userData.bodyMesh, false);
+    if (hits && hits.length > 0) {
+      const hit = hits[0];
+      const fn = hit.face.normal;
+      const nx_ = Math.abs(fn.x), ny_ = Math.abs(fn.y), nz_ = Math.abs(fn.z);
+      const ax = nx_ > ny_ ? (nx_ > nz_ ? 0 : 2) : (ny_ > nz_ ? 1 : 2);
+      const nn = [0, 0, 0];
+      nn[ax] = (ax === 0 ? fn.x : (ax === 1 ? fn.y : fn.z)) > 0 ? 1 : -1;
+      const inPt = [hit.point.x - nn[0] * 0.05, hit.point.y - nn[1] * 0.05, hit.point.z - nn[2] * 0.05];
+      const c = [Math.floor(inPt[0] / BS), Math.floor(inPt[1] / BS), Math.floor(inPt[2] / BS)];
+      if (T.inGrid(c[0], c[1], c[2])) {
+        const prev = [c[0] + nn[0], c[1] + nn[1], c[2] + nn[2]];
+        return {
+          hit: c,
+          prev: prev,
+          n: nn,
+          p: [hit.point.x / BS, hit.point.y / BS, hit.point.z / BS],
+          dir: [rc.ray.direction.x / BS, rc.ray.direction.z / BS]
+        };
+      }
+    }
+  }
+
+  return voxelRay(rc.ray.origin, rc.ray.direction);
 }
 const REACH = 28;
 function aim(e) {
@@ -1228,7 +1260,8 @@ function aim(e) {
     const cp = V.cam.position, dx = (h.hit[0] + 0.5) * BS - cp.x, dy = (h.hit[1] + 0.5) * BS - cp.y, dz = (h.hit[2] + 0.5) * BS - cp.z;
     if (dx * dx + dy * dy + dz * dz > REACH * REACH) return null;
   }
-  const sup = S.g[hk] > 0 || T.isFrame(T.LOCK[hk]);
+  const lk = T.LOCK[hk];
+  const sup = S.g[hk] > 0 || lk === T.L_CHASSIS || lk === T.L_AXLE;
   return {
     hit: h.hit, mine: S.g[hk] > 0, prev: p, n: h.n, fy: h.p[1] - h.hit[1], dir: h.dir, sup,
     put: sup && p && T.inGrid(...p) && !T.isLocked(...p) ? p : null
@@ -1271,7 +1304,7 @@ function showAim(e) {
   const isBreak = V.touchMode === 'break';
   const ctr = (m, c) => { m.visible = !!c; if (c) m.position.set((c[0] + 0.5) * BS, (c[1] + 0.5) * BS, (c[2] + 0.5) * BS); };
   const org = (m, c, code) => { m.visible = !!c; if (c) { m.position.set(c[0] * BS, c[1] * BS, c[2] * BS); const g = shapeGeo(code); if (m.userData.code !== code) { m.userData.code = code; m.geometry = m.isLineSegments ? g.edge : g.fill; } } };
-  const hitC = a && a.mine ? a.hit : null;
+  const hitC = a && (isBreak ? a.mine : (a.mine || a.sup)) ? a.hit : null;
   ctr(V.hit, hitC); ctr(V.hit2, hitC && mirrorOf(hitC));
   if (V.hit.material) V.hit.material.color.set(isBreak ? 0xff2244 : 0xffffff);
   if (V.hit2.material) V.hit2.material.color.set(isBreak ? 0xff2244 : 0xffffff);
@@ -1378,14 +1411,18 @@ function toggleFP(on) {
   const fpUi = $('fpTouchUi'); if (fpUi) fpUi.classList.toggle('active', on);
   $('bFP').textContent = on ? '全体視点' : '一人称'; $('bFP').setAttribute('aria-pressed', String(on));
   if (on) {
+    placeCam();
     { const o = new THREE.Vector3().subVectors(V.cam.position, V.target); o.setLength(Math.min(o.length(), 16)); V.pos = V.target.clone().add(o); }
+    if (V.pos.y < 2.5) V.pos.y = 6;
     const d = new THREE.Vector3().subVectors(V.target, V.pos);
     V.yaw = Math.atan2(-d.x, -d.z); V.pitch = clamp(Math.asin(d.y / d.length()), -1.2, 1.2);
-    if (V.pos.y < 2) V.pos.y = 6;
+    placeCam();
+    layout3d();
     if (!isMobileScreen()) toggleMax(true);
   } else {
     try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
     V.hit.visible = V.hit2.visible = V.fill.visible = V.fill2.visible = V.ghost.visible = V.ghost2.visible = false;
+    layout3d();
     if (!isMobileScreen()) toggleMax(false);
   }
   updTip();
@@ -1411,10 +1448,11 @@ function moveFP(dt) {
   if (mx !== 0 || mz !== 0 || my !== 0) {
     V.pos.x = clamp(V.pos.x + mx * sp, -25, CX + 25);
     V.pos.z = clamp(V.pos.z + mz * sp, -25, CZ + 25);
-    V.pos.y = clamp(V.pos.y + my * sp, 0.6, 40);
+    V.pos.y = clamp(V.pos.y + my * sp, 2.0, 40);
   }
 }
 function doPlaceFP() {
+  placeCam();
   const a = aim(null);
   if (!a || !a.sup) { SFX.error(); toast('置く場所がありません（車体のブロックに向けてね）'); return; }
   if (!a.put) { SFX.error(); toast('ここには置けません'); return; }
@@ -1422,6 +1460,7 @@ function doPlaceFP() {
   showAim(null);
 }
 function doBreakFP() {
+  placeCam();
   const a = aim(null);
   if (!a || !a.hit) { SFX.error(); toast('壊すブロックがありません（壊したいブロックに向けてね）'); return; }
   if (!a.mine) { SFX.error(); toast('基本パーツは壊せません'); return; }
