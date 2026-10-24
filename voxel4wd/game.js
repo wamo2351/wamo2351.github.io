@@ -1220,16 +1220,34 @@ function voxelRay(o, d) {
 }
 function rayAt(e) {
   const r = cv3.getBoundingClientRect();
-  let nx = e ? ((e.clientX - r.left) / r.width) * 2 - 1 : 0;
-  let ny = e ? -((e.clientY - r.top) / r.height) * 2 + 1 : 0;
-  if (V.fp) { nx = 0; ny = 0; }
+  let nx = 0, ny = 0;
+  if (e && typeof e.clientX === 'number') {
+    nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+    ny = -((e.clientY - r.top) / r.height) * 2 + 1;
+  } else if (V.fp) {
+    const crossEl = $('cross');
+    if (crossEl && crossEl.style.display !== 'none') {
+      const cr = crossEl.getBoundingClientRect();
+      const cx = cr.left + cr.width / 2;
+      const cy = cr.top + cr.height / 2;
+      nx = ((cx - r.left) / r.width) * 2 - 1;
+      ny = -((cy - r.top) / r.height) * 2 + 1;
+    }
+  }
   const rc = new THREE.Raycaster();
   rc.setFromCamera({ x: nx, y: ny }, V.cam);
 
   if (V.car && V.car.userData && V.car.userData.bodyMesh) {
     const hits = rc.intersectObject(V.car.userData.bodyMesh, false);
     if (hits && hits.length > 0) {
-      const hit = hits[0];
+      let hit = null;
+      for (let i = 0; i < hits.length; i++) {
+        if (rc.ray.direction.dot(hits[i].face.normal) < -1e-4) {
+          hit = hits[i];
+          break;
+        }
+      }
+      if (!hit) hit = hits[0];
       const fn = hit.face.normal;
       const nx_ = Math.abs(fn.x), ny_ = Math.abs(fn.y), nz_ = Math.abs(fn.z);
       const ax = nx_ > ny_ ? (nx_ > nz_ ? 0 : 2) : (ny_ > nz_ ? 1 : 2);
@@ -1238,14 +1256,17 @@ function rayAt(e) {
       const inPt = [hit.point.x - nn[0] * 0.05, hit.point.y - nn[1] * 0.05, hit.point.z - nn[2] * 0.05];
       const c = [Math.floor(inPt[0] / BS), Math.floor(inPt[1] / BS), Math.floor(inPt[2] / BS)];
       if (T.inGrid(c[0], c[1], c[2])) {
-        const prev = [c[0] + nn[0], c[1] + nn[1], c[2] + nn[2]];
-        return {
-          hit: c,
-          prev: prev,
-          n: nn,
-          p: [hit.point.x / BS, hit.point.y / BS, hit.point.z / BS],
-          dir: [rc.ray.direction.x / BS, rc.ray.direction.z / BS]
-        };
+        const k = idx(c[0], c[1], c[2]), lk = T.LOCK[k];
+        if (S.g[k] > 0 || lk === T.L_CHASSIS || lk === T.L_AXLE) {
+          const prev = [c[0] + nn[0], c[1] + nn[1], c[2] + nn[2]];
+          return {
+            hit: c,
+            prev: prev,
+            n: nn,
+            p: [hit.point.x / BS, hit.point.y / BS, hit.point.z / BS],
+            dir: [rc.ray.direction.x / BS, rc.ray.direction.z / BS]
+          };
+        }
       }
     }
   }
@@ -1413,7 +1434,7 @@ function toggleFP(on) {
   if (on) {
     placeCam();
     { const o = new THREE.Vector3().subVectors(V.cam.position, V.target); o.setLength(Math.min(o.length(), 16)); V.pos = V.target.clone().add(o); }
-    if (V.pos.y < 2.5) V.pos.y = 6;
+    if (V.pos.y < 4.0) V.pos.y = 8;
     const d = new THREE.Vector3().subVectors(V.target, V.pos);
     V.yaw = Math.atan2(-d.x, -d.z); V.pitch = clamp(Math.asin(d.y / d.length()), -1.2, 1.2);
     placeCam();
@@ -1457,6 +1478,7 @@ function doPlaceFP() {
   if (!a || !a.sup) { SFX.error(); toast('置く場所がありません（車体のブロックに向けてね）'); return; }
   if (!a.put) { SFX.error(); toast('ここには置けません'); return; }
   commit3d('place', a);
+  if (S.dirty3) rebuild3d();
   showAim(null);
 }
 function doBreakFP() {
@@ -1465,6 +1487,7 @@ function doBreakFP() {
   if (!a || !a.hit) { SFX.error(); toast('壊すブロックがありません（壊したいブロックに向けてね）'); return; }
   if (!a.mine) { SFX.error(); toast('基本パーツは壊せません'); return; }
   commit3d('break', a);
+  if (S.dirty3) rebuild3d();
   showAim(null);
 }
 function setupRepeat(btn, action) {
@@ -1585,7 +1608,15 @@ function up3d(e) {
   V.down = null;
   const repeated = d.rep; stopHold();
   if (repeated || V.moved) return;
-  if (V.fp && d.touch) return;
+  if (V.fp) {
+    const a = aim(e);
+    if (a && (a.mine || a.sup)) {
+      commit3d(actionFor(d), a);
+      if (S.dirty3) rebuild3d();
+      showAim(null);
+    }
+    return;
+  }
   commit3d(actionFor(d), aim(e)); showAim(e);
 }
 cv3.addEventListener('pointerup', up3d);

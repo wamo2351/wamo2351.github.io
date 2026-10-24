@@ -237,6 +237,7 @@ kbd{font-family:var(--f-m);font-size:11px;border:1px solid var(--line2);border-b
 .cross{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);pointer-events:none;display:none;z-index:20}
 .cross::before,.cross::after{content:"";position:absolute;background:#fff;mix-blend-mode:difference}
 .cross::before{left:10px;top:0;width:2px;height:22px}.cross::after{top:10px;left:0;height:2px;width:22px}
+.cross-dot{position:absolute;left:50%;top:50%;width:4px;height:4px;transform:translate(-50%,-50%);background:#ff3b30;border-radius:50%;box-shadow:0 0 0 1px #fff;pointer-events:none}
 
 /* 一人称操作UI（スマホ用バーチャルパッド＆アクションボタン） */
 .fp-touch-ui{display:none;position:absolute;inset:0;pointer-events:none;z-index:15}
@@ -623,7 +624,7 @@ body{padding-block:8px}
               <ul class="checks" id="checks"></ul>
             </div>
           </div>
-          <div class="cross" id="cross"></div>
+          <div class="cross" id="cross"><div class="cross-dot"></div></div>
           <!-- 一人称操作UI（スマホ用バーチャルパッド＆アクションボタン） -->
           <div class="fp-touch-ui" id="fpTouchUi">
             <div class="v-pad-wrap" id="vPadWrap">
