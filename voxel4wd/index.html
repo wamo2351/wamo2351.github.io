@@ -841,8 +841,20 @@ body{padding-block:8px}
 <div class="toast" id="toast" role="status"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script type="module">
-import { joinRoom } from 'https://esm.run/trystero/nostr';
-window.TrysteroJoinRoom = joinRoom;
+/* 複数のシグナリング方式(Nostr / MQTT / BitTorrent)を同時に使い、どれか1つでも生きていれば相手を見つけられるようにする */
+window.TrysteroStrategies = [];
+const loaders = [
+  ['nostr', 'https://esm.run/@trystero-p2p/nostr'],
+  ['mqtt', 'https://esm.run/@trystero-p2p/mqtt'],
+  ['torrent', 'https://esm.run/@trystero-p2p/torrent']
+];
+await Promise.all(loaders.map(async ([name, url]) => {
+  try {
+    const m = await import(url);
+    if (typeof m.joinRoom === 'function') window.TrysteroStrategies.push({ name, joinRoom: m.joinRoom });
+  } catch (e) { console.warn('Trystero strategy failed to load:', name, e); }
+}));
+window.TrysteroJoinRoom = window.TrysteroStrategies.length ? window.TrysteroStrategies[0].joinRoom : undefined;
 </script>
 <script src="game.js"></script>
 </body>

@@ -1976,113 +1976,134 @@ function sendP2P(msg) {
     try { NET.sendAct(msg, NET.peerId); } catch (e) {}
   }
 }
+const P2P_TURN = [
+  { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+];
 function connectRoom(roomName, labelTxt) {
-  if (typeof window.TrysteroJoinRoom !== 'function') {
-    toast('通信モジュールを読み込み中です。1秒後にもう一度押してください');
+  const strategies = (window.TrysteroStrategies && window.TrysteroStrategies.length)
+    ? window.TrysteroStrategies
+    : (typeof window.TrysteroJoinRoom === 'function' ? [{ name: 'default', joinRoom: window.TrysteroJoinRoom }] : []);
+  if (!strategies.length) {
+    toast('通信モジュールを読み込み中です。数秒後にもう一度押してください');
     return;
   }
   disconnectP2P(true);
   setP2pStatus(`${labelTxt}で待機・検索中...`, 'wait');
 
-  let room;
-  try {
-    room = window.TrysteroJoinRoom({ appId: APP_ID }, roomName);
-    NET.room = room;
-  } catch (err) {
-    console.error('TrysteroJoinRoom error:', err);
+  // 複数方式で同じ部屋に同時参加。最初に相手と繋がった方式を採用し、残りは閉じる
+  const rooms = [];
+  let active = -1;
+  const leaveAll = () => { rooms.forEach(r => { try { r.room.leave(); } catch (_) {} }); };
+  NET.room = { leave: leaveAll };
+
+  const adopt = (i, peerId) => {
+    if (active === -1) {
+      active = i;
+      NET.sendAct = rooms[i].send;
+      rooms.forEach((r, j) => { if (j !== i) { try { r.room.leave(); } catch (_) {} } });
+    }
+    return active === i;
+  };
+
+  const handleMsg = (i, data, peerId) => {
+    if (!data || typeof data !== 'object') return;
+    if (!adopt(i, peerId)) return;
+    if (NET.peerId && NET.peerId !== peerId) return;
+    if (!NET.peerId) { NET.peerId = peerId; NET.connected = true; }
+
+    if (data.type === 'hello') {
+      clearTimeout(NET.waitTimer);
+      showNatWarn('');
+      const firstHello = !NET.oppCar;
+      NET.oppCar = data.car;
+      const myT = myCarPayload().tieBreaker, opT = data.car.tieBreaker || 0;
+      NET.isHost = myT !== opT ? myT > opT : String(peerId) > 'm';
+      setP2pStatus(`対戦相手：${data.car.name}（接続完了・${R.p2pRule === 'off' ? 'アイテムなし' : 'アイテムあり'}）`, 'ok');
+      if (firstHello) {
+        SFX.match();
+        toast(`${data.car.name} とマッチングしました！`);
+        sendP2P({ type: 'hello', car: myCarPayload() });
+      }
+      setupRaceCars();
+      updStartBtn();
+    } else if (data.type === 'item_sel') {
+      if (NET.oppCar) NET.oppCar.itemKind = data.itemKind;
+    } else if (data.type === 'ready') {
+      NET.oppReady = true;
+      if (data.car) { NET.oppCar = data.car; setupRaceCars(); }
+      toast(`${NET.oppCar ? NET.oppCar.name : '相手'} がスタート準備完了！`);
+      checkBothReady();
+    } else if (data.type === 'start') {
+      beginOnlineRace();
+    } else if (data.type === 'fire_item') {
+      if (data.ev) applyOnlineEvent(data.ev, false);
+    }
+  };
+
+  strategies.forEach((st, i) => {
+    try {
+      const room = st.joinRoom({ appId: APP_ID, turnConfig: P2P_TURN }, roomName);
+      const act = room.makeAction('v4wd');
+      // Trystero 0.2x系(配列API)と0.26系(オブジェクト/プロパティAPI)の両方に対応
+      let send, onMsg;
+      if (Array.isArray(act)) { send = act[0]; onMsg = act[1]; }
+      else {
+        send = (msg, target) => { const r = act.send(msg, { target }); if (r && r.catch) r.catch(() => {}); };
+        onMsg = fn => { act.onMessage = (d, meta) => fn(d, meta && typeof meta === 'object' ? meta.peerId : meta); };
+      }
+      const setJoin = fn => { if (typeof room.onPeerJoin === 'function') room.onPeerJoin(fn); else room.onPeerJoin = fn; };
+      const setLeave = fn => { if (typeof room.onPeerLeave === 'function') room.onPeerLeave(fn); else room.onPeerLeave = fn; };
+      rooms[i] = { name: st.name, room, send };
+      setJoin(peerId => {
+        if (!adopt(i, peerId)) return;
+        if (NET.connected && NET.peerId && NET.peerId !== peerId) return; // すでに1対1でマッチング済みなら無視
+        clearTimeout(NET.waitTimer);
+        showNatWarn('');
+        NET.peerId = peerId;
+        NET.connected = true; NET.myReady = false; NET.oppReady = false;
+        setP2pStatus('相手を発見！データ同期中...', 'ok');
+        sendP2P({ type: 'hello', car: myCarPayload() });
+        // 繋がるまで定期的にhelloを再送（取りこぼし対策）
+        let tries = 0;
+        const retry = () => {
+          if (!NET.connected || NET.oppCar || NET.peerId !== peerId) return;
+          sendP2P({ type: 'hello', car: myCarPayload() });
+          if (++tries < 10) NET.waitTimer = setTimeout(retry, 1500);
+          else showNatWarn('相手は見つかりましたが、直接通信がネットワーク制限（NAT越え失敗）により遮断されました。スマホの4G/5G回線や別のWi-Fiに切り替えて再度お試しください。');
+        };
+        NET.waitTimer = setTimeout(retry, 1500);
+      });
+      setLeave(peerId => {
+        if (active !== i) return;
+        if (NET.peerId && peerId && NET.peerId === peerId) {
+          const wasTrying = !NET.oppCar;
+          disconnectP2P();
+          if (wasTrying) showNatWarn('相手との直接通信が途中で切断されました。お互いの回線の相性（NAT制限）によって繋がらなかった可能性があります。');
+          else toast('対戦相手との通信が切断されました');
+        }
+      });
+      if (typeof onMsg === 'function') onMsg((data, peerId) => handleMsg(i, data, peerId));
+    } catch (err) {
+      console.error('P2P strategy error:', st.name, err);
+    }
+  });
+
+  if (!rooms.some(Boolean)) {
     setP2pStatus('通信の初期化に失敗しました', '');
     disconnectP2P();
     return;
   }
 
-  let sendMsg, onMsg;
-  try {
-    const act = room.makeAction('v4wd');
-    if (Array.isArray(act)) {
-      sendMsg = act[0]; onMsg = act[1];
-    } else if (act && typeof act === 'object') {
-      sendMsg = act[0] || act.send || act.sendMessage;
-      onMsg = act[1] || act.on || act.listen || act.onMessage;
-    }
-    NET.sendAct = typeof sendMsg === 'function' ? sendMsg : null;
-  } catch (err) {
-    console.error('makeAction error:', err);
-    setP2pStatus('通信アクション作成に失敗しました', '');
-    disconnectP2P();
-    return;
-  }
-
-  // 一定時間経っても直接通信(NAT越え)または相手が見つからない場合の案内
+  // 一定時間経っても相手が見つからない場合の案内
   NET.waitTimer = setTimeout(() => {
     if (!NET.connected && NET.room) {
-      showNatWarn('なかなか繋がらない場合：学校・会社・公衆Wi-Fiや一部のスマホ回線では、通信の保護制限（NAT・ファイアウォール）により直接通信がブロックされることがあります。相手と合言葉が合っているか確認するか、別の回線（自宅Wi-Fiや4G/5G回線）でお試しください。');
+      showNatWarn('相手がまだ見つかりません。相手も同じ合言葉・同じアイテム設定で検索中か確認してください。ランダム対戦は同時に検索している相手がいないとマッチしません。学校・会社などの制限回線では繋がらないことがあります。');
     }
   }, 15000);
-
-  room.onPeerJoin(peerId => {
-    if (NET.connected && NET.peerId && NET.peerId !== peerId) return; // すでに1対1でマッチング済みなら無視
-    clearTimeout(NET.waitTimer);
-    showNatWarn('');
-    NET.peerId = peerId;
-    NET.connected = true; NET.myReady = false; NET.oppReady = false;
-    setP2pStatus('相手を発見！データ同期中...', 'ok');
-    sendP2P({ type: 'hello', car: myCarPayload() });
-    // データが届かない場合（片方向ブロック等）の検知
-    NET.waitTimer = setTimeout(() => {
-      if (NET.connected && !NET.oppCar) {
-        showNatWarn('相手は見つかりましたが、直接通信がネットワーク制限（NAT越え失敗）により遮断されました。スマホの4G/5G回線や別のWi-Fiに切り替えて再度お試しください。');
-      }
-    }, 8000);
-  });
-
-  room.onPeerLeave(peerId => {
-    if (NET.peerId && peerId && NET.peerId === peerId) {
-      const wasTrying = !NET.oppCar;
-      disconnectP2P();
-      if (wasTrying) {
-        showNatWarn('相手との直接通信が途中で切断されました。お互いの回線の相性（NAT制限）によって繋がらなかった可能性があります。');
-      } else {
-        toast('対戦相手との通信が切断されました');
-      }
-    }
-  });
-
-  if (typeof onMsg === 'function') {
-    onMsg((data, peerId) => {
-      if (!data || typeof data !== 'object') return;
-      if (NET.peerId && NET.peerId !== peerId) return;
-      if (!NET.peerId) { NET.peerId = peerId; NET.connected = true; }
-
-      if (data.type === 'hello') {
-        clearTimeout(NET.waitTimer);
-        showNatWarn('');
-        const firstHello = !NET.oppCar;
-        NET.oppCar = data.car;
-        const myT = myCarPayload().tieBreaker, opT = data.car.tieBreaker || 0;
-        NET.isHost = myT !== opT ? myT > opT : String(peerId) > 'm';
-        setP2pStatus(`対戦相手：${data.car.name}（接続完了・${R.p2pRule === 'off' ? 'アイテムなし' : 'アイテムあり'}）`, 'ok');
-        if (firstHello) {
-          SFX.match();
-          toast(`${data.car.name} とマッチングしました！`);
-          sendP2P({ type: 'hello', car: myCarPayload() });
-        }
-        setupRaceCars();
-        updStartBtn();
-      } else if (data.type === 'item_sel') {
-        if (NET.oppCar) NET.oppCar.itemKind = data.itemKind;
-      } else if (data.type === 'ready') {
-        NET.oppReady = true;
-        if (data.car) { NET.oppCar = data.car; setupRaceCars(); }
-        toast(`${NET.oppCar ? NET.oppCar.name : '相手'} がスタート準備完了！`);
-        checkBothReady();
-      } else if (data.type === 'start') {
-        beginOnlineRace();
-      } else if (data.type === 'fire_item') {
-        if (data.ev) applyOnlineEvent(data.ev, false);
-      }
-    });
-  }
 }
+
 
 function joinWordMatch() {
   const word = ($('p2pWord').value || '').trim();
