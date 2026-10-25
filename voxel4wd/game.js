@@ -858,11 +858,15 @@ const SHADE = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -
 function buildCarGroup(g, opt) {
   opt = opt || {};
   const pos = [], col = [], idx = [], lines = [], sg = opt.s;
+  const triData = [];
   const cBody = new THREE.Color(TH.body), cLead = new THREE.Color(TH.lead), cCh = new THREE.Color(TH.chassis), tmpC = new THREE.Color(), cc = opt.c;
   let vi = 0;
-  const addFace = (poly, c, j, soft) => {
+  const addFace = (poly, c, j, soft, voxelX, voxelY, voxelZ, faceNormal) => {
     for (const v of poly) { pos.push(v[0], v[1], v[2]); col.push(c.r * j, c.g * j, c.b * j); }
-    for (let i = 1; i < poly.length - 1; i++) idx.push(vi, vi + i, vi + i + 1);
+    for (let i = 1; i < poly.length - 1; i++) {
+      idx.push(vi, vi + i, vi + i + 1);
+      triData.push({ x: voxelX, y: voxelY, z: voxelZ, n: faceNormal });
+    }
     if (opt.edges !== false && !soft) for (let e = 0; e < poly.length; e++) { const a = poly[e], b = poly[(e + 1) % poly.length]; lines.push(a[0], a[1], a[2], b[0], b[1], b[2]); }
     vi += poly.length;
   };
@@ -880,7 +884,7 @@ function buildCarGroup(g, opt) {
         if (solidVox(g, sg, x + d[0], y + d[1], z + d[2])) skip = true;
       }
       if (skip) continue;
-      addFace(f.v.map(v => [(x + v[0]) * BS, (y + v[1]) * BS, (z + v[2]) * BS]), c, j, f.soft);
+      addFace(f.v.map(v => [(x + v[0]) * BS, (y + v[1]) * BS, (z + v[2]) * BS]), c, j, f.soft, x, y, z, f.n);
     }
   }
   const geo = new THREE.BufferGeometry();
@@ -889,6 +893,7 @@ function buildCarGroup(g, opt) {
   geo.setIndex(idx); geo.computeVertexNormals();
   const grp = new THREE.Group();
   const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  mesh.userData = { triData };
   grp.add(mesh);
   if (opt.edges !== false && lines.length) {
     const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(lines, 3));
@@ -1076,8 +1081,9 @@ function rotateSlot(dir) {
 renderHotbar(); selectSlot(0, false);
 
 function setSym(on) {
-  S.sym = on; const b = $('symBtn'); b.setAttribute('aria-pressed', String(on)); b.textContent = '左右対称 ' + (on ? 'ON' : 'OFF');
-  if (V.ok && V.fp) toast('左右対称 ' + (on ? 'ON' : 'OFF'));
+  S.sym = on; const b = $('symBtn'); if (b) b.setAttribute('aria-pressed', String(on));
+  const v = $('symVal'); if (v) v.textContent = on ? 'ON' : 'OFF'; else if (b) b.textContent = (isMobileScreen() ? '対称 ' : '左右対称 ') + (on ? 'ON' : 'OFF');
+  if (V.ok && V.fp) toast((isMobileScreen() ? '対称 ' : '左右対称 ') + (on ? 'ON' : 'OFF'));
 }
 $('symBtn').onclick = () => setSym(!S.sym);
 
@@ -1170,13 +1176,36 @@ function layout3d() {
   V.r.setSize(w, h, false); V.cam.aspect = w / h; V.cam.updateProjectionMatrix(); V.dirtyCam = true;
 }
 function placeCam() {
-  if (V.fp) { V.cam.position.copy(V.pos); V.cam.rotation.order = 'YXZ'; V.cam.rotation.set(V.pitch, V.yaw, 0); V.cam.updateMatrixWorld(); return; }
+  if (V.fp) {
+    if (!V.pos) return;
+    V.cam.position.copy(V.pos);
+    V.cam.rotation.order = 'YXZ';
+    V.cam.rotation.set(V.pitch || 0, V.yaw || 0, 0);
+    V.cam.updateMatrixWorld();
+    return;
+  }
   const sp = Math.sin(V.phi);
   V.cam.position.set(V.target.x + V.dist * sp * Math.cos(V.theta), V.target.y + V.dist * Math.cos(V.phi), V.target.z + V.dist * sp * Math.sin(V.theta));
   V.cam.lookAt(V.target);
 }
 const CAMS = { iso: [0.75, 1.0, 62], side: [Math.PI / 2, Math.PI / 2, 66], top: [Math.PI / 2, 0.02, 74], front: [0, Math.PI / 2, 60], rear: [Math.PI, Math.PI / 2, 60] };
-document.querySelectorAll('#v3btns [data-cam]').forEach(b => b.onclick = () => { if (V.fp) toggleFP(false); const c = CAMS[b.dataset.cam]; V.theta = c[0]; V.phi = c[1]; V.dist = c[2]; });
+document.querySelectorAll('#v3btns [data-cam]').forEach(b => b.onclick = () => {
+  const c = CAMS[b.dataset.cam];
+  if (!c) return;
+  if (V.fp) {
+    const dist = 15;
+    const sp = Math.sin(c[1]);
+    const offset = new THREE.Vector3(dist * sp * Math.cos(c[0]), Math.max(3.0, dist * Math.cos(c[1])), dist * sp * Math.sin(c[0]));
+    V.pos = V.target.clone().add(offset);
+    if (V.pos.y < 3.5) V.pos.y = 3.5;
+    const d = new THREE.Vector3().subVectors(V.target, V.pos);
+    V.yaw = Math.atan2(-d.x, -d.z);
+    V.pitch = clamp(Math.asin(d.y / d.length()), -1.2, 1.2);
+    placeCam();
+  } else {
+    V.theta = c[0]; V.phi = c[1]; V.dist = c[2];
+  }
+});
 
 function rebuild3d() {
   if (!V.ok) return;
@@ -1221,52 +1250,56 @@ function voxelRay(o, d) {
 function rayAt(e) {
   const r = cv3.getBoundingClientRect();
   let nx = 0, ny = 0;
-  if (e && typeof e.clientX === 'number') {
-    nx = ((e.clientX - r.left) / r.width) * 2 - 1;
-    ny = -((e.clientY - r.top) / r.height) * 2 + 1;
-  } else if (V.fp) {
+  if (V.fp) {
     const crossEl = $('cross');
-    if (crossEl && crossEl.style.display !== 'none') {
+    if (crossEl) {
       const cr = crossEl.getBoundingClientRect();
       const cx = cr.left + cr.width / 2;
       const cy = cr.top + cr.height / 2;
       nx = ((cx - r.left) / r.width) * 2 - 1;
       ny = -((cy - r.top) / r.height) * 2 + 1;
     }
+  } else if (e && typeof e.clientX === 'number') {
+    nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+    ny = -((e.clientY - r.top) / r.height) * 2 + 1;
   }
   const rc = new THREE.Raycaster();
   rc.setFromCamera({ x: nx, y: ny }, V.cam);
 
   if (V.car && V.car.userData && V.car.userData.bodyMesh) {
-    const hits = rc.intersectObject(V.car.userData.bodyMesh, false);
-    if (hits && hits.length > 0) {
-      let hit = null;
+    const mesh = V.car.userData.bodyMesh;
+    const triData = mesh.userData && mesh.userData.triData;
+    const hits = rc.intersectObject(mesh, false);
+    if (hits && hits.length > 0 && triData) {
+      let hit = null, info = null;
       for (let i = 0; i < hits.length; i++) {
-        if (rc.ray.direction.dot(hits[i].face.normal) < -1e-4) {
+        const d = triData[hits[i].faceIndex];
+        if (!d) continue;
+        if (rc.ray.direction.x * d.n[0] + rc.ray.direction.y * d.n[1] + rc.ray.direction.z * d.n[2] < -1e-4) {
           hit = hits[i];
+          info = d;
           break;
         }
       }
-      if (!hit) hit = hits[0];
-      const fn = hit.face.normal;
-      const nx_ = Math.abs(fn.x), ny_ = Math.abs(fn.y), nz_ = Math.abs(fn.z);
-      const ax = nx_ > ny_ ? (nx_ > nz_ ? 0 : 2) : (ny_ > nz_ ? 1 : 2);
-      const nn = [0, 0, 0];
-      nn[ax] = (ax === 0 ? fn.x : (ax === 1 ? fn.y : fn.z)) > 0 ? 1 : -1;
-      const inPt = [hit.point.x - nn[0] * 0.05, hit.point.y - nn[1] * 0.05, hit.point.z - nn[2] * 0.05];
-      const c = [Math.floor(inPt[0] / BS), Math.floor(inPt[1] / BS), Math.floor(inPt[2] / BS)];
-      if (T.inGrid(c[0], c[1], c[2])) {
-        const k = idx(c[0], c[1], c[2]), lk = T.LOCK[k];
-        if (S.g[k] > 0 || lk === T.L_CHASSIS || lk === T.L_AXLE) {
-          const prev = [c[0] + nn[0], c[1] + nn[1], c[2] + nn[2]];
-          return {
-            hit: c,
-            prev: prev,
-            n: nn,
-            p: [hit.point.x / BS, hit.point.y / BS, hit.point.z / BS],
-            dir: [rc.ray.direction.x / BS, rc.ray.direction.z / BS]
-          };
-        }
+      if (!hit && hits.length > 0) {
+        hit = hits[0];
+        info = triData[hit.faceIndex];
+      }
+      if (info && T.inGrid(info.x, info.y, info.z)) {
+        const c = [info.x, info.y, info.z];
+        const fn = info.n;
+        const nx_ = Math.abs(fn[0]), ny_ = Math.abs(fn[1]), nz_ = Math.abs(fn[2]);
+        const ax = nx_ > ny_ ? (nx_ > nz_ ? 0 : 2) : (ny_ > nz_ ? 1 : 2);
+        const nn = [0, 0, 0];
+        nn[ax] = fn[ax] > 0 ? 1 : -1;
+        const prev = [c[0] + nn[0], c[1] + nn[1], c[2] + nn[2]];
+        return {
+          hit: c,
+          prev: prev,
+          n: nn,
+          p: [hit.point.x / BS, hit.point.y / BS, hit.point.z / BS],
+          dir: [rc.ray.direction.x / BS, rc.ray.direction.z / BS]
+        };
       }
     }
   }
@@ -1419,7 +1452,13 @@ function updTip() {
   if (el) el.textContent = '';
 }
 function toggleMax(on) {
-  V.max = on; $('v3wrap').classList.toggle('max', on); $('bMax').textContent = on ? '小さく' : '大きく';
+  V.max = on; $('v3wrap').classList.toggle('max', on);
+  const b = $('bMax');
+  if (b) {
+    b.innerHTML = on
+      ? '<span class="lbl-max-pc">もどす</span><span class="lbl-max-sp">縮小</span>'
+      : '<span class="lbl-max-pc">大きく</span><span class="lbl-max-sp">拡大</span>';
+  }
   document.body.style.overflow = on ? 'hidden' : ''; layout3d();
 }
 const isMobileScreen = () => window.innerWidth <= 768 || (window.innerHeight <= 520 && window.innerWidth <= 920) || ('ontouchstart' in window && window.innerWidth <= 900);
@@ -1432,8 +1471,11 @@ function toggleFP(on) {
   const fpUi = $('fpTouchUi'); if (fpUi) fpUi.classList.toggle('active', on);
   $('bFP').textContent = on ? '全体視点' : '一人称'; $('bFP').setAttribute('aria-pressed', String(on));
   if (on) {
-    placeCam();
-    { const o = new THREE.Vector3().subVectors(V.cam.position, V.target); o.setLength(Math.min(o.length(), 16)); V.pos = V.target.clone().add(o); }
+    if (!V.pos) {
+      const o = new THREE.Vector3().subVectors(V.cam.position, V.target);
+      o.setLength(Math.min(o.length(), 16));
+      V.pos = V.target.clone().add(o);
+    }
     if (V.pos.y < 4.0) V.pos.y = 8;
     const d = new THREE.Vector3().subVectors(V.target, V.pos);
     V.yaw = Math.atan2(-d.x, -d.z); V.pitch = clamp(Math.asin(d.y / d.length()), -1.2, 1.2);
@@ -1443,6 +1485,7 @@ function toggleFP(on) {
   } else {
     try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
     V.hit.visible = V.hit2.visible = V.fill.visible = V.fill2.visible = V.ghost.visible = V.ghost2.visible = false;
+    placeCam();
     layout3d();
     if (!isMobileScreen()) toggleMax(false);
   }
@@ -1608,16 +1651,8 @@ function up3d(e) {
   V.down = null;
   const repeated = d.rep; stopHold();
   if (repeated || V.moved) return;
-  if (V.fp) {
-    const a = aim(e);
-    if (a && (a.mine || a.sup)) {
-      commit3d(actionFor(d), a);
-      if (S.dirty3) rebuild3d();
-      showAim(null);
-    }
-    return;
-  }
-  commit3d(actionFor(d), aim(e)); showAim(e);
+  if (V.fp && d.touch) return;
+  commit3d(actionFor(d), aim(V.fp ? null : e)); showAim(V.fp ? null : e);
 }
 cv3.addEventListener('pointerup', up3d);
 cv3.addEventListener('pointercancel', e => { V.ptrs.delete(e.pointerId); V.down = null; stopHold(); });
@@ -2880,7 +2915,10 @@ $('tabR').onclick = () => { if (S.an.rules.ok) showTab('r'); else notifyRuleNg()
 $('goRace').onclick = () => { if (S.an.rules.ok) showTab('r'); else notifyRuleNg(); };
 function onResize() { if (!$('garage').hidden) { layout3d(); } else { layoutRace(); } }
 window.addEventListener('resize', onResize);
-if (window.ResizeObserver) new ResizeObserver(onResize).observe(document.querySelector('.app'));
+if (window.ResizeObserver) {
+  new ResizeObserver(onResize).observe(document.querySelector('.app'));
+  if ($('v3wrap')) new ResizeObserver(onResize).observe($('v3wrap'));
+}
 
 /* ===== 起動 ===== */
 readTheme();

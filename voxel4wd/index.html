@@ -234,14 +234,15 @@ kbd{font-family:var(--f-m);font-size:11px;border:1px solid var(--line2);border-b
 .tab.disabled{opacity:.5;cursor:not-allowed}
 .vbtn{border:2px solid var(--line2);background:var(--card);color:var(--ink);border-radius:999px;padding:3px 11px;font-size:12px;font-weight:700;cursor:pointer}
 .vbtn[aria-pressed="true"],.vbtn[aria-expanded="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.lbl-sym-sp,.lbl-max-sp{display:none}
 .cross{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);pointer-events:none;display:none;z-index:20}
 .cross::before,.cross::after{content:"";position:absolute;background:#fff;mix-blend-mode:difference}
 .cross::before{left:10px;top:0;width:2px;height:22px}.cross::after{top:10px;left:0;height:2px;width:22px}
-.cross-dot{position:absolute;left:50%;top:50%;width:4px;height:4px;transform:translate(-50%,-50%);background:#ff3b30;border-radius:50%;box-shadow:0 0 0 1px #fff;pointer-events:none}
 
 /* 一人称操作UI（スマホ用バーチャルパッド＆アクションボタン） */
 .fp-touch-ui{display:none;position:absolute;inset:0;pointer-events:none;z-index:15}
-.v-pad-wrap{position:absolute;left:12px;bottom:62px;display:flex;align-items:flex-end;gap:8px;pointer-events:auto}
+.fp-touch-ui.active{display:flex}
+.v-pad-wrap{position:absolute;left:12px;bottom:70px;display:flex;align-items:flex-end;gap:8px;pointer-events:auto}
 .v-pad{width:90px;height:90px;border-radius:50%;background:rgba(20,32,51,.55);backdrop-filter:blur(4px);border:2.5px solid rgba(255,255,255,.5);box-shadow:0 4px 14px rgba(0,0,0,.4);position:relative;display:grid;place-items:center;touch-action:none;user-select:none}
 .v-pad-dir{position:absolute;font-size:9.5px;color:rgba(255,255,255,.55);pointer-events:none;font-weight:900;line-height:1}
 .v-pad-dir.dir-up{top:4px;left:50%;transform:translateX(-50%)}
@@ -252,7 +253,7 @@ kbd{font-family:var(--f-m);font-size:11px;border:1px solid var(--line2);border-b
 .v-elev-wrap{display:flex;flex-direction:column;gap:5px}
 .v-elev-btn{width:34px;height:32px;border-radius:8px;background:rgba(20,32,51,.65);border:2px solid rgba(255,255,255,.45);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;touch-action:none;user-select:none;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3);padding:0}
 .v-elev-btn:active,.v-elev-btn.act{background:var(--accent);border-color:#fff;transform:scale(.92)}
-.v-act-wrap{position:absolute;right:12px;bottom:62px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:auto}
+.v-act-wrap{position:absolute;right:12px;bottom:70px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;pointer-events:auto}
 .v-act-btn{border:2.5px solid var(--ink);border-radius:999px;font-family:var(--f-b);font-weight:900;display:flex;align-items:center;justify-content:center;gap:4px;touch-action:none;user-select:none;cursor:pointer;transition:transform .08s ease}
 .v-act-btn:active{transform:scale(.92)}
 .v-act-btn.act-place{min-width:76px;height:50px;padding:0 14px;background:var(--accent);color:#fff;font-size:15px;box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 60%,#000),0 6px 14px rgba(0,0,0,.3)}
@@ -390,7 +391,7 @@ body{padding-block:8px}
   .g-fit,.r-grid{display:flex;flex-direction:column;gap:12px;height:auto}
   .g-side,.r-side{margin-top:2px;overflow:visible;height:auto}
   .g-right{padding:6px}
-  .g-right .v3wrap{aspect-ratio:auto;height:min(64vh,540px);min-height:390px;border-radius:14px}
+  .g-right .v3wrap{aspect-ratio:auto;height:min(66vh,520px);min-height:410px;border-radius:14px}
   .r-main{flex:none;height:auto;gap:8px}
   .stage{aspect-ratio:auto;height:min(60vh,520px);min-height:380px;border-radius:14px;flex:none}
   .r-side{display:flex;flex-direction:column;gap:10px}
@@ -401,29 +402,44 @@ body{padding-block:8px}
 }
 
 @media (max-width:768px){
-  /* ガレージ（モデリング）上部操作バーと車検パネルの完全分離 */
-  .v3bar{position:absolute;top:7px;left:7px;right:auto;max-width:calc(100% - 116px);display:flex;flex-wrap:wrap;gap:4px;align-items:center;z-index:5}
+  .lbl-sym-pc,.lbl-max-pc{display:none}
+  .lbl-sym-sp,.lbl-max-sp{display:inline}
+
+  /* ガレージ（モデリング）上部操作バーと車検パネルの完全分離＆1行化 */
+  .v3bar{position:absolute;top:6px;left:6px;right:auto;max-width:calc(100% - 94px);display:flex;flex-wrap:nowrap;gap:4px;align-items:center;z-index:5}
   .edit-mode-seg{display:none!important}
   #bFP{display:inline-block}
-  .v3bar .vbtn{padding:3px 8px;font-size:11px}
+  .v3bar .vbtn{padding:3px 7px;font-size:11px;white-space:nowrap;flex-shrink:0}
   .vbtn .vbtn-label{display:none}
   .fp-touch-ui.active{display:flex}
 
-  .inspect{position:absolute;top:7px;right:7px;left:auto;z-index:6;margin:0}
-  .inspect.collapsed-mobile{width:auto;max-width:110px;padding:3px 6px;border-radius:999px;background:color-mix(in srgb,var(--card) 94%,transparent);display:flex;align-items:center}
-  .inspect.collapsed-mobile .inspect-hdr{width:100%;gap:4px}
-  .inspect.collapsed-mobile .inspect-hdr h2{font-size:11px;gap:3px;letter-spacing:0}
-  .inspect-tag{display:inline-block;font-size:10.5px;padding:1px 4px;border-radius:4px}
-  .inspect-btn{display:inline-block;padding:1px 5px;font-size:10px;border-radius:999px}
+  .inspect{position:absolute;top:6px;right:6px;left:auto;z-index:6;margin:0;cursor:pointer}
+  .inspect.collapsed-mobile{width:auto;max-width:88px;padding:3px 6px;border-radius:999px;background:color-mix(in srgb,var(--card) 94%,transparent);display:flex;align-items:center;cursor:pointer}
+  .inspect.collapsed-mobile .inspect-hdr{width:100%;gap:3px;cursor:pointer}
+  .inspect.collapsed-mobile .inspect-hdr h2{font-size:11px;gap:2px;letter-spacing:0;white-space:nowrap}
+  .inspect-tag{display:inline-block;font-size:10px;padding:1px 4px;border-radius:4px}
+  .inspect.collapsed-mobile .inspect-btn{display:none}
   .inspect.collapsed-mobile .inspect-body{display:none}
 
   .inspect:not(.collapsed-mobile){width:min(310px,92vw);max-width:none;padding:10px 12px;background:var(--card);border:2px solid var(--ink);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.38);z-index:30}
   .inspect:not(.collapsed-mobile) .inspect-tag,.inspect:not(.collapsed-mobile) .inspect-btn{display:inline-block}
 
-  /* ガレージ下部：不要なテキスト非表示＆アイテム選択バー */
+  /* ガレージ下部：バーチャルパッド・アクションボタン・ホットバーの独立配置（重なり防止） */
   .v3tip{display:none}
-  .hotbar{bottom:8px;width:min(96%,390px);padding:3px;gap:4px;z-index:4}
-  .hb{min-height:44px;aspect-ratio:1}
+  .hotbar{bottom:6px;width:min(92%,310px);padding:3px;gap:4px;border-radius:10px;z-index:10}
+  .hb{height:42px;max-height:42px;aspect-ratio:1;border-radius:6px;flex:0 1 44px}
+  .hb .hn{font-size:9px;left:2px;top:1px}
+  .hb .hl{font-size:8px;right:2px;bottom:1px}
+
+  .v-pad-wrap{position:absolute;left:8px;bottom:70px;display:flex;align-items:flex-end;gap:6px;pointer-events:auto;z-index:15}
+  .v-pad{width:80px;height:80px}
+  .v-stick{width:32px;height:32px}
+  .v-elev-wrap{display:flex;flex-direction:column;gap:4px}
+  .v-elev-btn{width:28px;height:26px;border-radius:6px;font-size:10px}
+
+  .v-act-wrap{position:absolute;right:8px;bottom:70px;display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:auto;z-index:15}
+  .v-act-btn.act-place{min-width:66px;height:42px;padding:0 11px;font-size:13.5px;box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 60%,#000),0 4px 10px rgba(0,0,0,.3)}
+  .v-act-btn.act-break{min-width:58px;height:35px;padding:0 9px;font-size:11.5px;box-shadow:0 2px 0 color-mix(in srgb,var(--bad) 60%,#000),0 3px 8px rgba(0,0,0,.3)}
 
   .help-pop{
     top:38px;
@@ -523,11 +539,21 @@ body{padding-block:8px}
 @media (max-height:520px) and (orientation:landscape){
   body:has(.app.fit){overflow:hidden}
   .app.fit{height:100dvh;display:flex;flex-direction:column}
+  .lbl-sym-pc,.lbl-max-pc{display:none}
+  .lbl-sym-sp,.lbl-max-sp{display:inline}
+  .vbtn .vbtn-label{display:none}
   .edit-mode-seg{display:none!important}
   #bFP{display:inline-block}
   .fp-touch-ui.active{display:flex}
-  .v-pad-wrap{bottom:50px;left:8px}
-  .v-act-wrap{bottom:50px;right:8px}
+  .v-pad-wrap{bottom:46px;left:6px;gap:5px}
+  .v-pad{width:70px;height:70px}
+  .v-stick{width:26px;height:26px}
+  .v-elev-btn{width:26px;height:22px;font-size:9.5px;border-radius:5px}
+  .v-act-wrap{bottom:46px;right:6px;gap:5px}
+  .v-act-btn.act-place{min-width:58px;height:36px;font-size:12px;padding:0 9px}
+  .v-act-btn.act-break{min-width:52px;height:30px;font-size:10.5px;padding:0 7px}
+  .hotbar{bottom:4px;width:min(90%,340px);padding:2px;gap:2px}
+  .hb{min-height:32px}
   body{padding-block:4px}
   .top{margin-bottom:4px;padding-bottom:2px}
   .brand .logo{font-size:18px}
@@ -538,8 +564,18 @@ body{padding-block:8px}
   .g-right,.r-main{height:100%;min-height:0}
   .g-side,.r-side{height:100%;min-height:0;overflow-y:auto;margin-top:0}
   .g-right .v3wrap,.stage{flex:1 1 0;min-height:0;height:auto;aspect-ratio:auto}
-  .v3bar{max-width:calc(100% - 110px)}
-  .inspect.collapsed-mobile{max-width:105px}
+  .v3bar{max-width:calc(100% - 94px);gap:3px}
+  .v3bar .vbtn{padding:2px 5px;font-size:10.5px}
+
+  .inspect{position:absolute;top:6px;right:6px;left:auto;z-index:6;margin:0;cursor:pointer}
+  .inspect.collapsed-mobile{width:auto;max-width:86px;padding:2px 5px;border-radius:999px;background:color-mix(in srgb,var(--card) 94%,transparent);display:flex;align-items:center;cursor:pointer}
+  .inspect.collapsed-mobile .inspect-hdr{width:100%;gap:3px;cursor:pointer}
+  .inspect.collapsed-mobile .inspect-hdr h2{font-size:10.5px;gap:2px;letter-spacing:0;white-space:nowrap}
+  .inspect-tag{display:inline-block;font-size:9.5px;padding:1px 3px;border-radius:3px}
+  .inspect.collapsed-mobile .inspect-btn{display:none}
+  .inspect.collapsed-mobile .inspect-body{display:none}
+  .inspect:not(.collapsed-mobile){width:min(280px,85vw);max-height:calc(100% - 12px);overflow-y:auto;z-index:30}
+
   .v3tip,.stage-tip{display:none}
   .pop{bottom:46px;max-height:calc(100% - 52px)}
   .swatches{grid-template-columns:repeat(13,1fr)}
@@ -608,8 +644,8 @@ body{padding-block:8px}
               <button class="mode-pill act" id="bModePlace" data-m="place" aria-pressed="true">＋ 置く</button>
               <button class="mode-pill" id="bModeBreak" data-m="break" aria-pressed="false">✕ 壊す</button>
             </div>
-            <button class="vbtn" id="symBtn" aria-pressed="false" title="M キーでも切り替え">左右対称 OFF</button>
-            <button class="vbtn" id="bMax">大きく</button>
+            <button class="vbtn" id="symBtn" aria-pressed="false" title="M キーでも切り替え"><span class="lbl-sym-pc">左右対称 </span><span class="lbl-sym-sp">対称 </span><span id="symVal">OFF</span></button>
+            <button class="vbtn" id="bMax"><span class="lbl-max-pc">大きく</span><span class="lbl-max-sp">拡大</span></button>
             <button class="vbtn" id="bFP" aria-pressed="false">一人称</button>
             <button class="vbtn" id="bHelp" aria-label="操作説明" title="操作説明" aria-expanded="false">ℹ<span class="vbtn-label"> 操作説明</span></button>
           </div>
@@ -624,7 +660,7 @@ body{padding-block:8px}
               <ul class="checks" id="checks"></ul>
             </div>
           </div>
-          <div class="cross" id="cross"><div class="cross-dot"></div></div>
+          <div class="cross" id="cross"></div>
           <!-- 一人称操作UI（スマホ用バーチャルパッド＆アクションボタン） -->
           <div class="fp-touch-ui" id="fpTouchUi">
             <div class="v-pad-wrap" id="vPadWrap">
