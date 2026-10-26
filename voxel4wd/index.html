@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ボクセル四駆</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -191,6 +191,8 @@ kbd{font-family:var(--f-m);font-size:11px;border:1px solid var(--line2);border-b
 .advice ul{margin:4px 0 0;padding-left:1.2em}
 .toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:20;max-width:92vw;text-align:center}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+body.mob .toast{bottom:auto;top:max(52px,calc(env(safe-area-inset-top,0px) + 48px));transform:translate(-50%,-20px)}
+body.mob .toast.on{transform:translate(-50%,0)}
 
 @media (max-width:900px){
   .g-grid,.r-grid{grid-template-columns:minmax(0,1fr)}
@@ -599,6 +601,114 @@ body{padding-block:8px}
 .p2p-dot.wait{background:var(--warn);animation:pulse 1s infinite}
 .p2p-dot.ok{background:var(--good)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ---- v10: スマホ全画面レイアウト & タップ配置モード ---- */
+.mob-only{display:none}
+.lbl-sp{display:none}
+body.mob .mob-only{display:inline-flex;align-items:center;justify-content:center;gap:4px}
+body.mob .lbl-pc,body.mob .snd-l{display:none}
+body.mob .lbl-sp{display:inline}
+
+/* 操作方式スイッチ・タップ時の動作 */
+.method-sw,.tap-tgl{display:none}
+.act-btns{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.v3wrap:not(.is-fp) .v-pad-wrap,.v3wrap:not(.is-fp) .act-btns{display:none}
+body.mob .v3wrap.is-fp .method-sw{display:flex}
+body.mob .v3wrap.is-fp.tap-edit .act-btns{display:none}
+body.mob .v3wrap.is-fp.tap-edit .tap-tgl,body.mob .v3wrap:not(.is-fp) .tap-tgl{display:flex}
+.method-sw{background:rgba(20,32,51,.72);backdrop-filter:blur(4px);border:2px solid rgba(255,255,255,.45);border-radius:999px;padding:2px;gap:2px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.method-sw button{border:0;background:transparent;color:rgba(255,255,255,.75);font-weight:700;font-size:11.5px;padding:4px 9px;border-radius:999px;white-space:nowrap;touch-action:manipulation}
+.method-sw button[aria-pressed="true"]{background:#fff;color:var(--ink)}
+.tap-tgl{flex-direction:column;gap:6px;align-items:stretch;background:rgba(20,32,51,.6);backdrop-filter:blur(4px);border-radius:14px;padding:5px;border:2px solid rgba(255,255,255,.35);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.tap-cap{font-size:10px;font-weight:700;color:rgba(255,255,255,.8);text-align:center;line-height:1}
+.tap-opt{min-width:74px;height:40px;border-radius:10px;border:2px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-weight:900;font-size:14px;touch-action:manipulation;transition:transform .08s}
+.tap-opt:active{transform:scale(.94)}
+.tap-opt.place[aria-pressed="true"]{background:var(--accent);border-color:#fff;box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 60%,#000)}
+.tap-opt.break[aria-pressed="true"]{background:var(--bad);border-color:#fff;box-shadow:0 3px 0 color-mix(in srgb,var(--bad) 60%,#000)}
+.v3wrap.tap-edit.is-fp #v3{cursor:pointer}
+
+/* 1画面固定（スクロールなし） */
+body.mob{overflow:hidden!important;padding:max(4px,env(safe-area-inset-top,0px)) max(4px,env(safe-area-inset-right,0px)) max(4px,env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px));overscroll-behavior:none}
+body.mob .app.fit{height:calc(100vh - 8px);height:calc(100dvh - max(4px,env(safe-area-inset-top,0px)) - max(4px,env(safe-area-inset-bottom,0px)));min-height:0;display:flex;flex-direction:column}
+body.mob #garage,body.mob #race{flex:1 1 0;min-height:0;overflow:hidden}
+
+/* ヘッダー：1行に圧縮。サーキット中は隠して全画面 */
+body.mob .top{flex-wrap:nowrap;gap:6px;margin:0 0 4px;padding:0}
+body.mob .brand,body.mob .tabs{display:none}
+body.mob.in-race .top{display:none}
+body.mob #bSound{padding:4px 8px;font-size:14px;flex:none}
+body.mob .hdr-tools{flex:1 1 auto;min-width:0;width:auto;margin-left:0;flex-wrap:nowrap;gap:5px;justify-content:flex-start}
+body.mob .hdr-tools .btn.sm{padding:4px 8px;font-size:12.5px;white-space:nowrap}
+body.mob .goBox{margin-left:auto}
+body.mob #goHint{display:none}
+body.mob .goBox .btn.go{padding:6px 14px;font-size:14px;white-space:nowrap}
+body.mob .ddp{position:fixed;top:calc(max(4px,env(safe-area-inset-top,0px)) + 42px);left:6px;right:6px;width:auto;max-width:none;max-height:calc(100dvh - 60px);overflow-y:auto;z-index:100}
+
+/* ガレージ：3Dビューを画面いっぱいに */
+body.mob .g-fit{display:flex;flex-direction:column;height:100%;gap:0;min-height:0}
+body.mob .g-right{flex:1 1 0;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;border-radius:0;display:flex;flex-direction:column}
+body.mob .g-right .v3wrap{flex:1 1 0;height:auto;min-height:0;aspect-ratio:auto;border-radius:12px;border:2px solid var(--ink)}
+body.mob .g-right .v3wrap.max{border:0;border-radius:0;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+body.mob .v3btns{flex:none;flex-wrap:nowrap;justify-content:flex-start;overflow-x:auto;gap:5px;margin-top:4px;padding:0 1px 1px;scrollbar-width:none}
+body.mob .v3btns::-webkit-scrollbar{display:none}
+body.mob .v3btns .sp{display:block;flex:0 0 2px;width:2px;height:22px;align-self:center;background:var(--line2);margin:0 2px}
+body.mob .v3btns .chip{min-height:32px;padding:4px 10px;font-size:12px;white-space:nowrap;flex:none}
+
+/* 風洞データ：下から出るシート */
+body.mob .g-side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;max-height:72%;overflow-y:auto;z-index:70;margin:0;
+  background:var(--bg);border-top:2px solid var(--ink);border-radius:16px 16px 0 0;padding:10px 10px max(12px,env(safe-area-inset-bottom,0px));
+  box-shadow:0 -12px 30px rgba(0,0,0,.35);transform:translateY(105%);transition:transform .25s ease;visibility:hidden}
+body.mob.aero-open .g-side{transform:none;visibility:visible}
+
+/* サーキット：コースを画面いっぱいに */
+body.mob .r-grid{display:flex;flex-direction:column;height:100%;gap:0;min-height:0}
+body.mob .r-main{flex:1 1 0;height:100%;min-height:0;gap:4px}
+body.mob .stage{flex:1 1 0;height:auto;min-height:0;aspect-ratio:auto;border-radius:12px}
+body.mob .live{flex:none;padding:5px 9px;gap:8px;border-radius:12px}
+body.mob .live .lv .n{font-size:14px}
+body.mob .camb{top:7px;right:7px;gap:4px;max-width:calc(100% - 130px)}
+body.mob .camb button{padding:4px 9px;font-size:11.5px}
+body.mob #bStartFloat{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);width:auto;padding:12px 30px;font-size:17px;z-index:5;white-space:nowrap}
+body.mob #bStartFloat.wait{background:var(--line2);border-color:var(--line2);color:var(--ink2);box-shadow:none;font-size:14px}
+body.mob #bStartFloat:active{transform:translateX(-50%) translateY(3px)}
+body.mob .r-side{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;max-height:78%;overflow-y:auto;z-index:80;margin:0;display:flex;flex-direction:column;gap:10px;
+  background:var(--bg);border-top:2px solid var(--ink);border-radius:16px 16px 0 0;padding:10px 10px max(12px,env(safe-area-inset-bottom,0px));
+  box-shadow:0 -12px 30px rgba(0,0,0,.35);transform:translateY(105%);transition:transform .25s ease;visibility:hidden}
+body.mob #race.sheet-open .r-side{transform:none;visibility:visible}
+body.mob .r-side .panel{flex:none;height:auto;overflow:visible}
+.sheet-head{order:-5;gap:8px;position:sticky;top:-10px;z-index:2;background:var(--bg);padding:2px 0 6px;margin-top:-2px}
+body.mob .sheet-head{display:flex}
+.sheet-head b{font-family:var(--f-d);font-weight:400;font-size:16px}
+body.mob .res-overlay{position:fixed;inset:0;z-index:100}
+body.mob .mini-wrap{top:7px;left:7px;width:min(130px,30%);gap:3px}
+body.mob .mini-lap{font-size:11px;padding:2px 6px}
+body.mob #itemPanel{order:-1;flex:none;height:auto;overflow:visible}
+body.mob #p2pPanel{order:1}
+body.mob .stage-tip{display:none}
+
+/* スマホ横向き：シートは右から出るパネルに */
+@media (orientation:landscape){
+  body.mob .g-side,body.mob .r-side{left:auto;top:0;bottom:0;width:min(400px,52%);max-height:none;border-top:0;border-left:2px solid var(--ink);border-radius:16px 0 0 16px;transform:translateX(105%)}
+  body.mob .v3btns .chip{min-height:28px;padding:2px 9px}
+}
+
+/* ---- v11: 操作方法スイッチ & 誤選択・誤ズーム防止 ---- */
+body.mob #bFP{display:none!important}
+body.mob .method-sw{display:none!important}
+.ctl-sw{background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:2px;gap:2px}
+.ctl-sw button{border:0;background:transparent;color:var(--ink);font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;white-space:nowrap;touch-action:manipulation}
+.ctl-sw button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+body.mob .ctl-sw button{font-size:11.5px;padding:3px 8px}
+@media (max-width:430px){
+  body.mob .v3bar .vbtn,body.mob #symBtn,body.mob #bMax,body.mob #bHelp{padding:3px 8px;font-size:11.5px}
+  body.mob .ctl-sw button{padding:3px 6px;font-size:11px}
+}
+@media (max-width:400px){ body.mob #inspect{top:44px!important} }
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.mob,body.mob *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+body.mob input,body.mob textarea,body.mob select{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font-size:16px!important}
+body.mob button,body.mob .chip,body.mob .vbtn,body.mob [role="button"]{touch-action:manipulation}
+body.mob canvas{touch-action:none}
 </style>
 </head>
 <body>
@@ -612,11 +722,11 @@ body{padding-block:8px}
       <button class="tab" role="tab" id="tabG" aria-selected="true">ガレージ</button>
       <button class="tab" role="tab" id="tabR" aria-selected="false">サーキット</button>
     </nav>
-    <button class="btn sm" id="bSound" aria-pressed="true" title="効果音のON/OFF">🔊 音 ON</button>
+    <button class="btn sm snd-btn" id="bSound" aria-pressed="true" title="効果音のON/OFF">🔊<span class="snd-l"> 音 ON</span></button>
     <div class="hdr-tools" id="hdrTools">
-      <div class="dd"><button class="btn sm" id="ddPreB" aria-expanded="false">サンプル ▾</button>
+      <div class="dd"><button class="btn sm" id="ddPreB" aria-expanded="false"><span class="lbl-pc">サンプル</span><span class="lbl-sp">見本</span> ▾</button>
         <div class="ddp panel" id="ddPre" hidden><h2>サンプルを読み込む</h2><div class="chips" id="presets"></div><p class="small" id="presetNote" style="margin:8px 0 0"></p></div></div>
-      <div class="dd"><button class="btn sm" id="ddSlotB" aria-expanded="false">マイガレージ ▾</button>
+      <div class="dd"><button class="btn sm" id="ddSlotB" aria-expanded="false"><span class="lbl-pc">マイガレージ</span><span class="lbl-sp">保存</span> ▾</button>
         <div class="ddp panel wide" id="ddSlot" hidden>
           <h2>マイガレージ（このブラウザに保存）</h2>
           <div class="saveRow"><input type="text" id="carName" maxlength="24" placeholder="機体の名前" aria-label="機体の名前"><button class="btn sm go" id="bSaveCar">名前をつけて保存</button></div>
@@ -631,6 +741,8 @@ body{padding-block:8px}
             </div>
           </div>
         </div></div>
+      <button class="btn sm mob-only" id="bAero" aria-expanded="false" title="風洞データ">📊 風洞</button>
+      <button class="btn sm mob-only" id="bFull" title="全画面表示" aria-label="全画面表示" hidden>⛶</button>
       <div class="goBox"><span class="small" id="goHint"></span><button class="btn go" id="goRace">レースへ</button></div>
     </div>
   </header>
@@ -647,6 +759,10 @@ body{padding-block:8px}
             <button class="vbtn" id="symBtn" aria-pressed="false" title="M キーでも切り替え"><span class="lbl-sym-pc">左右対称 </span><span class="lbl-sym-sp">対称 </span><span id="symVal">OFF</span></button>
             <button class="vbtn" id="bMax"><span class="lbl-max-pc">大きく</span><span class="lbl-max-sp">拡大</span></button>
             <button class="vbtn" id="bFP" aria-pressed="false">一人称</button>
+            <div class="ctl-sw mob-only" role="radiogroup" aria-label="操作方法">
+              <button id="bCtlPad" aria-pressed="true">🎮 パッド</button>
+              <button id="bCtlTouch" aria-pressed="false">👆 タッチ</button>
+            </div>
             <button class="vbtn" id="bHelp" aria-label="操作説明" title="操作説明" aria-expanded="false">ℹ<span class="vbtn-label"> 操作説明</span></button>
           </div>
           <div class="inspect collapsed-mobile" id="inspect" aria-label="車検">
@@ -678,8 +794,19 @@ body{padding-block:8px}
             </div>
 
             <div class="v-act-wrap" id="vActWrap">
-              <button class="v-act-btn act-break" id="bActBreak" aria-label="壊す">✕ 壊す</button>
-              <button class="v-act-btn act-place" id="bActPlace" aria-label="置く">＋ 置く</button>
+              <div class="method-sw" role="radiogroup" aria-label="置く・壊すの操作方式">
+                <button id="bMethBtn" aria-pressed="true">🎯 ボタン</button>
+                <button id="bMethTap" aria-pressed="false">👆 タップ</button>
+              </div>
+              <div class="act-btns">
+                <button class="v-act-btn act-break" id="bActBreak" aria-label="壊す">✕ 壊す</button>
+                <button class="v-act-btn act-place" id="bActPlace" aria-label="置く">＋ 置く</button>
+              </div>
+              <div class="tap-tgl" role="radiogroup" aria-label="タップしたときの動作">
+                <span class="tap-cap">タップで</span>
+                <button class="tap-opt place" id="bTapPlace" aria-pressed="true">＋ 置く</button>
+                <button class="tap-opt break" id="bTapBreak" aria-pressed="false">✕ 壊す</button>
+              </div>
             </div>
           </div>
           <div class="v3tip" id="v3tip" style="display:none;" aria-hidden="true"></div>
@@ -692,11 +819,11 @@ body{padding-block:8px}
             <div class="help-section help-mobile-only">
               <div class="help-sec-title">📱 スマホでの操作方法</div>
               <ul class="help-list">
-                <li><b>移動:</b> 左下のパッド（▲▼◀▶）で移動、▲/▼ボタンで上昇/下降</li>
-                <li><b>視点:</b> 画面右側を指でドラッグして見回す</li>
-                <li><b>置く・壊す:</b> 中央の十字をブロックに合わせて「＋ 置く」「✕ 壊す」をタップ</li>
+                <li><b>操作方法の切り替え:</b> 左上の「🎮 パッド」「👆 タッチ」で切り替え</li>
+                <li><b>🎮 パッド操作:</b> 左下のパッドで移動、▲/▼で上昇/下降、画面をドラッグして見回し。中央の十字をブロックに合わせて「＋ 置く」「✕ 壊す」をタップ</li>
+                <li><b>👆 タッチ操作:</b> 画面をタップした場所に置く／壊す（右下の「＋ 置く」「✕ 壊す」で切り替え）。1本指ドラッグで機体回転、2本指ピンチで拡大縮小</li>
                 <li><b>ブロック選択:</b> 画面下の枠をタップ（色・向きの変更も可能）</li>
-                <li><b>全体視点時:</b> 1本指ドラッグで機体回転、2本指ピンチで拡大縮小</li>
+                <li><b>画面:</b> 上の「📊 風洞」でデータ表示、「拡大」で編集画面だけの全画面表示</li>
               </ul>
             </div>
             <!-- PCレイアウト用説明（スマホでは完全非表示） -->
@@ -726,7 +853,7 @@ body{padding-block:8px}
       </div>
       <div class="g-side">
         <div class="panel slim">
-          <h2>風洞データ（秒速4m）<span class="legend2"><b style="background:var(--accent)"></b>抵抗 <b style="background:var(--cool)"></b>下向き <b style="background:var(--bad)"></b>浮く</span></h2>
+          <h2>風洞データ（秒速4m）<button class="vbtn mob-only" id="bAeroClose" aria-label="閉じる" style="order:9">✕ 閉じる</button><span class="legend2"><b style="background:var(--accent)"></b>抵抗 <b style="background:var(--cool)"></b>下向き <b style="background:var(--bad)"></b>浮く</span></h2>
           <div class="gauges" id="gauges"></div>
         </div>
       </div>
@@ -740,7 +867,7 @@ body{padding-block:8px}
           <canvas id="rc" aria-label="3Dコース"></canvas>
           <div class="cd" id="cd"></div>
           <div class="camb" id="camb">
-            <button data-c="chase" aria-pressed="false">追従</button><button data-c="over" aria-pressed="true">全体</button>
+            <button class="mob-only" id="bRaceBack" title="ガレージへ戻る">◀ ガレージ</button><button data-c="chase" aria-pressed="false">追従</button><button data-c="over" aria-pressed="true">全体</button><button class="mob-only" id="bRaceSheet" aria-expanded="false" title="レース設定">⚙ 設定</button>
           </div>
           <div class="aimBanner" id="aimBanner" hidden></div>
           <div class="mini-wrap">
@@ -748,6 +875,7 @@ body{padding-block:8px}
             <div class="mini-lap" id="miniLap"><span>周回</span><span id="miniLapTxt">1 / 4 周目</span></div>
           </div>
           <button class="btn go" id="bItem" disabled hidden>おじゃま発動！</button>
+          <button class="btn go mob-only" id="bStartFloat" hidden>レース開始！</button>
           <div class="stage-tip">ドラッグでカメラを回す ・ ホイールでズーム</div>
           <div class="res-overlay" id="results" hidden>
             <div class="panel results">
@@ -770,7 +898,8 @@ body{padding-block:8px}
           <div class="lv"><span class="t">接地の強さ</span><span class="n" id="lvG">1.00G</span><span class="bar"><i id="lvGb"></i></span></div>
         </div>
       </div>
-      <div class="r-side">
+      <div class="r-side" id="rSide">
+        <div class="sheet-head mob-only"><b>レース設定</b><span class="sp"></span><button class="vbtn snd-btn" id="bRaceSnd" aria-pressed="true">🔊</button><button class="vbtn" id="bRaceSheetClose">▼ 閉じる</button></div>
         <div class="panel" id="p2pPanel">
           <h2 class="ih">対戦相手・モード選択</h2>
           <div class="mode-tabs" id="modeSeg" role="radiogroup" aria-label="対戦モード">

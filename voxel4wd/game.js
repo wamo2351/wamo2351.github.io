@@ -713,8 +713,7 @@ const SFX = (() => {
       enabled = !!v;
       try { localStorage.setItem('te4wd.sfx', enabled ? '1' : '0'); } catch (_) {}
       if (!enabled) stopMotor();
-      const b = $('bSound');
-      if (b) { b.setAttribute('aria-pressed', String(enabled)); b.textContent = enabled ? '🔊 音 ON' : '🔇 音 OFF'; }
+      syncSndBtns();
       if (enabled) this.click();
     },
     click() { tone('triangle', 620, 880, 0.04, 0.07); },
@@ -796,11 +795,14 @@ const SFX = (() => {
     stopMotor
   };
 })();
-if ($('bSound')) {
-  $('bSound').setAttribute('aria-pressed', String(SFX.on));
-  $('bSound').textContent = SFX.on ? '🔊 音 ON' : '🔇 音 OFF';
-  $('bSound').onclick = () => SFX.setOn(!SFX.on);
+function syncSndBtns() {
+  document.querySelectorAll('.snd-btn').forEach(b => {
+    b.setAttribute('aria-pressed', String(SFX.on));
+    b.innerHTML = b.id === 'bSound' ? (SFX.on ? '🔊<span class="snd-l"> 音 ON</span>' : '🔇<span class="snd-l"> 音 OFF</span>') : (SFX.on ? '🔊' : '🔇');
+    b.onclick = () => SFX.setOn(!SFX.on);
+  });
 }
+syncSndBtns();
 function fitCanvas(cv, w, h) {
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   cv.style.width = w + 'px'; cv.style.height = h + 'px';
@@ -1111,10 +1113,33 @@ document.addEventListener('keydown', e => {
 });
 
 /* ===== 3Dビュー ===== */
-const V = { ok: false, theta: 0.75, phi: 1.0, dist: 62, target: null, car: null, arrows: null, ghost: null, plane: null, cg: null, pend: null, ptrs: new Map(), moved: false, pinch0: 0, down: null, keys: new Set(), joy: { x: 0, y: 0, my: 0 }, tap: 'place', touchMode: 'place', hit: null, fill: null, lastE: null, hold: null, aim: null, fp: false, max: false, pos: null, yaw: 0, pitch: 0, locked: false, noLock: false };
+const V = { ok: false, theta: 0.75, phi: 1.0, dist: 62, target: null, car: null, arrows: null, ghost: null, plane: null, cg: null, pend: null, ptrs: new Map(), moved: false, pinch0: 0, down: null, keys: new Set(), joy: { x: 0, y: 0, my: 0 }, tap: 'place', touchMode: 'place', hit: null, fill: null, lastE: null, hold: null, aim: null, fp: false, max: false, tapEdit: false, pos: null, yaw: 0, pitch: 0, locked: false, noLock: false };
 const cv3 = $('v3');
 vReady = true;
 
+V.tapEdit = false; // スマホは「パッド操作／タッチ操作」の切り替えに統一
+const tapOn = () => V.fp && V.tapEdit && document.body.classList.contains('mob');
+function hideAimFx() { if (!V.ok) return; V.hit.visible = V.hit2.visible = V.fill.visible = V.fill2.visible = V.ghost.visible = V.ghost2.visible = false; }
+function updTouchUi() {
+  const mob = document.body.classList.contains('mob');
+  const ui = $('fpTouchUi'); if (ui) ui.classList.toggle('active', V.fp || mob);
+  const w = $('v3wrap'); if (w) { w.classList.toggle('is-fp', !!V.fp); w.classList.toggle('tap-edit', !!V.tapEdit); }
+  const cr = $('cross'); if (cr) cr.style.display = V.fp && !tapOn() ? 'block' : 'none';
+  if ($('bCtlPad')) { $('bCtlPad').setAttribute('aria-pressed', String(!!V.fp)); $('bCtlTouch').setAttribute('aria-pressed', String(!V.fp)); }
+  const mb = $('bMethBtn'), mt = $('bMethTap');
+  if (mb) mb.setAttribute('aria-pressed', String(!V.tapEdit));
+  if (mt) mt.setAttribute('aria-pressed', String(!!V.tapEdit));
+  const tp = $('bTapPlace'), tb = $('bTapBreak');
+  if (tp) tp.setAttribute('aria-pressed', String(V.touchMode !== 'break'));
+  if (tb) tb.setAttribute('aria-pressed', String(V.touchMode === 'break'));
+}
+function setTapEdit(on) {
+  if (V.tapEdit === on) return;
+  V.tapEdit = on;
+  try { localStorage.setItem('te4wd.tapEdit', on ? '1' : '0'); } catch (_) {}
+  hideAimFx(); updTouchUi(); SFX.click();
+  toast(on ? 'タップ操作：画面をタップした場所に置く／壊す（ドラッグで見回し）' : 'ボタン操作：中央の十字に合わせてボタンで置く／壊す');
+}
 function setTouchMode(m) {
   V.touchMode = m;
   const p = $('bModePlace'), b = $('bModeBreak');
@@ -1123,12 +1148,18 @@ function setTouchMode(m) {
     b.classList.toggle('act', m === 'break'); b.setAttribute('aria-pressed', String(m === 'break'));
   }
   if (V.ok && V.lastE) showAim(V.lastE);
-  if (m === 'break') toast('「壊す」モード：タップしたブロックを削除します');
-  else toast('「置く」モード：タップした場所にブロックを配置します');
+  updTouchUi(); SFX.click();
+  if (m === 'break') toast('「壊す」：タップしたブロックを削除します');
+  else toast('「置く」：タップした場所にブロックを置きます');
   updTip();
 }
 if ($('bModePlace')) $('bModePlace').onclick = () => setTouchMode('place');
 if ($('bModeBreak')) $('bModeBreak').onclick = () => setTouchMode('break');
+const tapBtn = (id, fn) => { const b = $(id); if (!b) return; b.addEventListener('pointerdown', e => e.stopPropagation()); b.onclick = e => { e.stopPropagation(); fn(); }; };
+tapBtn('bMethBtn', () => setTapEdit(false));
+tapBtn('bMethTap', () => setTapEdit(true));
+tapBtn('bTapPlace', () => { if (V.touchMode !== 'place') setTouchMode('place'); });
+tapBtn('bTapBreak', () => { if (V.touchMode !== 'break') setTouchMode('break'); });
 
 function init3d() {
   if (!HAS3) return fail3d('3D表示ライブラリを読み込めませんでした。');
@@ -1185,7 +1216,9 @@ function placeCam() {
     return;
   }
   const sp = Math.sin(V.phi);
-  V.cam.position.set(V.target.x + V.dist * sp * Math.cos(V.theta), V.target.y + V.dist * Math.cos(V.phi), V.target.z + V.dist * sp * Math.sin(V.theta));
+  // 縦長画面では横方向の視野が狭いので、その分カメラを引く
+  const dist = V.dist * (V.cam.aspect < 0.9 ? clamp(0.85 / V.cam.aspect, 1, 1.8) : 1);
+  V.cam.position.set(V.target.x + dist * sp * Math.cos(V.theta), V.target.y + dist * Math.cos(V.phi), V.target.z + dist * sp * Math.sin(V.theta));
   V.cam.lookAt(V.target);
 }
 const CAMS = { iso: [0.75, 1.0, 62], side: [Math.PI / 2, Math.PI / 2, 66], top: [Math.PI / 2, 0.02, 74], front: [0, Math.PI / 2, 60], rear: [Math.PI, Math.PI / 2, 60] };
@@ -1247,10 +1280,10 @@ function voxelRay(o, d) {
   }
   return null;
 }
-function rayAt(e) {
+function rayAt(e, useTap) {
   const r = cv3.getBoundingClientRect();
   let nx = 0, ny = 0;
-  if (V.fp) {
+  if (V.fp && !useTap) {
     const crossEl = $('cross');
     if (crossEl) {
       const cr = crossEl.getBoundingClientRect();
@@ -1307,12 +1340,13 @@ function rayAt(e) {
   return voxelRay(rc.ray.origin, rc.ray.direction);
 }
 const REACH = 28;
-function aim(e) {
-  const h = rayAt(e); if (!h) return null;
+function aim(e, useTap) {
+  const h = rayAt(e, useTap); if (!h) return null;
   const hk = idx(...h.hit), p = h.prev;
   if (V.fp) {
     const cp = V.cam.position, dx = (h.hit[0] + 0.5) * BS - cp.x, dy = (h.hit[1] + 0.5) * BS - cp.y, dz = (h.hit[2] + 0.5) * BS - cp.z;
-    if (dx * dx + dy * dy + dz * dz > REACH * REACH) return null;
+    const reach = useTap ? REACH * 2.2 : REACH;
+    if (dx * dx + dy * dy + dz * dz > reach * reach) return null;
   }
   const lk = T.LOCK[hk];
   const sup = S.g[hk] > 0 || lk === T.L_CHASSIS || lk === T.L_AXLE;
@@ -1353,8 +1387,8 @@ function computePlan(a, code) {
   return items;
 }
 function pruneFloating() { const f = T.floaters(S.g, S.s); for (const k of f) { S.g[k] = 0; S.c[k] = 0; S.s[k] = 0; } return f.length; }
-function showAim(e) {
-  const a = V.ok && (V.fp || e) ? aim(e) : null; V.aim = a;
+function showAim(e, useTap) {
+  const a = V.ok && (V.fp || e) ? aim(e, useTap) : null; V.aim = a;
   const isBreak = V.touchMode === 'break';
   const ctr = (m, c) => { m.visible = !!c; if (c) m.position.set((c[0] + 0.5) * BS, (c[1] + 0.5) * BS, (c[2] + 0.5) * BS); };
   const org = (m, c, code) => { m.visible = !!c; if (c) { m.position.set(c[0] * BS, c[1] * BS, c[2] * BS); const g = shapeGeo(code); if (m.userData.code !== code) { m.userData.code = code; m.geometry = m.isLineSegments ? g.edge : g.fill; } } };
@@ -1467,13 +1501,13 @@ function toggleFP(on) {
   if (!V.ok || V.fp === on) return;
   V.fp = on; V.keys.clear(); stopHold();
   V.cam.fov = on ? 75 : 40; V.cam.near = on ? 0.1 : 0.5; V.cam.updateProjectionMatrix();
-  $('cross').style.display = on ? 'block' : 'none';
-  const fpUi = $('fpTouchUi'); if (fpUi) fpUi.classList.toggle('active', on);
+  updTouchUi();
   $('bFP').textContent = on ? '全体視点' : '一人称'; $('bFP').setAttribute('aria-pressed', String(on));
   if (on) {
     if (!V.pos) {
-      const o = new THREE.Vector3().subVectors(V.cam.position, V.target);
-      o.setLength(Math.min(o.length(), 16));
+      const sp0 = Math.sin(V.phi), o = new THREE.Vector3(sp0 * Math.cos(V.theta), Math.cos(V.phi), sp0 * Math.sin(V.theta));
+      const portrait = cv3.clientHeight > cv3.clientWidth * 1.15;
+      o.setLength(isMobileScreen() ? (portrait ? 40 : 26) : 16);
       V.pos = V.target.clone().add(o);
     }
     if (V.pos.y < 4.0) V.pos.y = 8;
@@ -1610,7 +1644,16 @@ function initVirtualPad() {
   setupRepeat($('bActBreak'), doBreakFP);
 }
 $('bFP').onclick = () => toggleFP(!V.fp);
-$('bMax').onclick = () => { if (V.fp) toggleFP(false); else toggleMax(!V.max); };
+function prefPad() { try { return localStorage.getItem('te4wd.ctl') !== 'touch'; } catch (_) { return true; } }
+function setCtl(pad) {
+  try { localStorage.setItem('te4wd.ctl', pad ? 'pad' : 'touch'); } catch (_) {}
+  if (V.fp === pad) return;
+  SFX.click(); toggleFP(pad);
+  toast(pad ? '🎮 パッド操作：パッドで移動、十字に合わせてボタンで置く／壊す' : '👆 タッチ操作：タップした場所に置く／壊す（ドラッグで回転・ピンチで拡大）');
+}
+if ($('bCtlPad')) $('bCtlPad').onclick = () => setCtl(true);
+if ($('bCtlTouch')) $('bCtlTouch').onclick = () => setCtl(false);
+$('bMax').onclick = () => { if (V.fp && !isMobileScreen()) toggleFP(false); else { toggleMax(!V.max); setTimeout(layout3d, 50); } };
 
 cv3.addEventListener('contextmenu', e => e.preventDefault());
 cv3.addEventListener('auxclick', e => e.preventDefault());
@@ -1621,7 +1664,9 @@ cv3.addEventListener('pointerdown', e => {
   V.ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); V.lastE = e;
   V.down = { x: e.clientX, y: e.clientY, b: e.button, touch: e.pointerType !== 'mouse', rep: false }; V.moved = false;
   if (V.ptrs.size === 2) { const [a, b] = [...V.ptrs.values()]; V.pinch0 = Math.hypot(a.x - b.x, a.y - b.y); V.moved = true; stopHold(); return; }
-  const down = V.down, kind = actionFor(V.down); if (!V.fp && (kind === 'break' || down.touch)) startHold('break');
+  const kind = actionFor(V.down);
+  if (!V.fp && kind === 'break') startHold('break');
+  else if (V.down.touch && tapOn()) showAim(e, true);
 });
 cv3.addEventListener('pointermove', e => {
   V.lastE = e;
@@ -1630,7 +1675,10 @@ cv3.addEventListener('pointermove', e => {
   if (p) {
     const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
     if (V.fp) {
-      V.moved = true;
+      if (V.ptrs.size > 1 || (V.down && Math.hypot(e.clientX - V.down.x, e.clientY - V.down.y) > (V.down.touch ? 12 : 5))) {
+        if (!V.moved && tapOn()) hideAimFx();
+        V.moved = true;
+      }
       lookBy(dx * 1.6, dy * 1.6);
       return;
     }
@@ -1651,11 +1699,18 @@ function up3d(e) {
   V.down = null;
   const repeated = d.rep; stopHold();
   if (repeated || V.moved) return;
-  if (V.fp && d.touch) return;
+  const useTap = V.fp && d.touch && tapOn();
+  if (V.fp && d.touch && !useTap) return;
+  if (useTap) {
+    const a = aim(e, true);
+    if (!a || (V.touchMode === 'break' ? !a.mine : !a.sup)) { SFX.error(); toast(V.touchMode === 'break' ? '壊せるブロックがありません（自分で置いたブロックをタップしてね）' : '置く場所がありません（車体のブロックをタップしてね）'); }
+    else { commit3d(actionFor(d), a); if (S.dirty3) rebuild3d(); }
+    hideAimFx(); return;
+  }
   commit3d(actionFor(d), aim(V.fp ? null : e)); showAim(V.fp ? null : e);
 }
 cv3.addEventListener('pointerup', up3d);
-cv3.addEventListener('pointercancel', e => { V.ptrs.delete(e.pointerId); V.down = null; stopHold(); });
+cv3.addEventListener('pointercancel', e => { V.ptrs.delete(e.pointerId); V.down = null; stopHold(); if (tapOn()) hideAimFx(); });
 cv3.addEventListener('pointerleave', () => { if (!V.ptrs.size && !V.fp) V.hit.visible = V.hit2.visible = V.fill.visible = V.fill2.visible = V.ghost.visible = V.ghost2.visible = false; });
 cv3.addEventListener('wheel', e => {
   e.preventDefault();
@@ -1903,7 +1958,7 @@ function loopEd(ts) {
   if (V.fp) moveFP(dt); else moveCam(dt);
   if (V.ok) {
     if (S.dirty3) rebuild3d();
-    updPlane(); placeCam(); if (V.fp) showAim(null); V.r.render(V.scene, V.cam);
+    updPlane(); placeCam(); if (V.fp && !tapOn()) showAim(null); V.r.render(V.scene, V.cam);
   }
 }
 
@@ -2214,6 +2269,15 @@ $('bP2pRand').onclick = joinRandomMatch;
 $('bP2pLeave').onclick = () => disconnectP2P();
 
 function updStartBtn() {
+  updStartBtnMain();
+  const f = $('bStartFloat'), m = $('bStart');
+  if (f && m) {
+    const sheetOpen = $('race').classList.contains('sheet-open');
+    f.hidden = sheetOpen || R.phase === 'run' || !$('results').hidden;
+    f.textContent = m.textContent; f.classList.toggle('wait', m.classList.contains('wait'));
+  }
+}
+function updStartBtnMain() {
   const b = $('bStart');
   if (R.raceMode === 'cpu') {
     b.disabled = false;
@@ -2248,9 +2312,20 @@ function beginOnlineRace() {
   resetItem();
   R.phase = 'run'; R.t = -3; R.shown = false; R.last = 0; R.done = false;
   $('results').hidden = true;
-  updStartBtn(); updItemUi();
+  setRaceSheet(false); updItemUi();
   toast('1対1 オンラインレース スタート！');
 }
+
+/* ---- スマホ：レース設定シート ---- */
+function setRaceSheet(open) {
+  const el = $('race'); el.classList.toggle('sheet-open', !!open);
+  const b = $('bRaceSheet'); if (b) b.setAttribute('aria-expanded', String(!!open));
+  updStartBtn();
+}
+if ($('bRaceSheet')) $('bRaceSheet').onclick = () => { SFX.click(); setRaceSheet(!$('race').classList.contains('sheet-open')); };
+if ($('bRaceSheetClose')) $('bRaceSheetClose').onclick = () => { SFX.click(); setRaceSheet(false); };
+if ($('bRaceBack')) $('bRaceBack').onclick = () => showTab('g');
+if ($('bStartFloat')) $('bStartFloat').onclick = () => startRace();
 
 /* ---- シーン ---- */
 const rc = $('rc');
@@ -2448,8 +2523,9 @@ function updCamera(dt, snapNow) {
       R.camLook.lerp(look, k);
     }
   } else {
-    const c = new THREE.Vector3(2.2, 0, -1.45), ph = Math.PI / 2 + R.az, el = 0.95 + (R.el - 0.36);
-    const d = R.dist * 11;
+    const portrait = R.cam.aspect < 0.85;
+    const c = new THREE.Vector3(2.2, 0, -1.45), ph = (portrait ? 0 : Math.PI / 2) + R.az, el = (portrait ? 0.5 : 0.95) + (R.el - 0.36);
+    const d = R.dist * 11 * (portrait ? clamp(1.0 / R.cam.aspect, 1.2, 2.3) : 1);
     pos = new THREE.Vector3(c.x + Math.cos(ph) * d * Math.sin(el), c.y + d * Math.cos(el), c.z + Math.sin(ph) * d * Math.sin(el)); look = c;
     const k = snapNow ? 1 : Math.min(1, dt * 4);
     R.camPos.lerp(pos, k); R.camLook.lerp(look, k);
@@ -2457,9 +2533,9 @@ function updCamera(dt, snapNow) {
   R.cam.position.copy(R.camPos); R.cam.lookAt(R.camLook);
   if (R.cam.fov !== 55) { R.cam.fov = 55; R.cam.updateProjectionMatrix(); }
 }
-document.querySelectorAll('#camb button').forEach(b => b.onclick = () => {
+document.querySelectorAll('#camb button[data-c]').forEach(b => b.onclick = () => {
   R.mode = b.dataset.c; R.az = 0; R.el = 0.36; R.dist = 0.36; R.snap = true;
-  document.querySelectorAll('#camb button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  document.querySelectorAll('#camb button[data-c]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
 });
 rc.addEventListener('pointerdown', e => {
   try { rc.setPointerCapture(e.pointerId); } catch (_) {}
@@ -2599,12 +2675,12 @@ function showResults() {
   $('advice').innerHTML = adviceHTML(me, myRank) + itemReportHTML(); $('results').hidden = false;
   updStartBtn();
 }
-if ($('resClose')) $('resClose').onclick = () => { $('results').hidden = true; };
+if ($('resClose')) $('resClose').onclick = () => { $('results').hidden = true; updStartBtn(); };
 if ($('bResRestart')) $('bResRestart').onclick = () => { $('results').hidden = true; startRace(); };
 if ($('bResGarage')) $('bResGarage').onclick = () => { $('results').hidden = true; showTab('g'); };
 if ($('results')) {
   $('results').onclick = e => {
-    if (e.target === $('results')) $('results').hidden = true;
+    if (e.target === $('results')) { $('results').hidden = true; updStartBtn(); }
   };
 }
 
@@ -2663,9 +2739,10 @@ function startRace() {
       const maxT = Math.max(2.5, Math.min(R.endAt * 0.65, 7.0));
       R.cpuPlan = { kind, fireAt: 1.0 + Math.random() * (maxT - 1.0), fired: false };
     }
-    $('results').hidden = true; updStartBtn(); updItemUi();
+    $('results').hidden = true; setRaceSheet(false); updItemUi();
   } else {
     if (!NET.connected || !NET.oppCar) {
+      setRaceSheet(true);
       toast('対戦相手とマッチングするまでお待ちください（合言葉を入れて接続、またはランダム対戦）');
       return;
     }
@@ -2922,19 +2999,56 @@ function showTab(which) {
   const g = which === 'g';
   $('garage').hidden = !g; $('race').hidden = g;
   $('app').classList.add('fit'); $('hdrTools').hidden = !g;
+  document.body.classList.toggle('in-race', !g); setAero(false);
   $('tabG').setAttribute('aria-selected', String(g)); $('tabR').setAttribute('aria-selected', String(!g));
   if (g) {
     layout3d(); markDirty();
-    if (isMobileScreen() && !V.fp) toggleFP(true);
+    if (isMobileScreen()) toggleFP(prefPad());
   } else {
     enterRace();
+    if (document.body.classList.contains('mob')) setRaceSheet(true);
   }
   window.scrollTo({ top: 0 });
 }
 $('tabG').onclick = () => showTab('g');
 $('tabR').onclick = () => { if (S.an.rules.ok) showTab('r'); else notifyRuleNg(); };
 $('goRace').onclick = () => { if (S.an.rules.ok) showTab('r'); else notifyRuleNg(); };
-function onResize() { if (!$('garage').hidden) { layout3d(); } else { layoutRace(); } }
+function applyMob() {
+  const mob = isMobileScreen(), was = document.body.classList.contains('mob');
+  document.body.classList.toggle('mob', mob);
+  if (was !== mob) { if (!mob) { setAero(false); $('race').classList.remove('sheet-open'); } updTouchUi(); updStartBtn(); updItemUi(); }
+}
+function onResize() { applyMob(); if (!$('garage').hidden) { layout3d(); } else { layoutRace(); } }
+/* 風洞データ（スマホではシート表示） */
+function setAero(open) {
+  document.body.classList.toggle('aero-open', !!open);
+  const b = $('bAero'); if (b) b.setAttribute('aria-expanded', String(!!open));
+}
+if ($('bAero')) $('bAero').onclick = e => { e.stopPropagation(); SFX.click(); setAero(!document.body.classList.contains('aero-open')); };
+if ($('bAeroClose')) $('bAeroClose').onclick = () => setAero(false);
+document.addEventListener('pointerdown', e => {
+  if (!document.body.classList.contains('aero-open')) return;
+  if (e.target.closest('.g-side') || e.target.closest('#bAero')) return;
+  setAero(false);
+}, true);
+/* 全画面 (Fullscreen API が使える端末のみ) */
+{
+  const fb = $('bFull'), de = document.documentElement;
+  const req = de.requestFullscreen || de.webkitRequestFullscreen;
+  if (fb && req && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+    fb.hidden = false;
+    const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fb.onclick = () => {
+      SFX.click();
+      try {
+        if (isFs()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        else { const r = req.call(de, { navigationUI: 'hide' }); if (r && r.catch) r.catch(() => toast('この端末では全画面にできませんでした')); }
+      } catch (_) { toast('この端末では全画面にできませんでした'); }
+    };
+    const sync = () => { fb.textContent = isFs() ? '⤢' : '⛶'; fb.title = isFs() ? '全画面を解除' : '全画面表示'; setTimeout(onResize, 120); };
+    document.addEventListener('fullscreenchange', sync); document.addEventListener('webkitfullscreenchange', sync);
+  }
+}
 window.addEventListener('resize', onResize);
 if (window.ResizeObserver) {
   new ResizeObserver(onResize).observe(document.querySelector('.app'));
@@ -2944,9 +3058,37 @@ if (window.ResizeObserver) {
 /* ===== 起動 ===== */
 readTheme();
 { const p = PRE.find(x => x.id === 'std'); S.g = p.fn(); $('presetNote').textContent = p.name + '：' + p.note; }
+applyMob();
 init3d(); init3dRace();
 changed(); updUndo(); renderSlots(); layout3d();
-if (isMobileScreen()) toggleFP(true);
+updTouchUi();
+if (isMobileScreen()) toggleFP(prefPad());
+updTouchUi();
+/* スマホ：文字選択・長押しメニュー・ダブルタップ／ピンチでのページ拡大を防ぐ */
+{
+  const isField = t => !!(t && t.closest && t.closest('input,textarea,select,[contenteditable]'));
+  const mob = () => document.body.classList.contains('mob');
+  document.addEventListener('selectstart', e => { if (mob() && !isField(e.target)) e.preventDefault(); });
+  document.addEventListener('contextmenu', e => { if (mob() && !isField(e.target)) e.preventDefault(); });
+  document.addEventListener('dblclick', e => { if (!isField(e.target)) e.preventDefault(); }, { passive: false });
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+  document.addEventListener('touchmove', e => { if (e.touches.length > 1 || (e.scale !== undefined && e.scale !== 1)) e.preventDefault(); }, { passive: false });
+  let lastEnd = 0;
+  document.addEventListener('touchend', e => {
+    const now = e.timeStamp;
+    if (now - lastEnd < 320 && e.changedTouches.length === 1 && !isField(e.target) && !e.target.closest('canvas')) {
+      e.preventDefault();
+      const ct = e.changedTouches[0], t = document.elementFromPoint(ct.clientX, ct.clientY) || e.target;
+      t.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: ct.clientX, clientY: ct.clientY, view: window }));
+    }
+    lastEnd = now;
+  }, { passive: false });
+  document.addEventListener('selectionchange', () => {
+    if (!mob()) return; const a = document.activeElement;
+    if (isField(a)) return; const sel = window.getSelection && window.getSelection();
+    if (sel && sel.rangeCount && !sel.isCollapsed) sel.removeAllRanges();
+  });
+}
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(markDirty);
 requestAnimationFrame(loopEd); requestAnimationFrame(loopRace);
 })();
