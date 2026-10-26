@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ボクセル四駆</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -691,6 +691,24 @@ body.mob .stage-tip{display:none}
   body.mob .g-side,body.mob .r-side{left:auto;top:0;bottom:0;width:min(400px,52%);max-height:none;border-top:0;border-left:2px solid var(--ink);border-radius:16px 0 0 16px;transform:translateX(105%)}
   body.mob .v3btns .chip{min-height:28px;padding:2px 9px}
 }
+
+/* ---- v11: 操作方法スイッチ & 誤選択・誤ズーム防止 ---- */
+body.mob #bFP{display:none!important}
+body.mob .method-sw{display:none!important}
+.ctl-sw{background:var(--card);border:2px solid var(--ink);border-radius:999px;padding:2px;gap:2px}
+.ctl-sw button{border:0;background:transparent;color:var(--ink);font-weight:700;font-size:12px;padding:3px 10px;border-radius:999px;white-space:nowrap;touch-action:manipulation}
+.ctl-sw button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+body.mob .ctl-sw button{font-size:11.5px;padding:3px 8px}
+@media (max-width:430px){
+  body.mob .v3bar .vbtn,body.mob #symBtn,body.mob #bMax,body.mob #bHelp{padding:3px 8px;font-size:11.5px}
+  body.mob .ctl-sw button{padding:3px 6px;font-size:11px}
+}
+@media (max-width:400px){ body.mob #inspect{top:44px!important} }
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.mob,body.mob *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+body.mob input,body.mob textarea,body.mob select{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;font-size:16px!important}
+body.mob button,body.mob .chip,body.mob .vbtn,body.mob [role="button"]{touch-action:manipulation}
+body.mob canvas{touch-action:none}
 </style>
 </head>
 <body>
@@ -741,6 +759,10 @@ body.mob .stage-tip{display:none}
             <button class="vbtn" id="symBtn" aria-pressed="false" title="M キーでも切り替え"><span class="lbl-sym-pc">左右対称 </span><span class="lbl-sym-sp">対称 </span><span id="symVal">OFF</span></button>
             <button class="vbtn" id="bMax"><span class="lbl-max-pc">大きく</span><span class="lbl-max-sp">拡大</span></button>
             <button class="vbtn" id="bFP" aria-pressed="false">一人称</button>
+            <div class="ctl-sw mob-only" role="radiogroup" aria-label="操作方法">
+              <button id="bCtlPad" aria-pressed="true">🎮 パッド</button>
+              <button id="bCtlTouch" aria-pressed="false">👆 タッチ</button>
+            </div>
             <button class="vbtn" id="bHelp" aria-label="操作説明" title="操作説明" aria-expanded="false">ℹ<span class="vbtn-label"> 操作説明</span></button>
           </div>
           <div class="inspect collapsed-mobile" id="inspect" aria-label="車検">
@@ -797,12 +819,10 @@ body.mob .stage-tip{display:none}
             <div class="help-section help-mobile-only">
               <div class="help-sec-title">📱 スマホでの操作方法</div>
               <ul class="help-list">
-                <li><b>移動:</b> 左下のパッド（▲▼◀▶）で移動、▲/▼ボタンで上昇/下降</li>
-                <li><b>視点:</b> 画面右側を指でドラッグして見回す</li>
-                <li><b>置く・壊す（ボタン操作）:</b> 中央の十字をブロックに合わせて「＋ 置く」「✕ 壊す」をタップ</li>
-                <li><b>置く・壊す（タップ操作）:</b> 右下の「👆 タップ」に切り替えると、画面をタップした場所に置く／壊すができます。「＋ 置く」「✕ 壊す」で動作を切り替え。ドラッグは見回し</li>
+                <li><b>操作方法の切り替え:</b> 左上の「🎮 パッド」「👆 タッチ」で切り替え</li>
+                <li><b>🎮 パッド操作:</b> 左下のパッドで移動、▲/▼で上昇/下降、画面をドラッグして見回し。中央の十字をブロックに合わせて「＋ 置く」「✕ 壊す」をタップ</li>
+                <li><b>👆 タッチ操作:</b> 画面をタップした場所に置く／壊す（右下の「＋ 置く」「✕ 壊す」で切り替え）。1本指ドラッグで機体回転、2本指ピンチで拡大縮小</li>
                 <li><b>ブロック選択:</b> 画面下の枠をタップ（色・向きの変更も可能）</li>
-                <li><b>全体視点時:</b> タップした場所に置く／壊す（右下で切り替え）、1本指ドラッグで機体回転、2本指ピンチで拡大縮小</li>
                 <li><b>画面:</b> 上の「📊 風洞」でデータ表示、「拡大」で編集画面だけの全画面表示</li>
               </ul>
             </div>

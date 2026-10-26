@@ -1117,7 +1117,7 @@ const V = { ok: false, theta: 0.75, phi: 1.0, dist: 62, target: null, car: null,
 const cv3 = $('v3');
 vReady = true;
 
-try { V.tapEdit = localStorage.getItem('te4wd.tapEdit') === '1'; } catch (_) {}
+V.tapEdit = false; // スマホは「パッド操作／タッチ操作」の切り替えに統一
 const tapOn = () => V.fp && V.tapEdit && document.body.classList.contains('mob');
 function hideAimFx() { if (!V.ok) return; V.hit.visible = V.hit2.visible = V.fill.visible = V.fill2.visible = V.ghost.visible = V.ghost2.visible = false; }
 function updTouchUi() {
@@ -1125,6 +1125,7 @@ function updTouchUi() {
   const ui = $('fpTouchUi'); if (ui) ui.classList.toggle('active', V.fp || mob);
   const w = $('v3wrap'); if (w) { w.classList.toggle('is-fp', !!V.fp); w.classList.toggle('tap-edit', !!V.tapEdit); }
   const cr = $('cross'); if (cr) cr.style.display = V.fp && !tapOn() ? 'block' : 'none';
+  if ($('bCtlPad')) { $('bCtlPad').setAttribute('aria-pressed', String(!!V.fp)); $('bCtlTouch').setAttribute('aria-pressed', String(!V.fp)); }
   const mb = $('bMethBtn'), mt = $('bMethTap');
   if (mb) mb.setAttribute('aria-pressed', String(!V.tapEdit));
   if (mt) mt.setAttribute('aria-pressed', String(!!V.tapEdit));
@@ -1215,7 +1216,9 @@ function placeCam() {
     return;
   }
   const sp = Math.sin(V.phi);
-  V.cam.position.set(V.target.x + V.dist * sp * Math.cos(V.theta), V.target.y + V.dist * Math.cos(V.phi), V.target.z + V.dist * sp * Math.sin(V.theta));
+  // 縦長画面では横方向の視野が狭いので、その分カメラを引く
+  const dist = V.dist * (V.cam.aspect < 0.9 ? clamp(0.85 / V.cam.aspect, 1, 1.8) : 1);
+  V.cam.position.set(V.target.x + dist * sp * Math.cos(V.theta), V.target.y + dist * Math.cos(V.phi), V.target.z + dist * sp * Math.sin(V.theta));
   V.cam.lookAt(V.target);
 }
 const CAMS = { iso: [0.75, 1.0, 62], side: [Math.PI / 2, Math.PI / 2, 66], top: [Math.PI / 2, 0.02, 74], front: [0, Math.PI / 2, 60], rear: [Math.PI, Math.PI / 2, 60] };
@@ -1641,7 +1644,16 @@ function initVirtualPad() {
   setupRepeat($('bActBreak'), doBreakFP);
 }
 $('bFP').onclick = () => toggleFP(!V.fp);
-$('bMax').onclick = () => { if (V.fp) toggleFP(false); else toggleMax(!V.max); };
+function prefPad() { try { return localStorage.getItem('te4wd.ctl') !== 'touch'; } catch (_) { return true; } }
+function setCtl(pad) {
+  try { localStorage.setItem('te4wd.ctl', pad ? 'pad' : 'touch'); } catch (_) {}
+  if (V.fp === pad) return;
+  SFX.click(); toggleFP(pad);
+  toast(pad ? '🎮 パッド操作：パッドで移動、十字に合わせてボタンで置く／壊す' : '👆 タッチ操作：タップした場所に置く／壊す（ドラッグで回転・ピンチで拡大）');
+}
+if ($('bCtlPad')) $('bCtlPad').onclick = () => setCtl(true);
+if ($('bCtlTouch')) $('bCtlTouch').onclick = () => setCtl(false);
+$('bMax').onclick = () => { if (V.fp && !isMobileScreen()) toggleFP(false); else { toggleMax(!V.max); setTimeout(layout3d, 50); } };
 
 cv3.addEventListener('contextmenu', e => e.preventDefault());
 cv3.addEventListener('auxclick', e => e.preventDefault());
@@ -2991,7 +3003,7 @@ function showTab(which) {
   $('tabG').setAttribute('aria-selected', String(g)); $('tabR').setAttribute('aria-selected', String(!g));
   if (g) {
     layout3d(); markDirty();
-    if (isMobileScreen() && !V.fp) toggleFP(true);
+    if (isMobileScreen()) toggleFP(prefPad());
   } else {
     enterRace();
     if (document.body.classList.contains('mob')) setRaceSheet(true);
@@ -3050,7 +3062,33 @@ applyMob();
 init3d(); init3dRace();
 changed(); updUndo(); renderSlots(); layout3d();
 updTouchUi();
-if (isMobileScreen()) toggleFP(true);
+if (isMobileScreen()) toggleFP(prefPad());
+updTouchUi();
+/* スマホ：文字選択・長押しメニュー・ダブルタップ／ピンチでのページ拡大を防ぐ */
+{
+  const isField = t => !!(t && t.closest && t.closest('input,textarea,select,[contenteditable]'));
+  const mob = () => document.body.classList.contains('mob');
+  document.addEventListener('selectstart', e => { if (mob() && !isField(e.target)) e.preventDefault(); });
+  document.addEventListener('contextmenu', e => { if (mob() && !isField(e.target)) e.preventDefault(); });
+  document.addEventListener('dblclick', e => { if (!isField(e.target)) e.preventDefault(); }, { passive: false });
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+  document.addEventListener('touchmove', e => { if (e.touches.length > 1 || (e.scale !== undefined && e.scale !== 1)) e.preventDefault(); }, { passive: false });
+  let lastEnd = 0;
+  document.addEventListener('touchend', e => {
+    const now = e.timeStamp;
+    if (now - lastEnd < 320 && e.changedTouches.length === 1 && !isField(e.target) && !e.target.closest('canvas')) {
+      e.preventDefault();
+      const ct = e.changedTouches[0], t = document.elementFromPoint(ct.clientX, ct.clientY) || e.target;
+      t.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: ct.clientX, clientY: ct.clientY, view: window }));
+    }
+    lastEnd = now;
+  }, { passive: false });
+  document.addEventListener('selectionchange', () => {
+    if (!mob()) return; const a = document.activeElement;
+    if (isField(a)) return; const sel = window.getSelection && window.getSelection();
+    if (sel && sel.rangeCount && !sel.isCollapsed) sel.removeAllRanges();
+  });
+}
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(markDirty);
 requestAnimationFrame(loopEd); requestAnimationFrame(loopRace);
 })();
