@@ -71,6 +71,17 @@ button { font: inherit; color: inherit; }
   #tS { grid-column: 1; grid-row: 1 / span 2; margin-top: calc(var(--bs) * .62); }
   #tJ { grid-column: 2; grid-row: 1; }
   /* key throw button sits right under the jump button (its slot stays reserved so nothing moves when it appears) */
+  /* user-arranged buttons: each one is placed freely inside the bottom area */
+  #touch.custom { display: block; }
+  #touch.custom .pad { display: contents; }
+  #touch.custom .pad button { position: absolute !important; margin: 0 !important; translate: -50% -50%; }
+  #touch.editing { outline: 2px dashed rgba(255, 212, 71, .45); outline-offset: -6px; }
+  #touch.editing .pad button { box-shadow: 0 0 0 2px var(--accent), 0 4px 0 #060912 !important; cursor: grab; }
+  #touch.editing .pad button.drag { opacity: .85; cursor: grabbing; }
+  #padBar { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 5; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; width: max-content; max-width: calc(100% - 20px); padding: 8px 10px; background: rgba(10, 14, 25, .92); border: 1px solid var(--accent); font-size: 12px; color: var(--accent); }
+  #padBar span { flex-basis: 100%; text-align: center; }
+  #padBar[hidden] { display: none; }
+  #padBar .btn { min-height: 38px; padding: 4px 16px; font-size: 14px; }
   #tT { position: static !important; grid-column: 2; grid-row: 2; justify-self: center; width: calc(var(--bs) * .9) !important; height: calc(var(--bs) * .9) !important; }
 }
 /* phone held sideways: controls become side columns so they never cover the game */
@@ -87,6 +98,10 @@ button { font: inherit; color: inherit; }
 }
 
 .bar-btns { display: flex; gap: 8px; flex-shrink: 0; }
+.pad-only { display: none; }
+body.pad-portrait .pad-only { display: block; }
+.help-pad { margin-bottom: 12px; }
+.help-pad .btn { width: 100%; min-height: 42px; font-size: 14px; border-color: var(--accent); }
 .bar-btns .btn { display: inline-flex; align-items: center; gap: 6px; }
 .bar-btns .q { display: inline-grid; place-items: center; width: 16px; height: 16px; background: var(--accent); color: var(--accent-ink); font-family: var(--font-px); font-size: 11px; font-weight: 700; }
 .stage-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -161,6 +176,7 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font-family: 
     <div id="hint" hidden><span>HINT</span> <b id="hintTxt"></b></div>
     <div id="chips"><span class="chip" id="chipItem" hidden></span><span class="chip" id="chipKey" hidden>🗝 鍵をもっている</span></div>
     <div id="toast" role="status" hidden></div>
+    <div id="padBar" hidden><span>ボタンをドラッグして好きな位置へ</span><button class="btn" id="bPadReset" type="button">元に戻す</button><button class="btn primary" id="bPadDone" type="button">完了</button></div>
 
     <div class="veil" id="vWin">
       <div class="card">
@@ -175,6 +191,7 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font-family: 
 
     <div class="veil" id="vHelp" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
       <div class="card help">
+        <div class="pad-only help-pad"><button class="btn" id="bPadEdit" type="button">⚙ ボタンの配置を変える</button></div>
         <div class="help-head">
           <canvas id="helpPeng" width="21" height="21" aria-hidden="true"></canvas>
           <div><div class="en">HOW TO PLAY</div><h2 id="helpTitle">遊び方</h2></div><button class="x" id="bHelpX" type="button" aria-label="とじる">×</button>
@@ -1646,7 +1663,7 @@ const R = (function () {
     const hasIt = !!(W.L.item && W.itemGot && !W.itemDone);
     const ci = $('#chipItem'); ci.hidden = !hasIt;
     if (hasIt) ci.textContent = W.L.item === 'arrow' ? '🏹 Fで発射' : '🗝 Fで投げる';
-    $('#tT').hidden = !hasIt;
+    $('#tT').hidden = !hasIt && !PAD.edit;
     if (W.res !== lastRes) {
       lastRes = W.res;
       $('#segLow').setAttribute('aria-pressed', W.res === 0); $('#segHigh').setAttribute('aria-pressed', W.res === 1);
@@ -1722,7 +1739,7 @@ const R = (function () {
     const W = G.W, L = W.L;
     G.parts = G.parts.filter(q => { q.life -= dt; q.vy += 200 * dt; q.x += q.vx * dt; q.y += q.vy * dt; return q.life > 0; });
     G.flash = Math.max(0, G.flash - dt * 6);
-    if (G.mode === 'play' && !helpOpen()) {
+    if (G.mode === 'play' && !helpOpen() && !PAD.edit) {
       const tog = K.tog || (K.want >= 0 && K.want !== W.res);
       PS.step(W, { left: K.left, right: K.right, jump: K.jump, jp: K.jp, toggle: tog, throw: K.thr }, dt);
       K.jp = false; K.tog = false; K.thr = false; K.want = -1;
@@ -1776,16 +1793,66 @@ const R = (function () {
 
   function hold(id, key) {
     const el = $(id);
-    el.addEventListener('pointerdown', e => { e.preventDefault(); el.setPointerCapture(e.pointerId); if (key === 'jump' && !K.jump) K.jp = true; K[key] = true; el.classList.add('on'); });
+    el.addEventListener('pointerdown', e => { e.preventDefault(); if (PAD.edit) return; el.setPointerCapture(e.pointerId); if (key === 'jump' && !K.jump) K.jp = true; K[key] = true; el.classList.add('on'); });
     const up = () => { K[key] = false; el.classList.remove('on'); }; el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
   }
   hold('#tL', 'left'); hold('#tR', 'right'); hold('#tJ', 'jump');
-  $('#tS').addEventListener('pointerdown', e => { e.preventDefault(); K.tog = true; $('#tS').classList.add('on'); });
+  $('#tS').addEventListener('pointerdown', e => { e.preventDefault(); if (PAD.edit) return; K.tog = true; $('#tS').classList.add('on'); });
   $('#tS').addEventListener('pointerup', () => $('#tS').classList.remove('on'));
   $('#tS').addEventListener('pointercancel', () => $('#tS').classList.remove('on'));
-  $('#tT').addEventListener('pointerdown', e => { e.preventDefault(); K.thr = true; $('#tT').classList.add('on'); });
+  $('#tT').addEventListener('pointerdown', e => { e.preventDefault(); if (PAD.edit) return; K.thr = true; $('#tT').classList.add('on'); });
   $('#tT').addEventListener('pointerup', () => $('#tT').classList.remove('on'));
   $('#tT').addEventListener('pointercancel', () => $('#tT').classList.remove('on'));
+  // ---------- free button layout (phone, upright) ----------
+  const PAD = { edit: false, ids: ['tL', 'tR', 'tS', 'tJ', 'tT'] };
+  const padMQ = window.matchMedia('(pointer: coarse) and (orientation: portrait), (max-width: 768px) and (orientation: portrait)');
+  const touchEl = $('#touch');
+  function padPlace() {          // put each button at its saved centre (fractions of the bottom area)
+    const lay = G.save.pad, on = !!(lay && padMQ.matches);
+    touchEl.classList.toggle('custom', on);
+    for (const id of PAD.ids) { const b = $('#' + id); if (!on) { b.style.left = b.style.top = ''; continue; }
+      const p = lay[id]; if (!p) continue;
+      b.style.left = (p[0] * 100).toFixed(2) + '%'; b.style.top = (p[1] * 100).toFixed(2) + '%'; }
+  }
+  function padMeasure() {        // current on-screen layout -> fractions
+    const r = touchEl.getBoundingClientRect(), o = {};
+    for (const id of PAD.ids) { const b = $('#' + id).getBoundingClientRect(); o[id] = [(b.left + b.width / 2 - r.left) / r.width, (b.top + b.height / 2 - r.top) / r.height]; }
+    return o;
+  }
+  function padEdit(on) {
+    PAD.edit = on; K.left = K.right = K.jump = false;
+    touchEl.classList.toggle('editing', on); $('#padBar').hidden = !on;
+    if (on) {
+      $('#tT').hidden = false;
+      if (!G.save.pad) { G.save.pad = padMeasure(); }
+      padPlace();
+    } else { store(); updateHud(); }
+    for (const id of PAD.ids) $('#' + id).classList.remove('on');
+  }
+  for (const id of PAD.ids) {
+    const b = $('#' + id); let drag = null;
+    b.addEventListener('pointerdown', e => {
+      if (!PAD.edit) return;
+      const r = b.getBoundingClientRect(); drag = { dx: e.clientX - (r.left + r.width / 2), dy: e.clientY - (r.top + r.height / 2) };
+      try { b.setPointerCapture(e.pointerId); } catch (_) {} b.classList.add('drag');
+    });
+    b.addEventListener('pointermove', e => {
+      if (!PAD.edit || !drag) return;
+      const t = touchEl.getBoundingClientRect(), hw = b.offsetWidth / 2, hh = b.offsetHeight / 2;
+      const cx = Math.max(hw, Math.min(t.width - hw, e.clientX - drag.dx - t.left)), cy = Math.max(hh, Math.min(t.height - hh, e.clientY - drag.dy - t.top));
+      G.save.pad[id] = [cx / t.width, cy / t.height]; padPlace();
+    });
+    const end = () => { if (drag) { drag = null; b.classList.remove('drag'); } };
+    b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end);
+  }
+  $('#bPadEdit').addEventListener('click', () => { closeHelp(); padEdit(true); });
+  $('#bPadDone').addEventListener('click', () => padEdit(false));
+  $('#bPadReset').addEventListener('click', () => { delete G.save.pad; padPlace(); G.save.pad = padMeasure(); padPlace(); });
+  const padMode = () => { document.body.classList.toggle('pad-portrait', padMQ.matches); if (!padMQ.matches && PAD.edit) padEdit(false); padPlace(); };
+  (padMQ.addEventListener ? padMQ.addEventListener('change', padMode) : padMQ.addListener(padMode));
+  new ResizeObserver(() => padPlace()).observe(touchEl);
+  padMode();
+
   function toggleBox() { G.box = !G.box; $('#bBox').setAttribute('aria-pressed', G.box); }
   function toggleSnd() { G.sound = !G.sound; $('#bSnd').setAttribute('aria-pressed', G.sound); }
   $('#bBox').addEventListener('click', toggleBox); $('#bSnd').addEventListener('click', toggleSnd);
