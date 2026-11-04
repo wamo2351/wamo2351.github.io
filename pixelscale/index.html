@@ -11,6 +11,9 @@
   --bg: #0a0e19; --panel: #121829; --panel-2: #1a2340; --line: #2b365c; --text: #e9edff; --dim: #8f9bc4;
   --accent: #ffd447; --accent-ink: #231c00; --mint: #43e8a8; --alert: #ff5470;
   --font-jp: "DotGothic16", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", monospace;
+  --font-zh-cn: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-zh-tw: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+  --font-ko: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
   --font-px: "Silkscreen", "DotGothic16", ui-monospace, monospace;
   color-scheme: dark;
 }
@@ -99,6 +102,14 @@ button { font: inherit; color: inherit; }
 
 .bar-btns { display: flex; gap: 8px; flex-shrink: 0; }
 .pad-only { display: none; }
+/* Chinese / Korean: the Japanese pixel font would mix glyph shapes, so use the system font for them */
+html[lang="zh-CN"] { --font-jp: var(--font-zh-cn); } html[lang="zh-TW"] { --font-jp: var(--font-zh-tw); } html[lang="ko"] { --font-jp: var(--font-ko); }
+.lang-btn { position: relative; gap: 4px; }
+.lang-btn .lang-code { font-family: var(--font-px); font-size: 11px; letter-spacing: .04em; }
+.lang-btn select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; border: 0; -webkit-appearance: none; appearance: none; }
+.lang-btn:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 480px) { .lang-btn .lang-code { display: none; } .lang-btn { padding-inline: 10px !important; } }
+
 body.pad-portrait .pad-only { display: block; }
 .help-pad { margin-bottom: 12px; }
 .help-pad .btn { width: 100%; min-height: 42px; font-size: 14px; border-color: var(--accent); }
@@ -120,7 +131,7 @@ body.pad-portrait .pad-only { display: block; }
 .mode ul { margin: 0 0 6px; padding-left: 1.1em; color: var(--text); font-size: 13px; }
 .mode li { margin-bottom: 2px; }
 .mode .warn { margin: 0; font-size: 12px; color: var(--alert); }
-.mode .warn::before { content: "注意 "; color: var(--dim); }
+.mode .warn::before { content: attr(data-pre) " "; color: var(--dim); }
 .help .note { font-size: 12px; }
 .help h3.sub { margin: 4px 0 6px; font-size: 15px; font-weight: 400; }
 .ctl { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
@@ -157,6 +168,15 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font-family: 
   #hint { max-width: 66%; font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+/* narrow phones: compact header buttons, stage name may wrap to two lines */
+@media (max-width: 480px) {
+  .bar { gap: 8px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+  .bar-btns { gap: 6px; }
+  .bar-btns .btn { padding: 6px 8px; font-size: 12px; min-height: 38px; gap: 4px; }
+  .bar-btns .q { width: 14px; height: 14px; font-size: 10px; }
+  .title { display: block; }
+  .stage-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; font-size: 12px; line-height: 1.25; overflow-wrap: anywhere; }
+}
 
 </style>
 
@@ -168,15 +188,15 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font-family: 
       <span class="stage-en" id="stEn">Spike Bed</span>
     </div>
     <div class="stats" hidden>TIME <b id="tTime">0.0</b>s · MISS <b id="tMiss">0</b></div>
-    <div class="bar-btns"><button class="btn" id="bHelp" type="button" aria-haspopup="dialog"><span class="q" aria-hidden="true">?</span>遊び方</button><button class="btn" id="bMenu" type="button">ステージ</button></div>
+    <div class="bar-btns"><label class="btn lang-btn"><span aria-hidden="true">🌐</span><span class="lang-code" id="langCode" aria-hidden="true">JA</span><select id="langSel" aria-label="Language / 言語"><option value="ja">日本語</option><option value="en">English</option><option value="zh-CN">简体中文</option><option value="zh-TW">繁體中文（台灣）</option><option value="ko">한국어</option><option value="es">Español</option></select></label><button class="btn" id="bHelp" type="button" aria-haspopup="dialog"><span class="q" aria-hidden="true">?</span><span data-i18n="help">遊び方</span></button><button class="btn" id="bMenu" type="button" data-i18n="stages">ステージ</button></div>
   </header>
 
   <main id="stage">
-    <canvas id="cv" aria-label="Pixel Scale ゲーム画面"></canvas>
+    <canvas id="cv" aria-label="Pixel Scale ゲーム画面" data-i18n-aria="ariaGame"></canvas>
     <div id="hint" hidden><span>HINT</span> <b id="hintTxt"></b></div>
-    <div id="chips"><span class="chip" id="chipItem" hidden></span><span class="chip" id="chipKey" hidden>🗝 鍵をもっている</span></div>
+    <div id="chips"><span class="chip" id="chipItem" hidden></span><span class="chip" id="chipKey" hidden data-i18n="chipKey">🗝 鍵をもっている</span></div>
     <div id="toast" role="status" hidden></div>
-    <div id="padBar" hidden><span>ボタンをドラッグして好きな位置へ</span><button class="btn" id="bPadReset" type="button">元に戻す</button><button class="btn primary" id="bPadDone" type="button">完了</button></div>
+    <div id="padBar" hidden><span data-i18n="padHint">ボタンをドラッグして好きな位置へ</span><button class="btn" id="bPadReset" type="button" data-i18n="padReset">元に戻す</button><button class="btn primary" id="bPadDone" type="button" data-i18n="padDone">完了</button></div>
 
     <div class="veil" id="vWin">
       <div class="card">
@@ -184,69 +204,69 @@ kbd { display: inline-block; min-width: 1.6em; text-align: center; font-family: 
         <h2 id="winTitle">クリア！</h2>
         <div class="result"><div>TIME<b id="rTime">0.0</b></div><div>MISS<b id="rMiss">0</b></div><div>BEST<b id="rBest">-</b></div></div>
         <p id="winMsg"></p>
-        <div class="row"><button class="btn primary" id="bNext" type="button">次のステージ ⏎</button><button class="btn" id="bAgain" type="button">もう一度</button></div>
+        <div class="row"><button class="btn primary" id="bNext" type="button">次のステージ ⏎</button><button class="btn" id="bAgain" type="button" data-i18n="again">もう一度</button></div>
       </div>
     </div>
 
 
     <div class="veil" id="vHelp" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
       <div class="card help">
-        <div class="pad-only help-pad"><button class="btn" id="bPadEdit" type="button">⚙ ボタンの配置を変える</button></div>
+        <div class="pad-only help-pad"><button class="btn" id="bPadEdit" type="button" data-i18n="padEdit">⚙ ボタンの配置を変える</button></div>
         <div class="help-head">
           <canvas id="helpPeng" width="21" height="21" aria-hidden="true"></canvas>
-          <div><div class="en">HOW TO PLAY</div><h2 id="helpTitle">遊び方</h2></div><button class="x" id="bHelpX" type="button" aria-label="とじる">×</button>
+          <div><div class="en">HOW TO PLAY</div><h2 id="helpTitle" data-i18n="help">遊び方</h2></div><button class="x" id="bHelpX" type="button" aria-label="とじる" data-i18n-aria="close">×</button>
         </div>
-        <p>ペンギンを<b class="hl">光る出口の門</b>まで連れていこう。この世界では<b class="hl">ドットの粗さがそのまま当たり判定</b>になる。粗さを切り替えて仕掛けを突破しよう。</p>
+        <p data-i18n-html="intro">ペンギンを<b class="hl">光る出口の門</b>まで連れていこう。この世界では<b class="hl">ドットの粗さがそのまま当たり判定</b>になる。粗さを切り替えて仕掛けを突破しよう。</p>
         <div class="modes">
           <section class="mode lo">
-            <h3>粗い 8bit <small>DOT 12</small></h3>
+            <h3><span data-i18n="loTitle">粗い 8bit</span> <small>DOT 12</small></h3>
             <ul>
-              <li>剣山・亀裂の上を足場として渡れる</li>
-              <li>動くトゲ塊に乗れる</li>
-              <li>転がる岩が四角く固まって止まる</li>
+              <li data-i18n="lo1">剣山・亀裂の上を足場として渡れる</li>
+              <li data-i18n="lo2">動くトゲ塊に乗れる</li>
+              <li data-i18n="lo3">転がる岩が四角く固まって止まる</li>
             </ul>
-            <p class="warn">水が増える／レーザーが太くなる</p>
+            <p class="warn" data-i18n="loWarn" data-i18n-pre="warnPre">水が増える／レーザーが太くなる</p>
           </section>
           <section class="mode hi">
-            <h3>細かい HD <small>DOT 1</small></h3>
+            <h3><span data-i18n="hiTitle">細かい HD</span> <small>DOT 1</small></h3>
             <ul>
-              <li>レーザーのすき間をくぐれる</li>
-              <li>細いすき間に鍵を投げ込める</li>
-              <li>排水口から水が抜ける</li>
+              <li data-i18n="hi1">レーザーのすき間をくぐれる</li>
+              <li data-i18n="hi2">細いすき間に鍵を投げ込める</li>
+              <li data-i18n="hi3">排水口から水が抜ける</li>
             </ul>
-            <p class="warn">剣山・トゲ塊に触れるとアウト</p>
+            <p class="warn" data-i18n="hiWarn" data-i18n-pre="warnPre">剣山・トゲ塊に触れるとアウト</p>
           </section>
         </div>
-        <p class="note">速く転がる岩に当たると潰される。せまい所で粗くすると押しつぶされることもある。</p>
-        <h3 class="sub">操作</h3>
+        <p class="note" data-i18n="note">速く転がる岩に当たると潰される。せまい所で粗くすると押しつぶされることもある。</p>
+        <h3 class="sub" data-i18n="controls">操作</h3>
         <table class="ctl">
-          <thead><tr><th></th><th>キーボード</th><th>スマホ</th></tr></thead>
+          <thead><tr><th></th><th data-i18n="kb">キーボード</th><th data-i18n="phone">スマホ</th></tr></thead>
           <tbody>
-            <tr><th>移動</th><td><kbd>←</kbd><kbd>→</kbd></td><td>◀ ▶</td></tr>
-            <tr><th>ジャンプ</th><td><kbd>SPACE</kbd><kbd>↑</kbd></td><td>▲</td></tr>
-            <tr><th>粗さ切替</th><td><kbd>SHIFT</kbd>（<kbd>Q</kbd>粗い <kbd>E</kbd>細かい）</td><td>8bit / HD ボタン</td></tr>
-            <tr><th>投げる・発射</th><td><kbd>F</kbd><kbd>X</kbd></td><td>F ボタン</td></tr>
-            <tr class="pc-only"><th>やりなおし</th><td><kbd>R</kbd></td><td></td></tr>
+            <tr><th data-i18n="move">移動</th><td><kbd>←</kbd><kbd>→</kbd></td><td>◀ ▶</td></tr>
+            <tr><th data-i18n="jump">ジャンプ</th><td><kbd>SPACE</kbd><kbd>↑</kbd></td><td>▲</td></tr>
+            <tr><th data-i18n="switch">粗さ切替</th><td data-i18n-html="switchKeys"><kbd>SHIFT</kbd>（<kbd>Q</kbd>粗い <kbd>E</kbd>細かい）</td><td data-i18n="switchPhone">8bit / HD ボタン</td></tr>
+            <tr><th data-i18n="throwShoot">投げる・発射</th><td><kbd>F</kbd><kbd>X</kbd></td><td data-i18n="throwPhone">F ボタン</td></tr>
+            <tr class="pc-only"><th data-i18n="retry">やりなおし</th><td><kbd>R</kbd></td><td></td></tr>
           </tbody>
         </table>
-        <div class="row"><button class="btn primary" id="bHelpClose" type="button">あそぶ</button></div>
+        <div class="row"><button class="btn primary" id="bHelpClose" type="button" data-i18n="play">あそぶ</button></div>
       </div>
     </div>
     <div class="veil" id="vMenu">
       <div class="card">
         <div class="en">SELECT STAGE</div>
-        <h2>ステージ選択</h2>
-        <p>ドットの粗さが、そのまま物理になる世界。16のステージを解像度で突破しよう。ステージ1〜5は仕掛けの練習、6からが本番。</p>
+        <h2 data-i18n="menuTitle">ステージ選択</h2>
+        <p data-i18n="menuDesc">ドットの粗さが、そのまま物理になる世界。16のステージを解像度で突破しよう。ステージ1〜5は仕掛けの練習、6からが本番。</p>
         <div class="levels" id="lvGrid"></div>
         <p style="font-size:11px;margin:0 0 10px">Art: Kenney "Platformer Art: Pixel" (CC0) · kenney.nl</p>
-        <div class="row"><button class="btn primary" id="bClose" type="button">とじる</button></div>
+        <div class="row"><button class="btn primary" id="bClose" type="button" data-i18n="close">とじる</button></div>
       </div>
     </div>
   </main>
 
-  <div id="touch" aria-label="スマホ操作ボタン">
-    <div class="pad move"><button id="tL" type="button" aria-label="左"><i>◀</i></button><button id="tR" type="button" aria-label="右"><i>▶</i></button></div>
-    <div class="pad act"><button id="tT" type="button" aria-label="投げる・発射" hidden><i>F</i><small>投げる</small></button><button id="tS" type="button" aria-label="解像度切替" data-res="1"><i id="tSName">HD</i><small id="tSSub">→ 粗く</small></button><button id="tJ" type="button" aria-label="ジャンプ"><i>▲</i><small>ジャンプ</small></button></div>
+  <div id="touch" aria-label="スマホ操作ボタン" data-i18n-aria="ariaTouch">
+    <div class="pad move"><button id="tL" type="button" aria-label="左" data-i18n-aria="ariaLeft"><i>◀</i></button><button id="tR" type="button" aria-label="右" data-i18n-aria="ariaRight"><i>▶</i></button></div>
+    <div class="pad act"><button id="tT" type="button" aria-label="投げる・発射" data-i18n-aria="throwShoot" hidden><i>F</i><small data-i18n="throw">投げる</small></button><button id="tS" type="button" aria-label="解像度切替" data-i18n-aria="switch" data-res="1"><i id="tSName">HD</i><small id="tSSub">→ 粗く</small></button><button id="tJ" type="button" aria-label="ジャンプ" data-i18n-aria="jump"><i>▲</i><small data-i18n="jump">ジャンプ</small></button></div>
   </div>
 
   <footer class="deck">
@@ -1593,7 +1613,7 @@ const R = (function () {
       const charX = D > 1 ? (b.i0 + b.i1) * D * 0.5 : p.x + 3;
       const topY = D > 1 ? b.j0 * D : p.y - 3;
       const cx = Math.round(gx(charX)), cy = Math.round(gy(topY) - 10 + Math.sin(performance.now() / 220) * 1.8);
-      const label = W.L.item === 'arrow' ? 'Fで発射' : 'Fで投げる';
+      const label = psT(W.L.item === 'arrow' ? 'labelShoot' : 'labelThrow');
       const fs = Math.max(11, Math.min(15, Math.round(S * 2.2)));
       main.save();
       main.font = '700 ' + fs + 'px DotGothic16, Silkscreen, monospace';
@@ -1614,6 +1634,37 @@ const R = (function () {
 
 </script>
 <script>
+// Pixel Scale i18n: ja / en / zh-CN / zh-TW / ko / es  (stage names & clear messages per language; ja comes from the level data)
+const I18N = (function () {
+  const UI = {"help": {"ja": "遊び方", "en": "How to Play", "zh-CN": "玩法", "zh-TW": "玩法說明", "ko": "플레이 방법", "es": "Cómo jugar"}, "stages": {"ja": "ステージ", "en": "Stages", "zh-CN": "关卡", "zh-TW": "關卡", "ko": "스테이지", "es": "Niveles"}, "padEdit": {"ja": "⚙ ボタンの配置を変える", "en": "⚙ Rearrange buttons", "zh-CN": "⚙ 调整按钮位置", "zh-TW": "⚙ 調整按鈕位置", "ko": "⚙ 버튼 배치 변경", "es": "⚙ Reorganizar botones"}, "close": {"ja": "とじる", "en": "Close", "zh-CN": "关闭", "zh-TW": "關閉", "ko": "닫기", "es": "Cerrar"}, "intro": {"ja": "ペンギンを<b class=\"hl\">光る出口の門</b>まで連れていこう。この世界では<b class=\"hl\">ドットの粗さがそのまま当たり判定</b>になる。粗さを切り替えて仕掛けを突破しよう。", "en": "Guide the penguin to the <b class=\"hl\">glowing exit gate</b>. In this world, <b class=\"hl\">the coarseness of the pixels is the hitbox itself</b>. Switch resolution to get past every trap.", "zh-CN": "带企鹅前往<b class=\"hl\">发光的出口之门</b>。在这个世界里，<b class=\"hl\">像素的粗细就是碰撞判定</b>。切换粗细来突破各种机关吧。", "zh-TW": "帶企鵝前往<b class=\"hl\">發光的出口之門</b>。在這個世界裡，<b class=\"hl\">像素的粗細就是碰撞判定</b>。切換粗細來突破各種機關吧。", "ko": "펭귄을 <b class=\"hl\">빛나는 출구 문</b>까지 데려가자. 이 세계에서는 <b class=\"hl\">도트의 거칠기가 그대로 충돌 판정</b>이 된다. 거칠기를 바꿔 가며 장치를 돌파하자.", "es": "Lleva al pingüino hasta la <b class=\"hl\">puerta de salida brillante</b>. En este mundo, <b class=\"hl\">el tamaño de los píxeles es la propia zona de impacto</b>. Cambia la resolución para superar cada trampa."}, "loTitle": {"ja": "粗い 8bit", "en": "Coarse 8bit", "zh-CN": "粗糙 8bit", "zh-TW": "粗糙 8bit", "ko": "거친 8bit", "es": "Grueso 8bit"}, "lo1": {"ja": "剣山・亀裂の上を足場として渡れる", "en": "Walk across spike beds and cracks like solid floor", "zh-CN": "可以把尖刺床和裂缝当作地面走过去", "zh-TW": "可以把尖刺床和裂縫當作地面走過去", "ko": "가시밭과 균열 위를 발판처럼 건널 수 있다", "es": "Camina sobre pinchos y grietas como si fueran suelo"}, "lo2": {"ja": "動くトゲ塊に乗れる", "en": "Ride on moving spike blocks", "zh-CN": "可以站在移动的尖刺块上", "zh-TW": "可以站在移動的尖刺塊上", "ko": "움직이는 가시 덩어리에 올라탈 수 있다", "es": "Súbete a los bloques de pinchos móviles"}, "lo3": {"ja": "転がる岩が四角く固まって止まる", "en": "Rolling boulders freeze into square blocks", "zh-CN": "滚动的岩石会变成方块并停住", "zh-TW": "滾動的岩石會變成方塊並停住", "ko": "굴러가는 바위가 네모나게 굳어 멈춘다", "es": "Las rocas rodantes se congelan en bloques cuadrados"}, "loWarn": {"ja": "水が増える／レーザーが太くなる", "en": "Water rises / lasers get thicker", "zh-CN": "水位上涨／激光变粗", "zh-TW": "水位上漲／雷射變粗", "ko": "물이 차오른다 / 레이저가 굵어진다", "es": "El agua sube / los láseres se ensanchan"}, "hiTitle": {"ja": "細かい HD", "en": "Fine HD", "zh-CN": "精细 HD", "zh-TW": "精細 HD", "ko": "세밀한 HD", "es": "Fino HD"}, "hi1": {"ja": "レーザーのすき間をくぐれる", "en": "Slip through gaps between lasers", "zh-CN": "可以从激光的缝隙中穿过", "zh-TW": "可以從雷射的縫隙中穿過", "ko": "레이저 틈새를 빠져나갈 수 있다", "es": "Pasa por los huecos entre láseres"}, "hi2": {"ja": "細いすき間に鍵を投げ込める", "en": "Throw keys through narrow gaps", "zh-CN": "可以把钥匙扔进狭窄的缝隙", "zh-TW": "可以把鑰匙丟進狹窄的縫隙", "ko": "좁은 틈으로 열쇠를 던져 넣을 수 있다", "es": "Lanza llaves por huecos estrechos"}, "hi3": {"ja": "排水口から水が抜ける", "en": "Water drains away", "zh-CN": "水会从排水口流走", "zh-TW": "水會從排水口流走", "ko": "배수구로 물이 빠진다", "es": "El agua se va por el desagüe"}, "hiWarn": {"ja": "剣山・トゲ塊に触れるとアウト", "en": "Touching spikes or spike blocks is fatal", "zh-CN": "碰到尖刺或尖刺块就会失败", "zh-TW": "碰到尖刺或尖刺塊就會失敗", "ko": "가시나 가시 덩어리에 닿으면 아웃", "es": "Tocar pinchos o bloques de pinchos es fatal"}, "warnPre": {"ja": "注意", "en": "Careful:", "zh-CN": "注意", "zh-TW": "注意", "ko": "주의", "es": "Ojo:"}, "note": {"ja": "速く転がる岩に当たると潰される。せまい所で粗くすると押しつぶされることもある。", "en": "Fast-rolling boulders will crush you. Switching to coarse in a tight spot can squash you, too.", "zh-CN": "被快速滚动的岩石撞到会被压扁。在狭窄的地方切换成粗糙也可能被挤扁。", "zh-TW": "被快速滾動的岩石撞到會被壓扁。在狹窄的地方切換成粗糙也可能被擠扁。", "ko": "빠르게 구르는 바위에 부딪히면 깔린다. 좁은 곳에서 거칠게 바꾸면 끼여서 찌부러질 수도 있다.", "es": "Las rocas que ruedan rápido te aplastan. Cambiar a grueso en un sitio estrecho también puede aplastarte."}, "controls": {"ja": "操作", "en": "Controls", "zh-CN": "操作", "zh-TW": "操作", "ko": "조작", "es": "Controles"}, "kb": {"ja": "キーボード", "en": "Keyboard", "zh-CN": "键盘", "zh-TW": "鍵盤", "ko": "키보드", "es": "Teclado"}, "phone": {"ja": "スマホ", "en": "Phone", "zh-CN": "手机", "zh-TW": "手機", "ko": "스마트폰", "es": "Móvil"}, "move": {"ja": "移動", "en": "Move", "zh-CN": "移动", "zh-TW": "移動", "ko": "이동", "es": "Mover"}, "jump": {"ja": "ジャンプ", "en": "Jump", "zh-CN": "跳跃", "zh-TW": "跳躍", "ko": "점프", "es": "Saltar"}, "switch": {"ja": "粗さ切替", "en": "Switch resolution", "zh-CN": "切换粗细", "zh-TW": "切換粗細", "ko": "거칠기 전환", "es": "Cambiar resolución"}, "switchKeys": {"ja": "<kbd>SHIFT</kbd>（<kbd>Q</kbd>粗い <kbd>E</kbd>細かい）", "en": "<kbd>SHIFT</kbd> (<kbd>Q</kbd> coarse <kbd>E</kbd> fine)", "zh-CN": "<kbd>SHIFT</kbd>（<kbd>Q</kbd>粗糙 <kbd>E</kbd>精细）", "zh-TW": "<kbd>SHIFT</kbd>（<kbd>Q</kbd>粗糙 <kbd>E</kbd>精細）", "ko": "<kbd>SHIFT</kbd> (<kbd>Q</kbd>거칠게 <kbd>E</kbd>세밀하게)", "es": "<kbd>SHIFT</kbd> (<kbd>Q</kbd> grueso <kbd>E</kbd> fino)"}, "switchPhone": {"ja": "8bit / HD ボタン", "en": "8bit / HD button", "zh-CN": "8bit / HD 按钮", "zh-TW": "8bit / HD 按鈕", "ko": "8bit / HD 버튼", "es": "Botón 8bit / HD"}, "throwShoot": {"ja": "投げる・発射", "en": "Throw / Shoot", "zh-CN": "投掷・发射", "zh-TW": "投擲・發射", "ko": "던지기・발사", "es": "Lanzar / Disparar"}, "throwPhone": {"ja": "F ボタン", "en": "F button", "zh-CN": "F 按钮", "zh-TW": "F 按鈕", "ko": "F 버튼", "es": "Botón F"}, "retry": {"ja": "やりなおし", "en": "Restart", "zh-CN": "重来", "zh-TW": "重來", "ko": "다시 하기", "es": "Reiniciar"}, "play": {"ja": "あそぶ", "en": "Play", "zh-CN": "开始玩", "zh-TW": "開始玩", "ko": "플레이", "es": "Jugar"}, "menuTitle": {"ja": "ステージ選択", "en": "Select Stage", "zh-CN": "选择关卡", "zh-TW": "選擇關卡", "ko": "스테이지 선택", "es": "Elegir nivel"}, "menuDesc": {"ja": "ドットの粗さが、そのまま物理になる世界。16のステージを解像度で突破しよう。ステージ1〜5は仕掛けの練習、6からが本番。", "en": "A world where pixel coarseness is the physics. Beat all 16 stages by switching resolution. Stages 1–5 teach the tricks; the real challenge starts at 6.", "zh-CN": "像素的粗细就是物理法则的世界。切换分辨率，突破全部16个关卡吧。第1〜5关是机关练习，从第6关开始才是正式挑战。", "zh-TW": "像素的粗細就是物理法則的世界。切換解析度，突破全部16個關卡吧。第1〜5關是機關練習，從第6關開始才是正式挑戰。", "ko": "도트의 거칠기가 그대로 물리 법칙이 되는 세계. 해상도를 바꿔 16개 스테이지를 돌파하자. 스테이지 1~5는 장치 연습, 6부터가 본편이다.", "es": "Un mundo donde el tamaño de los píxeles es la física. Supera los 16 niveles cambiando la resolución. Los niveles 1–5 enseñan los trucos; el reto de verdad empieza en el 6."}, "next": {"ja": "次のステージ ⏎", "en": "Next stage ⏎", "zh-CN": "下一关 ⏎", "zh-TW": "下一關 ⏎", "ko": "다음 스테이지 ⏎", "es": "Siguiente nivel ⏎"}, "again": {"ja": "もう一度", "en": "Try again", "zh-CN": "再来一次", "zh-TW": "再玩一次", "ko": "한 번 더", "es": "Otra vez"}, "winStage": {"ja": "ステージ {n} クリア！", "en": "Stage {n} clear!", "zh-CN": "第{n}关 通关！", "zh-TW": "第{n}關 過關！", "ko": "스테이지 {n} 클리어!", "es": "¡Nivel {n} superado!"}, "winAll": {"ja": "ぜんぶクリア！", "en": "All clear!", "zh-CN": "全部通关！", "zh-TW": "全部過關！", "ko": "올 클리어!", "es": "¡Todo superado!"}, "chipKey": {"ja": "🗝 鍵をもっている", "en": "🗝 Holding the key", "zh-CN": "🗝 持有钥匙", "zh-TW": "🗝 持有鑰匙", "ko": "🗝 열쇠 보유 중", "es": "🗝 Tienes la llave"}, "chipThrow": {"ja": "🗝 Fで投げる", "en": "🗝 F to throw", "zh-CN": "🗝 按F投掷", "zh-TW": "🗝 按F投擲", "ko": "🗝 F로 던지기", "es": "🗝 F para lanzar"}, "chipShoot": {"ja": "🏹 Fで発射", "en": "🏹 F to shoot", "zh-CN": "🏹 按F发射", "zh-TW": "🏹 按F發射", "ko": "🏹 F로 발사", "es": "🏹 F para disparar"}, "labelThrow": {"ja": "Fで投げる", "en": "F: throw", "zh-CN": "按F投掷", "zh-TW": "按F投擲", "ko": "F로 던지기", "es": "F: lanzar"}, "labelShoot": {"ja": "Fで発射", "en": "F: shoot", "zh-CN": "按F发射", "zh-TW": "按F發射", "ko": "F로 발사", "es": "F: disparar"}, "throw": {"ja": "投げる", "en": "Throw", "zh-CN": "投掷", "zh-TW": "投擲", "ko": "던지기", "es": "Lanzar"}, "toCoarse": {"ja": "→ 粗く", "en": "→ coarse", "zh-CN": "→ 粗糙", "zh-TW": "→ 粗糙", "ko": "→ 거칠게", "es": "→ grueso"}, "toFine": {"ja": "→ 細かく", "en": "→ fine", "zh-CN": "→ 精细", "zh-TW": "→ 精細", "ko": "→ 세밀하게", "es": "→ fino"}, "padHint": {"ja": "ボタンをドラッグして好きな位置へ", "en": "Drag the buttons wherever you like", "zh-CN": "拖动按钮到喜欢的位置", "zh-TW": "拖曳按鈕到喜歡的位置", "ko": "버튼을 드래그해 원하는 위치로", "es": "Arrastra los botones donde quieras"}, "padReset": {"ja": "元に戻す", "en": "Reset", "zh-CN": "恢复默认", "zh-TW": "恢復預設", "ko": "원래대로", "es": "Restablecer"}, "padDone": {"ja": "完了", "en": "Done", "zh-CN": "完成", "zh-TW": "完成", "ko": "완료", "es": "Listo"}, "ariaGame": {"ja": "Pixel Scale ゲーム画面", "en": "Pixel Scale game screen", "zh-CN": "Pixel Scale 游戏画面", "zh-TW": "Pixel Scale 遊戲畫面", "ko": "Pixel Scale 게임 화면", "es": "Pantalla de juego de Pixel Scale"}, "ariaTouch": {"ja": "スマホ操作ボタン", "en": "Touch controls", "zh-CN": "触屏按钮", "zh-TW": "觸控按鈕", "ko": "터치 조작 버튼", "es": "Controles táctiles"}, "ariaLeft": {"ja": "左", "en": "Left", "zh-CN": "左", "zh-TW": "左", "ko": "왼쪽", "es": "Izquierda"}, "ariaRight": {"ja": "右", "en": "Right", "zh-CN": "右", "zh-TW": "右", "ko": "오른쪽", "es": "Derecha"}}, NAMES = {"en": ["Coarse Floor", "Fine Gaps", "Stop the Boulder", "Key and Seesaw", "Water and Key", "Flooded Corridor", "Boulder Step", "Double Switch", "Mid-air Basics", "Key Tower", "Key Fort", "Torrent Slope", "Spike Block Bridge", "Boulder Courier", "Sky Key Castle", "Ultimate Mid-air Switch"], "zh-CN": ["粗糙的立足点", "精细像素的缝隙", "停住岩石", "钥匙与跷跷板", "水与钥匙", "淹水的回廊", "岩石踏板", "两个开关", "初次空中切换", "钥匙之塔", "钥匙要塞", "浊流之坡", "尖刺块连桥", "岩石搬运工", "天空钥匙城", "究极空中切换"], "zh-TW": ["粗糙的立足點", "精細像素的縫隙", "停住岩石", "鑰匙與蹺蹺板", "水與鑰匙", "淹水的迴廊", "岩石踏板", "兩個開關", "初次空中切換", "鑰匙之塔", "鑰匙要塞", "濁流之坡", "尖刺塊連橋", "岩石搬運工", "天空鑰匙城", "究極空中切換"], "ko": ["거친 도트의 발판", "세밀한 도트의 틈새", "바위를 멈춰라", "열쇠와 시소", "물과 열쇠", "수몰된 회랑", "바위 발판", "두 개의 스위치", "첫 공중 전환", "열쇠의 탑", "열쇠의 요새", "탁류의 비탈", "가시 덩어리 연결 다리", "바위 운반꾼", "하늘의 열쇠성", "궁극의 공중 전환"], "es": ["Suelo grueso", "Huecos finos", "Detén la roca", "Llave y balancín", "Agua y llave", "Pasillo inundado", "Escalón de roca", "Doble interruptor", "Cambio en el aire: básico", "Torre de la llave", "Fuerte de la llave", "Cuesta del torrente", "Puente de pinchos", "Mensajero de rocas", "Castillo celeste de la llave", "Cambio en el aire definitivo"]}, MSGS = {"en": ["In coarse pixels, tiny spikes and gaps get filled in and become \"floor\".", "Fine pixels slip through gaps; coarse pixels turn hazards into footholds.", "Anything frozen by coarse pixels keeps holding the switch down.", "Gaps let things through when fine and seal up when coarse. Switch between throwing and defending.", "Water only rises while pixels are coarse. Keys only pass through gaps in fine pixels.", "You kept an eye on the water and switched in rhythm to clear the corridor!", "You used a frozen boulder as a step and got the key!", "You froze both balls at once and threw open both doors!", "You've got the knack of switching mid-air!", "You climbed the tower and broke open the padlock!", "You threw the key mid-air and opened both the keyhole and the padlock!", "Caught between boulders and water, you made it through with perfect timing!", "You mastered moving platforms and mid-air switching!", "You delivered the ball to the hole and the last door opened!", "Sky Key Castle conquered. You beat trap after trap with resolution alone!", "Woohoo! You nailed the ultimate mid-air switch and conquered all 16 stages! You bend pixel size to your will — you're a true Pixel Master! Congratulations!!"], "zh-CN": ["在粗糙像素下，细小的尖刺和缝隙会被填满，变成“地面”。", "精细像素能穿过缝隙，粗糙像素能把危险物变成立足点。", "用粗糙像素停住的东西，会一直压着开关。", "缝隙在精细时能通过，粗糙时会被堵住。投掷和防守时要切换哦。", "水只在粗糙像素时上涨。钥匙只有在精细像素时才能穿过缝隙。", "一边看水位一边切换分辨率，闯过了节奏回廊！", "把停住的岩石当作踏板，拿到了钥匙！", "同时停住两个球，打开了两扇门！", "掌握了空中切换的诀窍！", "爬上了高塔，打开了门锁！", "在空中扔出钥匙，打开了锁孔和门锁！", "夹在岩石与洪水之间，靠切换时机闯了过去！", "驾驭了移动平台和空中切换！", "把球送进了洞里，最后一扇门打开了！", "征服了天空钥匙城。只靠分辨率攻克了重重机关！", "太棒了！成功完成究极空中切换，16个关卡全部制霸！能随心所欲操控像素粗细的你，就是真正的像素大师！恭喜！！"], "zh-TW": ["在粗糙像素下，細小的尖刺和縫隙會被填滿，變成「地面」。", "精細像素能穿過縫隙，粗糙像素能把危險物變成立足點。", "用粗糙像素停住的東西，會一直壓著開關。", "縫隙在精細時能通過，粗糙時會被堵住。投擲和防守時要切換喔。", "水只在粗糙像素時上漲。鑰匙只有在精細像素時才能穿過縫隙。", "一邊看水位一邊切換解析度，闖過了節奏迴廊！", "把停住的岩石當作踏板，拿到了鑰匙！", "同時停住兩顆球，打開了兩扇門！", "掌握了空中切換的訣竅！", "爬上了高塔，打開了門鎖！", "在空中丟出鑰匙，打開了鎖孔和門鎖！", "夾在岩石與洪水之間，靠切換時機闖了過去！", "駕馭了移動平台和空中切換！", "把球送進了洞裡，最後一扇門打開了！", "征服了天空鑰匙城。只靠解析度攻克了重重機關！", "太棒了！成功完成究極空中切換，16個關卡全部制霸！能隨心所欲操控像素粗細的你，就是真正的像素大師！恭喜！！"], "ko": ["거친 도트에서는 가느다란 가시와 틈새가 메워져 '바닥'이 된다.", "세밀한 도트는 틈새를 빠져나가고, 거친 도트는 위험물을 발판으로 바꾼다.", "거친 도트로 멈춘 물체는 그대로 스위치를 계속 눌러 준다.", "틈새는 세밀하면 통과되고 거칠면 막힌다. 던질 때와 막을 때 바꿔 쓰자.", "물은 거친 도트일 때만 차오른다. 열쇠는 세밀한 도트일 때만 틈새를 지나간다.", "수위를 보며 해상도를 바꾸는 리듬의 회랑을 빠져나왔다!", "멈춘 바위를 발판 삼아 열쇠를 손에 넣었다!", "두 공을 동시에 멈춰 두 개의 문을 활짝 열었다!", "공중 전환의 요령을 익혔다!", "탑을 끝까지 올라 자물쇠를 열었다!", "공중에서 열쇠를 던져 넣어 열쇠 구멍과 자물쇠를 모두 열었다!", "바위와 물 사이의 궁지를 전환 타이밍으로 극복했다!", "움직이는 발판과 공중 전환을 완벽히 다뤘다!", "공을 구멍까지 보내 마지막 문이 열렸다!", "하늘의 열쇠성을 제패했다. 수많은 장치를 해상도만으로 공략했다!", "해냈다! 궁극의 공중 전환을 성공시키고 16개 스테이지를 완전 정복! 도트의 거칠기를 자유자재로 다루는 당신이야말로 진정한 픽셀 마스터! 축하해!!"], "es": ["Con píxeles gruesos, los pinchos finos y los huecos se rellenan y se vuelven «suelo».", "Los píxeles finos atraviesan huecos; los gruesos convierten los peligros en plataformas.", "Lo que congelas con píxeles gruesos sigue presionando el interruptor.", "Los huecos dejan pasar en fino y se cierran en grueso. Cambia según lances o te defiendas.", "El agua solo sube con píxeles gruesos. Las llaves solo pasan por huecos con píxeles finos.", "¡Cruzaste el pasillo cambiando de resolución al ritmo del agua!", "¡Usaste una roca congelada como escalón y conseguiste la llave!", "¡Congelaste las dos bolas a la vez y abriste ambas puertas!", "¡Le pillaste el truco a cambiar en el aire!", "¡Subiste la torre y abriste el candado!", "¡Lanzaste la llave en el aire y abriste la cerradura y el candado!", "¡Atrapado entre rocas y agua, lo superaste con el momento justo!", "¡Dominaste las plataformas móviles y el cambio en el aire!", "¡Llevaste la bola hasta el agujero y se abrió la última puerta!", "Castillo celeste conquistado. ¡Superaste trampa tras trampa solo con la resolución!", "¡Sííí! ¡Clavaste el cambio en el aire definitivo y conquistaste los 16 niveles! Dominas el tamaño de los píxeles a tu antojo: ¡eres un auténtico Maestro del Píxel! ¡¡Enhorabuena!!"]}, LANGS = ["ja", "en", "zh-CN", "zh-TW", "ko", "es"];
+  function detect() {
+    const list = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']).map(s => String(s).toLowerCase());
+    for (const l of list) {
+      if (l.startsWith('ja')) return 'ja';
+      if (l.startsWith('zh')) return /tw|hk|mo|hant/.test(l) ? 'zh-TW' : 'zh-CN';
+      if (l.startsWith('ko')) return 'ko';
+      if (l.startsWith('es')) return 'es';
+      if (l.startsWith('en')) return 'en';
+    }
+    return 'en';
+  }
+  const I = { lang: 'ja', LANGS, detect };
+  I.t = (k, n) => { const r = UI[k]; let s = r ? (r[I.lang] != null ? r[I.lang] : r.ja) : k; if (n != null) s = s.replace('{n}', n); return s; };
+  I.name = L => I.lang === 'ja' ? L.jp : ((NAMES[I.lang] || [])[L.id - 1] || L.en);
+  I.msg = L => I.lang === 'ja' ? (L.msg || '') : ((MSGS[I.lang] || [])[L.id - 1] || L.msg || '');
+  I.apply = function () {
+    document.documentElement.lang = I.lang;
+    const c = document.getElementById('langCode'); if (c) c.textContent = { ja: 'JA', en: 'EN', 'zh-CN': '简', 'zh-TW': '繁', ko: '한', es: 'ES' }[I.lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = I.t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = I.t(el.dataset.i18nHtml); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', I.t(el.dataset.i18nAria)));
+    document.querySelectorAll('[data-i18n-pre]').forEach(el => { el.dataset.pre = I.t(el.dataset.i18nPre); });
+  };
+  return I;
+})();
+window.psT = I18N.t;
+</script>
+<script>
 // Pixel Scale UI: loop, input, menus, sound
 (function () {
   'use strict';
@@ -1627,6 +1678,12 @@ const R = (function () {
 
   try { const s = JSON.parse(localStorage.getItem('pixelscale.v3')); if (s && s.best) G.save = s; } catch (e) {}
   const store = () => { try { localStorage.setItem('pixelscale.v3', JSON.stringify(G.save)); } catch (e) {} };
+  I18N.lang = I18N.LANGS.includes(G.save.lang) ? G.save.lang : I18N.detect();
+  function setLang(l) {
+    I18N.lang = l; G.save.lang = l; store(); I18N.apply(); $('#langSel').value = l;
+    const L = LEVELS[G.li]; if (G.W) { $('#stName').textContent = 'STAGE ' + L.id + ' ' + I18N.name(L); $('#stEn').textContent = l === 'ja' ? L.en : ''; $('#stEn').hidden = l !== 'ja'; lastRes = -1; updateHud(); }
+    if ($('#vMenu').classList.contains('on')) buildMenu();
+  }
 
   // ---------- sound ----------
   let ac = null;
@@ -1647,7 +1704,7 @@ const R = (function () {
     G.li = Math.max(0, Math.min(LEVELS.length - 1, i));
     const L = LEVELS[G.li];
     G.W = PS.create(L); G.cam = 0; G.time = 0; G.miss = 0; G.mode = 'play'; G.parts = []; K.want = -1; lastRes = -1;
-    $('#stName').textContent = 'STAGE ' + L.id + ' ' + L.jp; $('#stEn').textContent = L.en;
+    $('#stName').textContent = 'STAGE ' + L.id + ' ' + I18N.name(L); $('#stEn').textContent = I18N.lang === 'ja' ? L.en : ''; $('#stEn').hidden = I18N.lang !== 'ja';
     $('#hintTxt').textContent = L.hint;
     const ci = $('#chipItem'); ci.hidden = true;
     $('#tT').hidden = true;
@@ -1662,13 +1719,13 @@ const R = (function () {
     const W = G.W; $('#chipKey').hidden = !W.hasKey;
     const hasIt = !!(W.L.item && W.itemGot && !W.itemDone);
     const ci = $('#chipItem'); ci.hidden = !hasIt;
-    if (hasIt) ci.textContent = W.L.item === 'arrow' ? '🏹 Fで発射' : '🗝 Fで投げる';
+    if (hasIt) ci.textContent = I18N.t(W.L.item === 'arrow' ? 'chipShoot' : 'chipThrow');
     $('#tT').hidden = !hasIt && !PAD.edit;
     if (W.res !== lastRes) {
       lastRes = W.res;
       $('#segLow').setAttribute('aria-pressed', W.res === 0); $('#segHigh').setAttribute('aria-pressed', W.res === 1);
       $('#rdName').textContent = W.res ? 'HD' : '8BIT'; $('#rdSub').textContent = W.res ? 'DOT 1 · 超高精細' : 'DOT 12 · 粗いドット';
-      $('#tS').dataset.res = W.res; $('#tSName').textContent = W.res ? 'HD' : '8bit'; $('#tSSub').textContent = W.res ? '→ 粗く' : '→ 細かく';
+      $('#tS').dataset.res = W.res; $('#tSName').textContent = W.res ? 'HD' : '8bit'; $('#tSSub').textContent = I18N.t(W.res ? 'toCoarse' : 'toFine');
     }
   }
   function buildMenu() {
@@ -1676,7 +1733,7 @@ const R = (function () {
     LEVELS.forEach((L, i) => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'lv';
       const best = G.save.best[L.id];
-      b.innerHTML = '<span class="n">STAGE ' + L.id + (G.save.done[L.id] ? ' ✓' : '') + '</span><span class="t">' + L.jp + '</span><span class="b">' + (best != null ? 'BEST ' + fmt(best) : '') + '</span>';
+      b.innerHTML = '<span class="n">STAGE ' + L.id + (G.save.done[L.id] ? ' ✓' : '') + '</span><span class="t">' + I18N.name(L) + '</span><span class="b">' + (best != null ? 'BEST ' + fmt(best) : '') + '</span>';
       b.addEventListener('click', () => startLevel(i)); g.appendChild(b);
     });
   }
@@ -1691,9 +1748,9 @@ const R = (function () {
   function winScreen() {
     const L = LEVELS[G.li], last = G.li === LEVELS.length - 1;
     G.save.done[L.id] = 1; const prev = G.save.best[L.id]; if (prev == null || G.time < prev) G.save.best[L.id] = +G.time.toFixed(1); store();
-    $('#winTitle').textContent = last ? 'ぜんぶクリア！' : 'ステージ ' + L.id + ' クリア！';
+    $('#winTitle').textContent = last ? I18N.t('winAll') : I18N.t('winStage', L.id);
     $('#rTime').textContent = fmt(G.time); $('#rMiss').textContent = G.miss; $('#rBest').textContent = fmt(G.save.best[L.id]);
-    $('#winMsg').textContent = L.msg || ''; $('#bNext').textContent = last ? 'ステージ選択' : '次のステージ ⏎';
+    $('#winMsg').textContent = I18N.msg(L); $('#bNext').textContent = last ? I18N.t('menuTitle') : I18N.t('next');
     $('#vWin').classList.add('on'); $('#bNext').focus({ preventScroll: true });
   }
   function nextAction() {
@@ -1852,6 +1909,8 @@ const R = (function () {
   (padMQ.addEventListener ? padMQ.addEventListener('change', padMode) : padMQ.addListener(padMode));
   new ResizeObserver(() => padPlace()).observe(touchEl);
   padMode();
+  I18N.apply(); $('#langSel').value = I18N.lang;
+  $('#langSel').addEventListener('change', e => setLang(e.target.value));
 
   function toggleBox() { G.box = !G.box; $('#bBox').setAttribute('aria-pressed', G.box); }
   function toggleSnd() { G.sound = !G.sound; $('#bSnd').setAttribute('aria-pressed', G.sound); }
