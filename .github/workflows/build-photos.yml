@@ -1,0 +1,43 @@
+name: Build photos.json
+
+on:
+  schedule:
+    - cron: '17 3 1 * *'   # 毎月1日 03:17 UTC（日本時間 12:17）
+  workflow_dispatch:         # Actions タブから手動実行もできる
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-photos
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: chronoguesser   # ゲームのフォルダで実行する
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build photos.json from Wikimedia Commons
+        run: node scripts/build-photos.mjs
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- photos.json && git ls-files --error-unmatch photos.json >/dev/null 2>&1; then
+            echo "photos.json に変更はありません"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add photos.json
+          git commit -m "Update chronoguesser/photos.json"
+          git pull --rebase
+          git push
