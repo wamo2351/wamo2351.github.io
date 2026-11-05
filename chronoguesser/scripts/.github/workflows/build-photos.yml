@@ -16,6 +16,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: chronoguesser   # ゲームのフォルダで実行する
     steps:
       - uses: actions/checkout@v4
 
@@ -35,5 +38,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
           git add photos.json
-          git commit -m "Update photos.json"
+          git commit -m "Update chronoguesser/photos.json"
+          git pull --rebase
           git push
