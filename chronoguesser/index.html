@@ -1,0 +1,3191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronoguesser - 街並み写真 年月日推理ゲーム</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* Tailwind CSS v3 Preflight & Compiled Utilities */
+        *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e2e8f0; --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgb(59 130 246 / 0.5); --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000; }
+        html { line-height: 1.5; -webkit-text-size-adjust: 100%; tab-size: 4; font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, "Noto Sans JP", "Noto Sans CJK JP", "Malgun Gothic", "Microsoft JhengHei", "Microsoft YaHei", sans-serif; }
+        body { margin: 0; line-height: inherit; }
+        h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; margin: 0; }
+        p { margin: 0; }
+        a { color: inherit; text-decoration: inherit; }
+        b, strong { font-weight: bolder; }
+        button, input, select { font-family: inherit; font-feature-settings: inherit; font-variation-settings: inherit; font-size: 100%; font-weight: inherit; line-height: inherit; color: inherit; margin: 0; padding: 0; }
+        button, select { text-transform: none; }
+        button, [type='button'] { -webkit-appearance: button; background-color: transparent; background-image: none; cursor: pointer; }
+        img, canvas, svg { display: block; vertical-align: middle; }
+        img { max-width: 100%; height: auto; }
+        [hidden] { display: none; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .inline-flex { display: inline-flex; }
+        .inline-block { display: inline-block; }
+        .hidden { display: none; }
+        .sticky { position: sticky; }
+        .top-0 { top: 0px; }
+        .z-30 { z-index: 30; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .z-20 { z-index: 20; }
+        .inset-0 { inset: 0px; }
+        .z-10 { z-index: 10; }
+        .-top-1\.5 { top: -0.375rem; }
+        .flex-col { flex-direction: column; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .shrink-0 { flex-shrink: 0; }
+        .justify-end { justify-content: flex-end; }
+        .gap-1\.5 { gap: 0.375rem; }
+        .gap-1 { gap: 0.25rem; }
+        .flex-1 { flex: 1 1 0%; }
+        .justify-center { justify-content: center; }
+        .gap-4 { gap: 1rem; }
+        .items-stretch { align-items: stretch; }
+        .gap-5 { gap: 1.25rem; }
+        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .gap-3\.5 { gap: 0.875rem; }
+        .gap-0\.5 { gap: 0.125rem; }
+        .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        .gap-3 { gap: 0.75rem; }
+        .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+        .gap-2\.5 { gap: 0.625rem; }
+        .items-start { align-items: flex-start; }
+        .items-baseline { align-items: baseline; }
+        .min-h-screen { min-height: 100vh; }
+        .min-h-0 { min-height: 0px; }
+        .max-w-6xl { max-width: 72rem; }
+        .w-7 { width: 1.75rem; }
+        .h-7 { height: 1.75rem; }
+        .w-auto { width: auto; }
+        .min-w-0 { min-width: 0px; }
+        .max-w-full { max-width: 100%; }
+        .max-w-\[110px\] { max-width: 110px; }
+        .h-3\.5 { height: 0.875rem; }
+        .w-px { width: 1px; }
+        .w-full { width: 100%; }
+        .max-w-4xl { max-width: 56rem; }
+        .h-10 { height: 2.5rem; }
+        .overflow-hidden { overflow: hidden; }
+        .min-h-\[140px\] { min-height: 140px; }
+        .min-h-\[250px\] { min-height: 250px; }
+        .w-8 { width: 2rem; }
+        .h-8 { height: 2rem; }
+        .min-w-\[42px\] { min-width: 42px; }
+        .min-w-\[64px\] { min-width: 64px; }
+        .h-full { height: 100%; }
+        .max-h-\[300px\] { max-height: 300px; }
+        .object-contain { object-fit: contain; }
+        .w-16 { width: 4rem; }
+        .w-12 { width: 3rem; }
+        .h-2\.5 { height: 0.625rem; }
+        .w-1\.5 { width: 0.375rem; }
+        .h-5 { height: 1.25rem; }
+        .max-h-20 { max-height: 5rem; }
+        .max-h-44 { max-height: 11rem; }
+        .overflow-y-auto { overflow-y: auto; }
+        .max-w-3xl { max-width: 48rem; }
+        .max-w-lg { max-width: 32rem; }
+        .max-h-96 { max-height: 24rem; }
+        .h-14 { height: 3.5rem; }
+        .object-cover { object-fit: cover; }
+        .min-w-\[84px\] { min-width: 84px; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .my-auto { margin-top: auto; margin-bottom: auto; }
+        .mr-1 { margin-right: 0.25rem; }
+        .mt-0\.5 { margin-top: 0.125rem; }
+        .mt-1\.5 { margin-top: 0.375rem; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .p-4 { padding: 1rem; }
+        .p-0\.5 { padding: 0.125rem; }
+        .p-1 { padding: 0.25rem; }
+        .p-1\.5 { padding: 0.375rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-2\.5 { padding: 0.625rem; }
+        .p-3\.5 { padding: 0.875rem; }
+        .p-3 { padding: 0.75rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+        .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+        .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+        .px-0\.5 { padding-left: 0.125rem; padding-right: 0.125rem; }
+        .py-3\.5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+        .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+        .px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+        .pt-0\.5 { padding-top: 0.125rem; }
+        .pt-1 { padding-top: 0.25rem; }
+        .pt-2 { padding-top: 0.5rem; }
+        .pt-1\.5 { padding-top: 0.375rem; }
+        .pt-2\.5 { padding-top: 0.625rem; }
+        .pb-2\.5 { padding-bottom: 0.625rem; }
+        .pb-5 { padding-bottom: 1.25rem; }
+        .pr-1 { padding-right: 0.25rem; }
+        .pt-4 { padding-top: 1rem; }
+        .space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }
+        .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+        .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }
+        .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+        .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; }
+        .space-y-3\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem; }
+        .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+        .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem; }
+        .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        .font-medium { font-weight: 500; }
+        .font-bold { font-weight: 700; }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .text-\[11px\] { font-size: 11px; }
+        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+        .text-center { text-align: center; }
+        .leading-relaxed { line-height: 1.625; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .font-extrabold { font-weight: 800; }
+        .leading-tight { line-height: 1.25; }
+        .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-\[10px\] { font-size: 10px; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .font-normal { font-weight: 400; }
+        .leading-snug { line-height: 1.375; }
+        .underline { text-decoration-line: underline; }
+        .line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
+        .text-right { text-align: right; }
+        .text-slate-900 { color: rgb(15 23 42); }
+        .text-slate-700 { color: rgb(51 65 85); }
+        .text-amber-500 { color: rgb(245 158 11); }
+        .text-slate-800 { color: rgb(30 41 59); }
+        .text-slate-500 { color: rgb(100 116 139); }
+        .text-amber-600 { color: rgb(217 119 6); }
+        .text-slate-600 { color: rgb(71 85 105); }
+        .text-amber-800 { color: rgb(146 64 14); }
+        .text-red-500 { color: rgb(239 68 68); }
+        .text-white { color: rgb(255 255 255); }
+        .text-amber-400 { color: rgb(251 191 36); }
+        .text-slate-200 { color: rgb(226 232 240); }
+        .text-slate-400 { color: rgb(148 163 184); }
+        .text-amber-900 { color: rgb(120 53 15); }
+        .text-left { text-align: left; }
+        .text-sky-800 { color: rgb(7 89 133); }
+        .text-pink-800 { color: rgb(157 23 77); }
+        .text-emerald-800 { color: rgb(6 95 70); }
+        .text-orange-800 { color: rgb(154 52 18); }
+        .bg-slate-50 { background-color: rgb(248 250 252); }
+        .bg-white { background-color: rgb(255 255 255); }
+        .bg-slate-100 { background-color: rgb(241 245 249); }
+        .bg-slate-300 { background-color: rgb(203 213 225); }
+        .bg-transparent { background-color: transparent; }
+        .bg-amber-100 { background-color: rgb(254 243 199); }
+        .bg-amber-400 { background-color: rgb(251 191 36); }
+        .bg-slate-900 { background-color: rgb(15 23 42); }
+        .bg-white\/95 { background-color: rgb(255 255 255 / 0.95); }
+        .bg-slate-900\/80 { background-color: rgb(15 23 42 / 0.8); }
+        .bg-amber-50 { background-color: rgb(255 251 235); }
+        .bg-slate-700 { background-color: rgb(51 65 85); }
+        .bg-red-500 { background-color: rgb(239 68 68); }
+        .bg-sky-50 { background-color: rgb(240 249 255); }
+        .bg-pink-50 { background-color: rgb(253 242 248); }
+        .bg-emerald-50 { background-color: rgb(236 253 245); }
+        .bg-orange-50 { background-color: rgb(255 247 237); }
+        .bg-emerald-100 { background-color: rgb(209 250 229); }
+        .bg-sky-100 { background-color: rgb(224 242 254); }
+        .bg-pink-100 { background-color: rgb(252 231 243); }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-md { border-radius: 0.375rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-full { border-radius: 9999px; }
+        .border { border-width: 1px; }
+        .border-b { border-bottom-width: 1px; }
+        .border-t { border-top-width: 1px; }
+        .border-l { border-left-width: 1px; }
+        .border-b-2 { border-bottom-width: 2px; }
+        .border-slate-200 { border-color: rgb(226 232 240); }
+        .border-slate-300 { border-color: rgb(203 213 225); }
+        .border-slate-100 { border-color: rgb(241 245 249); }
+        .border-amber-400 { border-color: rgb(251 191 36); }
+        .border-amber-200 { border-color: rgb(253 230 138); }
+        .border-amber-300 { border-color: rgb(252 211 77); }
+        .border-amber-500 { border-color: rgb(245 158 11); }
+        .border-sky-200 { border-color: rgb(186 230 253); }
+        .border-pink-200 { border-color: rgb(251 207 232); }
+        .border-emerald-200 { border-color: rgb(167 243 208); }
+        .border-orange-200 { border-color: rgb(254 215 170); }
+        .border-emerald-300 { border-color: rgb(110 231 183); }
+        .border-sky-300 { border-color: rgb(125 211 252); }
+        .border-pink-300 { border-color: rgb(249 168 212); }
+        .shadow-sm { --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
+        .shadow-lg { --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color); box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow); }
+        .ring-2 { --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); }
+        .ring-amber-300 { --tw-ring-color: rgb(252 211 77); }
+        .transition { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+        .opacity-80 { opacity: 0.8; }
+        .cursor-pointer { cursor: pointer; }
+        .top-2 { top: 0.5rem; }
+        .left-2 { left: 0.5rem; }
+        .right-2 { right: 0.5rem; }
+        .pointer-events-none { pointer-events: none; }
+        .pointer-events-auto { pointer-events: auto; }
+        .select-none { user-select: none; }
+        .hover\:text-amber-700:hover { color: rgb(180 83 9); }
+        .hover\:text-amber-600:hover { color: rgb(217 119 6); }
+        .hover\:bg-slate-200:hover { background-color: rgb(226 232 240); }
+        .hover\:bg-amber-500:hover { background-color: rgb(245 158 11); }
+        .hover\:bg-slate-800:hover { background-color: rgb(30 41 59); }
+        .hover\:bg-white:hover { background-color: rgb(255 255 255); }
+        .hover\:bg-slate-100:hover { background-color: rgb(241 245 249); }
+        .hover\:bg-sky-100:hover { background-color: rgb(224 242 254); }
+        .hover\:bg-pink-100:hover { background-color: rgb(252 231 243); }
+        .hover\:bg-emerald-100:hover { background-color: rgb(209 250 229); }
+        .hover\:bg-orange-100:hover { background-color: rgb(255 237 213); }
+        .focus\:border-amber-500:focus { border-color: rgb(245 158 11); }
+        .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+        .disabled\:opacity-40:disabled { opacity: 0.4; }
+        .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+        .disabled\:pointer-events-none:disabled { pointer-events: none; }
+        @media (min-width: 640px) {
+            .sm\:block { display: block; }
+            .sm\:inline { display: inline; }
+            .sm\:flex { display: flex; }
+            .sm\:grid { display: grid; }
+            .sm\:top-3 { top: 0.75rem; }
+            .sm\:left-3 { left: 0.75rem; }
+            .sm\:right-3 { right: 0.75rem; }
+            .sm\:gap-3 { gap: 0.75rem; }
+            .sm\:gap-4 { gap: 1rem; }
+            .sm\:gap-1\.5 { gap: 0.375rem; }
+            .sm\:gap-5 { gap: 1.25rem; }
+            .sm\:gap-6 { gap: 1.5rem; }
+            .sm\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .sm\:gap-2 { gap: 0.5rem; }
+            .sm\:gap-1 { gap: 0.25rem; }
+            .sm\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+            .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sm\:flex-row { flex-direction: row; }
+            .sm\:items-center { align-items: center; }
+            .sm\:justify-end { justify-content: flex-end; }
+            .sm\:h-9 { height: 2.25rem; }
+            .sm\:max-w-\[240px\] { max-width: 240px; }
+            .sm\:h-4 { height: 1rem; }
+            .sm\:h-16 { height: 4rem; }
+            .sm\:min-h-\[400px\] { min-height: 400px; }
+            .sm\:w-7 { width: 1.75rem; }
+            .sm\:h-7 { height: 1.75rem; }
+            .sm\:max-h-\[440px\] { max-height: 440px; }
+            .sm\:max-h-44 { max-height: 11rem; }
+            .sm\:max-h-96 { max-height: 24rem; }
+            .sm\:min-w-\[84px\] { min-width: 84px; }
+            .sm\:w-auto { width: auto; }
+            .sm\:w-20 { width: 5rem; }
+            .sm\:h-14 { height: 3.5rem; }
+            .sm\:p-6 { padding: 1.5rem; }
+            .sm\:p-4 { padding: 1rem; }
+            .sm\:p-5 { padding: 1.25rem; }
+            .sm\:p-8 { padding: 2rem; }
+            .sm\:p-3 { padding: 0.75rem; }
+            .sm\:px-4 { padding-left: 1rem; padding-right: 1rem; }
+            .sm\:py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+            .sm\:px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+            .sm\:py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+            .sm\:px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+            .sm\:py-5 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+            .sm\:py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+            .sm\:py-3\.5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+            .sm\:px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+            .sm\:py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+            .sm\:px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+            .sm\:py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+            .sm\:pb-6 { padding-bottom: 1.5rem; }
+            .sm\:pt-0 { padding-top: 0px; }
+            .sm\:pt-4 { padding-top: 1rem; }
+            .sm\:mt-0\.5 { margin-top: 0.125rem; }
+            .sm\:mt-2 { margin-top: 0.5rem; }
+            .sm\:mb-1 { margin-bottom: 0.25rem; }
+            .sm\:space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+            .sm\:space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+            .sm\:space-y-3\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.875rem; }
+            .sm\:space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+            .sm\:space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }
+            .sm\:space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+            .sm\:space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; }
+            .sm\:text-\[11px\] { font-size: 11px; }
+            .sm\:text-xs { font-size: 0.75rem; line-height: 1rem; }
+            .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+            .sm\:text-base { font-size: 1rem; line-height: 1.5rem; }
+            .sm\:text-2xl { font-size: 1.5rem; line-height: 2rem; }
+            .sm\:text-\[26px\] { font-size: 26px; }
+            .sm\:text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+            .sm\:text-5xl { font-size: 3rem; line-height: 1; }
+            .sm\:text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+            .sm\:leading-relaxed { line-height: 1.625; }
+            .sm\:line-clamp-none { overflow: visible; display: block; -webkit-box-orient: horizontal; -webkit-line-clamp: none; }
+            .sm\:text-right { text-align: right; }
+            .sm\:border-t-0 { border-top-width: 0px; }
+        }
+        @media (max-width: 639px) {
+            html, body {
+                height: 100vh;
+                height: 100dvh;
+                max-height: 100dvh;
+                overflow: hidden;
+            }
+            main {
+                flex: 1 1 0%;
+                min-height: 0;
+                overflow: hidden;
+            }
+            #modeSelectScreen,
+            #gameScreen,
+            #summaryScreen {
+                min-height: 0;
+                max-height: 100%;
+            }
+            #gameScreen > .game-layout-grid {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 0%;
+                min-height: 0;
+                gap: 0.5rem;
+            }
+            #photoViewerCard {
+                flex: 1 1 0%;
+                min-height: 130px;
+            }
+            #currentPhotoImg {
+                max-height: 100%;
+                width: auto;
+                height: auto;
+            }
+            #rightControlCard {
+                flex-shrink: 0;
+            }
+            #diffText br {
+                display: none;
+            }
+            #diffText span.text-slate-400::before {
+                content: " (";
+            }
+            #diffText span.text-slate-400::after {
+                content: ")";
+            }
+            input[type=range].chrono-slider {
+                height: 7px;
+            }
+            input[type=range].chrono-slider::-webkit-slider-thumb {
+                width: 20px;
+                height: 20px;
+                border-width: 2.5px;
+            }
+            input[type=range].chrono-slider::-moz-range-thumb {
+                width: 20px;
+                height: 20px;
+                border-width: 2.5px;
+            }
+        }
+        @media (min-width: 768px) {
+            .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+            .lg\:col-span-8 { grid-column: span 8 / span 8; }
+            .lg\:col-span-4 { grid-column: span 4 / span 4; }
+            .lg\:min-h-\[520px\] { min-height: 520px; }
+            .lg\:max-h-\[540px\] { max-height: 540px; }
+        }
+
+        body {
+            background-color: #F8FAFC;
+            color: #0F172A;
+            font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, "Noto Sans JP", "Noto Sans CJK JP", "Malgun Gothic", "Microsoft JhengHei", "Microsoft YaHei", sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        input[type=range].chrono-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 999px;
+            border: 1px solid #CBD5E1;
+            outline: none;
+        }
+        input[type=range].chrono-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #FACC15;
+            border: 3px solid #EF4444;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+            transition: transform 0.12s ease;
+        }
+        input[type=range].chrono-slider::-webkit-slider-thumb:hover { transform: scale(1.12); }
+        input[type=range].chrono-slider::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #FACC15;
+            border: 3px solid #EF4444;
+            cursor: pointer;
+        }
+        @media (pointer: coarse) and (min-width: 640px) {
+            input[type=range].chrono-slider { height: 10px; }
+            input[type=range].chrono-slider::-webkit-slider-thumb { width: 26px; height: 26px; }
+            input[type=range].chrono-slider::-moz-range-thumb { width: 26px; height: 26px; }
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .photo-viewport {
+            position: relative;
+            overflow: hidden;
+            background-color: #0F172A;
+            cursor: grab;
+            touch-action: pan-y;
+        }
+        .photo-viewport.is-zoomed {
+            touch-action: none;
+        }
+        .photo-viewport:active { cursor: grabbing; }
+        .photo-transform-layer {
+            transform-origin: center center;
+            transition: transform 0.08s ease-out;
+            will-change: transform;
+        }
+        .month-btn { transition: all .12s ease; }
+        .month-btn.active {
+            background: #FACC15 !important;
+            color: #0F172A !important;
+            border-color: #EAB308 !important;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(234, 179, 8, .35);
+        }
+        .season-bar {
+            background: linear-gradient(90deg,
+                #38bdf8 0%, #38bdf8 8%,
+                #f472b6 17%, #f472b6 33%,
+                #34d399 42%, #34d399 58%,
+                #fb923c 67%, #fb923c 83%,
+                #38bdf8 92%, #38bdf8 100%);
+        }
+        .photo-credit-overlay {
+            position: absolute;
+            left: 0.5rem;
+            bottom: 0.5rem;
+            z-index: 20;
+            max-width: calc(100% - 1rem);
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.375rem;
+            background: rgba(15, 23, 42, 0.68);
+            color: #F1F5F9;
+            font-size: 10px;
+            line-height: 1.5;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            pointer-events: none;
+        }
+        @media (min-width: 640px) {
+            .photo-credit-overlay { left: 0.75rem; bottom: 0.75rem; font-size: 11px; }
+        }
+        .logo-shadow {
+            filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.08));
+        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        #fxCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 60;
+        }
+        @keyframes fxPopGold {
+            0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); }
+            45% { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.35), 0 10px 24px -4px rgba(245, 158, 11, 0.35); background-color: #FFFBEB; border-color: #F59E0B; }
+            100% { transform: scale(1); box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25); background-color: #FFFBEB; border-color: #FCD34D; }
+        }
+        @keyframes fxPopGood {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.025); box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.28); background-color: #F0F9FF; border-color: #7DD3FC; }
+            100% { transform: scale(1); }
+        }
+        @keyframes fxMissShake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            15% { transform: translate(-7px, 2px) rotate(-1.2deg); background-color: #E2E8F0; border-color: #94A3B8; }
+            30% { transform: translate(6px, 3px) rotate(1deg); background-color: #E2E8F0; border-color: #94A3B8; }
+            45% { transform: translate(-5px, 3px) rotate(-0.8deg); }
+            60% { transform: translate(4px, 2px) rotate(0.6deg); }
+            75% { transform: translate(-2px, 1px) rotate(-0.3deg); }
+        }
+        .fx-card-perfect {
+            animation: fxPopGold 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .fx-card-good {
+            animation: fxPopGood 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        .fx-card-miss {
+            animation: fxMissShake 0.65s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <canvas id="fxCanvas" aria-hidden="true"></canvas>
+
+    <!-- ================= HEADER ================= -->
+    <header class="border-b border-slate-200 bg-white sticky top-0 z-30 shrink-0">
+        <div class="max-w-6xl mx-auto px-2.5 sm:px-4 py-1.5 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
+            <div class="flex items-center gap-2 cursor-pointer shrink-0" onclick="openModeSelect()" id="logoHeaderBtn" title="モード選択に戻る">
+                <img src="logo.png" alt="Chronoguesser" class="h-7 sm:h-9 w-auto logo-shadow">
+            </div>
+
+            <div class="flex items-center justify-end gap-1.5 sm:gap-3 min-w-0">
+                <button id="modeHeaderBtn" onclick="openModeSelect()" class="hidden items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-medium text-slate-700 transition max-w-full min-w-0">
+                    <i class="fa-solid fa-sliders text-amber-500 shrink-0"></i>
+                    <span id="activeModeLabel" class="font-bold text-slate-800 max-w-[110px] sm:max-w-[240px] truncate">チャレンジモード</span>
+                </button>
+                <div id="hudScoreBox" class="hidden items-center gap-1.5 sm:gap-4 bg-slate-100 border border-slate-200 px-2 sm:px-3.5 py-1 rounded-lg shrink-0">
+                    <div class="flex items-center gap-1 sm:gap-1.5">
+                        <span class="hidden sm:inline text-[11px] text-slate-500 font-medium" data-i18n="hudRound">ラウンド</span>
+                        <span id="hudRound" class="font-mono font-bold text-xs sm:text-sm text-slate-900">1 / 5</span>
+                    </div>
+                    <div class="h-3.5 sm:h-4 w-px bg-slate-300"></div>
+                    <div class="flex items-center gap-1 sm:gap-1.5">
+                        <span class="hidden sm:inline text-[11px] text-slate-500 font-medium" data-i18n="hudScore">スコア</span>
+                        <span id="hudScore" class="font-mono font-bold text-xs sm:text-sm text-amber-600">0</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 shrink-0">
+                    <i class="fa-solid fa-globe text-xs text-slate-500"></i>
+                    <select id="langSelect" onchange="setLanguage(this.value)" aria-label="Language" class="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer">
+                        <option value="ja">日本語</option>
+                        <option value="en">English</option>
+                        <option value="ko">한국어</option>
+                        <option value="zh-TW">繁體中文</option>
+                        <option value="zh-CN">简体中文</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN ================= -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-2.5 sm:px-4 py-2 sm:py-5 flex flex-col justify-center">
+
+        <!-- ===== MODE SELECT SCREEN ===== -->
+        <section id="modeSelectScreen" class="my-auto py-1 sm:py-4">
+            <div class="max-w-4xl mx-auto space-y-2.5 sm:space-y-6">
+                <div class="text-center space-y-1.5 sm:space-y-3 px-1">
+                    <img src="logo.png" alt="Chronoguesser" class="hidden sm:block h-10 sm:h-16 w-auto mx-auto logo-shadow">
+                    <p class="text-xs sm:text-base text-slate-600 font-medium leading-snug sm:leading-relaxed" data-i18n="tagline">
+                        世界の街並み写真から、撮影された「年・月・日」を推理するゲーム（全5問）
+                    </p>
+                    <p class="text-[10px] sm:text-xs text-slate-400" data-i18n="dateSourceNote">※ 撮影日は Wikimedia Commons の記録に基づきます</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-2.5 sm:gap-5 items-stretch">
+                    <!-- Card 1: Challenge Mode -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-6 shadow-sm flex flex-col justify-between gap-3 sm:gap-6">
+                        <div class="space-y-1.5 sm:space-y-2.5">
+                            <div class="flex sm:block items-center justify-between gap-2">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-md bg-amber-100 text-amber-800 text-xs font-bold sm:mb-1">
+                                    <i class="fa-solid fa-earth-americas"></i><span data-i18n="challengeBadge">全年代・全都市</span>
+                                </div>
+                                <h2 class="text-base sm:text-2xl font-bold text-slate-900" data-i18n="challengeTitle">チャレンジモード</h2>
+                            </div>
+                            <div id="challengeRangeLabel" class="font-mono text-xs sm:text-base font-bold text-amber-600">
+                                1850年 〜 <span class="current-max-year">2026</span>年 ／ すべての都市
+                            </div>
+                            <p class="hidden sm:block text-xs sm:text-sm text-slate-600 leading-relaxed" data-i18n="challengeDesc">
+                                19世紀の街角から2020年代の現代ストリートまで、世界中のあらゆる都市・年代から幅広く出題されます。
+                            </p>
+                        </div>
+
+                        <button onclick="startAllMode()" class="w-full py-2.5 sm:py-3.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-sm sm:text-base shadow-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play text-red-500"></i>
+                            <span data-i18n="challengeStartBtn">チャレンジモードで始める</span>
+                        </button>
+                    </div>
+
+                    <!-- Card 2: Custom Filter Mode (Era & City) -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-6 shadow-sm flex flex-col justify-between gap-3 sm:gap-5">
+                        <div class="space-y-2 sm:space-y-3.5">
+                            <div class="flex sm:block items-center justify-between gap-2">
+                                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-bold sm:mb-1">
+                                    <i class="fa-solid fa-filter"></i><span data-i18n="filterBadge">カスタム出題</span>
+                                </div>
+                                <h2 class="text-base sm:text-2xl font-bold text-slate-900" data-i18n="filterTitle">絞り込みモード</h2>
+                            </div>
+                            <p class="hidden sm:block text-xs sm:text-sm text-slate-600 leading-relaxed" data-i18n="filterDesc">
+                                出題される「開始年代」や「都市」を絞り込んでプレイできます。
+                            </p>
+
+                            <!-- Decade Filter -->
+                            <div class="space-y-1.5 pt-0.5 sm:pt-1">
+                                <div class="flex items-center justify-between gap-2 text-xs text-slate-700">
+                                    <span class="font-bold shrink-0"><i class="fa-regular fa-calendar mr-1 text-amber-500"></i><span data-i18n="startDecadeLabel">開始年代</span></span>
+                                    <select id="decadeSelect" onchange="selectDecadeFilter(+this.value)" class="bg-slate-50 border border-slate-300 text-slate-800 font-mono text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 max-w-full"></select>
+                                </div>
+                                <div id="decadePresetGrid" class="hidden sm:grid grid-cols-4 gap-1.5"></div>
+                            </div>
+
+                            <!-- City Filter -->
+                            <div class="space-y-1.5 pt-1.5 sm:pt-2 border-t border-slate-100">
+                                <div class="flex items-center justify-between gap-2 text-xs text-slate-700">
+                                    <span class="font-bold shrink-0"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i><span data-i18n="cityLabel">都市</span></span>
+                                    <select id="citySelect" onchange="selectCityFilter(this.value)" class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500 max-w-full"></select>
+                                </div>
+                                <div id="cityPresetGrid" class="hidden sm:grid grid-cols-4 gap-1.5"></div>
+                            </div>
+                        </div>
+
+                        <button onclick="startWithCustomFilter()" class="w-full py-2.5 sm:py-3.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm sm:text-base shadow-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play text-amber-400 shrink-0"></i>
+                            <span id="startFilterBtnText" class="truncate">絞り込みモードで始める</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== GAME SCREEN ===== -->
+        <section id="gameScreen" class="hidden flex-1 flex-col gap-2 sm:gap-4 min-h-0">
+            <div class="game-layout-grid grid lg:grid-cols-12 gap-2 sm:gap-5 flex-1 items-stretch min-h-0">
+
+                <!-- Photo viewer -->
+                <div id="photoViewerCard" class="lg:col-span-8 flex flex-col bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm relative min-h-[140px] sm:min-h-[400px] lg:min-h-[520px]">
+                    <div class="absolute top-2 left-2 right-2 sm:top-3 sm:left-3 sm:right-3 z-20 flex items-center justify-between gap-1.5 sm:gap-2 pointer-events-none">
+                        <div class="pointer-events-auto flex items-center gap-2 min-w-0">
+                            <span id="photoSourceBadge" class="hidden"></span>
+                            <button id="skipBtn" onclick="skipCurrentPhoto()" title="別の写真を読み込む" class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white/95 hover:bg-white border border-slate-200 text-xs font-medium text-slate-700 shadow-sm transition flex items-center gap-1 sm:gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none max-w-full">
+                                <i class="fa-solid fa-shuffle text-amber-500 shrink-0"></i>
+                                <span id="skipBtnText" class="truncate" data-i18n="skipBtn">別の街並みに切替</span>
+                            </button>
+                        </div>
+                        <div class="pointer-events-auto flex items-center gap-0.5 sm:gap-1 bg-white/95 border border-slate-200 p-0.5 sm:p-1 rounded-lg shadow-sm shrink-0">
+                            <button id="zoomOutBtn" onclick="adjustZoom(-0.4)" title="縮小" class="w-7 h-7 rounded hover:bg-slate-100 text-slate-700 flex items-center justify-center transition">
+                                <i class="fa-solid fa-minus text-xs"></i>
+                            </button>
+                            <span id="zoomLevelText" class="font-mono text-[11px] sm:text-xs px-1 sm:px-1.5 text-slate-700 font-bold min-w-[42px] text-center">100%</span>
+                            <button id="zoomInBtn" onclick="adjustZoom(0.4)" title="拡大" class="w-7 h-7 rounded hover:bg-slate-100 text-slate-700 flex items-center justify-center transition">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </button>
+                            <button id="zoomResetBtn" onclick="resetZoom()" title="リセット" class="w-7 h-7 rounded hover:bg-slate-100 text-slate-700 flex items-center justify-center transition border-l border-slate-200">
+                                <i class="fa-solid fa-expand text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="photoViewport" class="photo-viewport flex-1 flex items-center justify-center w-full h-full min-h-0 select-none relative">
+                        <div id="imageLoadingSpinner" class="hidden absolute inset-0 z-10 bg-slate-900/80 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                            <i class="fa-solid fa-circle-notch fa-spin text-2xl sm:text-3xl text-amber-400"></i>
+                            <span id="imageLoadingText" class="text-xs font-medium text-slate-200" data-i18n="loadingStreet">街並み写真を読み込んでいます...</span>
+                        </div>
+                        <div id="noPhotoOverlay" class="hidden absolute inset-0 z-10 bg-slate-900/80 flex-col items-center justify-center gap-2 px-4 text-center">
+                            <i class="fa-regular fa-image text-2xl sm:text-3xl text-amber-400"></i>
+                            <span class="text-sm sm:text-base font-bold text-white" data-i18n="noPhotoTitle">条件に合う写真が見つかりませんでした</span>
+                            <span class="text-xs text-slate-200" data-i18n="noPhotoDesc">もう一度検索するか、年代や都市の条件をゆるめてください。</span>
+                            <div class="flex flex-wrap justify-center gap-2 mt-2 pointer-events-auto">
+                                <button onclick="retryLoadPhoto()" class="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-slate-900 text-xs font-bold transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-rotate-right"></i><span data-i18n="retryBtn">もう一度検索</span>
+                                </button>
+                                <button onclick="openModeSelect()" class="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-sliders"></i><span data-i18n="backToModeBtn">モード選択に戻る</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="photoTransformLayer" class="photo-transform-layer flex items-center justify-center w-full h-full p-1.5 sm:p-4">
+                            <img id="currentPhotoImg" src="" alt="Streetscape" referrerpolicy="no-referrer"
+                                 class="max-h-[300px] sm:max-h-[440px] lg:max-h-[540px] w-auto max-w-full object-contain rounded shadow-lg pointer-events-none select-none"
+                                 draggable="false">
+                        </div>
+                    </div>
+                    <div id="photoCreditOverlay" class="photo-credit-overlay hidden"></div>
+                </div>
+
+                <!-- Right panel -->
+                <div id="rightControlCard" class="lg:col-span-4 flex flex-col bg-white border border-slate-200 rounded-2xl p-2.5 sm:p-5 shadow-sm">
+
+                    <!-- STEP A: guessing -->
+                    <div id="guessControlsPanel" class="flex flex-col justify-between h-full gap-2 sm:gap-4">
+                        <div class="space-y-2 sm:space-y-4">
+                            <!-- Full date preview -->
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 sm:py-3 text-center flex sm:block items-baseline justify-between gap-2">
+                                <div class="hidden sm:block text-xs text-slate-500 font-medium" data-i18n="yourGuessDate">あなたの予想日</div>
+                                <div id="guessDatePreview" class="font-mono text-lg sm:text-[26px] font-extrabold text-slate-900 leading-tight sm:mt-0.5">1950年6月15日</div>
+                                <div id="eraLabel" class="text-[11px] sm:text-xs text-slate-500 sm:mt-0.5 truncate">昭和25年・木曜日・夏</div>
+                            </div>
+
+                            <!-- YEAR -->
+                            <div class="space-y-1 sm:space-y-1.5">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-xs font-bold text-slate-700" data-i18n="yearLabel">年</span>
+                                    <div class="flex items-center gap-1">
+                                        <button onclick="stepYear(-10)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-mono text-slate-700">-10</button>
+                                        <button onclick="stepYear(-1)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-mono text-slate-700">-1</button>
+                                        <input type="number" id="yearNumberInput" min="1850" max="2026" value="1950"
+                                               onchange="setYear(this.value)"
+                                               class="w-16 text-center font-mono text-sm sm:text-base font-bold text-slate-900 bg-transparent border-b-2 border-amber-400 focus:border-amber-500 focus:outline-none">
+                                        <button onclick="stepYear(1)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-mono text-slate-700">+1</button>
+                                        <button onclick="stepYear(10)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-mono text-slate-700">+10</button>
+                                    </div>
+                                </div>
+                                <input type="range" id="yearRangeSlider" min="1850" max="2026" value="1950" step="1" oninput="setYear(this.value)" class="chrono-slider">
+                                <div id="yearTicks" class="flex justify-between text-[10px] font-mono text-slate-400 px-0.5"></div>
+                            </div>
+
+                            <!-- MONTH -->
+                            <div class="space-y-1 sm:space-y-1.5">
+                                <span class="hidden sm:inline text-xs font-bold text-slate-700" data-i18n="monthLabel">月</span>
+                                <div id="monthGrid" class="grid grid-cols-6 gap-1 sm:gap-1.5"></div>
+                            </div>
+
+                            <!-- DAY -->
+                            <div class="space-y-1 sm:space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-slate-700" data-i18n="dayLabel">日</span>
+                                    <div class="flex items-center gap-1">
+                                        <button onclick="stepDay(-1)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-mono text-slate-700">-1</button>
+                                        <span id="dayValueText" class="w-12 text-center font-mono text-xs sm:text-sm font-bold text-slate-900">15日</span>
+                                        <button onclick="stepDay(1)" class="px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-mono text-slate-700">+1</button>
+                                    </div>
+                                </div>
+                                <input type="range" id="dayRangeSlider" min="1" max="31" value="15" step="1" oninput="setDay(this.value)" class="chrono-slider">
+                                <span id="dayMaxLabel" class="hidden"></span>
+                            </div>
+
+                            <!-- HINTS -->
+                            <div class="pt-1 border-t border-slate-100">
+                                <div id="hintBox" class="grid grid-cols-2 gap-1.5 sm:gap-2">
+                                    <button onclick="useHint('location')" id="hintLocBtn" class="py-1.5 px-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600 transition flex items-center justify-center gap-1 min-w-0">
+                                        <i class="fa-solid fa-location-dot text-red-500 shrink-0"></i><span class="truncate" data-i18n="locHintBtn">場所ヒント (-10%)</span>
+                                    </button>
+                                    <span id="hintLocText" class="hidden py-1.5 px-2 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium truncate text-center"></span>
+                                    <button onclick="useHint('decade')" id="hintDecBtn" class="py-1.5 px-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600 transition flex items-center justify-center gap-1 min-w-0">
+                                        <i class="fa-regular fa-clock text-amber-500 shrink-0"></i><span class="truncate" data-i18n="decHintBtn">年代ヒント (-30%)</span>
+                                    </button>
+                                    <span id="hintDecText" class="hidden py-1.5 px-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium truncate text-center"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-1 sm:pt-2">
+                            <button id="submitBtn" onclick="submitGuess()" class="disabled:opacity-40 disabled:cursor-not-allowed w-full py-2.5 sm:py-3.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-sm sm:text-base shadow-sm transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check text-red-500"></i>
+                                <span data-i18n="submitBtn">この日付で回答する</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP B: result -->
+                    <div id="roundResultPanel" class="hidden flex-col justify-between h-full gap-2 sm:gap-3">
+                        <div class="space-y-2 sm:space-y-3">
+                            <div id="roundScoreCard" class="bg-slate-50 border border-slate-200 rounded-xl p-2 sm:p-3 text-center">
+                                <div class="flex sm:block items-center justify-between gap-2">
+                                    <div id="accuracyBadge" class="inline-block px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold sm:mb-1 truncate">-</div>
+                                    <div class="text-xl sm:text-3xl font-mono font-extrabold text-slate-900 shrink-0">
+                                        +<span id="roundPointsText">0</span> <span class="text-xs sm:text-sm font-normal text-slate-500">pts</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-1 sm:gap-1.5 mt-1.5 sm:mt-2 text-[10px] sm:text-[11px] font-mono">
+                                    <div class="rounded-lg bg-white border border-slate-200 py-0.5 sm:py-1 px-1">
+                                        <div class="text-slate-400 truncate" data-i18n="yearLabel">年</div>
+                                        <div id="yearPtsText" class="text-slate-800 font-bold">0</div>
+                                    </div>
+                                    <div class="rounded-lg bg-white border border-slate-200 py-0.5 sm:py-1 px-1">
+                                        <div class="text-slate-400 truncate" data-i18n="monthDayLabel">月日</div>
+                                        <div id="datePtsText" class="text-slate-800 font-bold">0</div>
+                                    </div>
+                                    <div class="rounded-lg bg-white border border-slate-200 py-0.5 sm:py-1 px-1">
+                                        <div class="text-slate-400 truncate" data-i18n="hintLabel">ヒント</div>
+                                        <div id="penaltyText" class="text-red-500 font-bold">0</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 rounded-xl p-2 sm:p-3 space-y-1.5 sm:space-y-2.5">
+                                <div class="grid grid-cols-2 gap-1.5 sm:gap-2 text-center">
+                                    <div class="p-1.5 sm:p-2 rounded-lg bg-slate-50 border border-slate-200">
+                                        <div class="text-[10px] text-slate-500" data-i18n="yourGuessShort">あなたの予想</div>
+                                        <div id="revealedGuessDate" class="font-mono text-xs sm:text-sm font-bold text-slate-700">-</div>
+                                    </div>
+                                    <div class="p-1.5 sm:p-2 rounded-lg bg-amber-50 border border-amber-300">
+                                        <div class="text-[10px] text-amber-800 font-medium" data-i18n="actualDateShort">正解の撮影日</div>
+                                        <div id="revealedActualDate" class="font-mono text-xs sm:text-sm font-bold text-slate-900">-</div>
+                                    </div>
+                                </div>
+                                <p id="diffText" class="text-[11px] sm:text-xs text-slate-600 text-center leading-tight">-</p>
+                                <div>
+                                    <div class="relative h-2.5 rounded-full season-bar opacity-80">
+                                        <div id="seasonGuessMarker" class="absolute -top-1.5 w-1.5 h-5 bg-slate-700 rounded" style="left:0%"></div>
+                                        <div id="seasonActualMarker" class="absolute -top-1.5 w-1.5 h-5 bg-red-500 rounded ring-2 ring-amber-300" style="left:0%"></div>
+                                    </div>
+                                    <div id="seasonBarMonths" class="flex justify-between text-[10px] font-mono text-slate-400 mt-1">
+                                        <span>1月</span><span>4月</span><span>7月</span><span>10月</span><span>12月</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1 sm:space-y-1.5 bg-slate-50 border border-slate-200 rounded-xl p-2 sm:p-3 max-h-20 sm:max-h-44 overflow-y-auto">
+                                <h4 id="photoTitleText" class="font-bold text-slate-900 text-xs sm:text-sm leading-snug">-</h4>
+                                <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] sm:text-xs text-slate-600">
+                                    <span class="font-medium"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i><span id="photoLocationText">-</span></span>
+                                    <a id="photoSourceLink" href="#" target="_blank" rel="noopener noreferrer" class="text-[11px] text-amber-600 hover:text-amber-700 underline flex items-center gap-1">
+                                        <span data-i18n="sourceLink">元ページ</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                    </a>
+                                </div>
+                                <p id="photoDescriptionText" class="text-[11px] sm:text-xs text-slate-600 leading-relaxed pt-1 border-t border-slate-200">-</p>
+                                <p id="photoCreditText" class="text-[10px] font-mono text-slate-400">-</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-1 sm:pt-2">
+                            <button onclick="nextRound()" id="nextRoundBtn" class="w-full py-2.5 sm:py-3.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-sm sm:text-base shadow-sm transition flex items-center justify-center gap-2">
+                                <span>次のラウンドへ</span><i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SUMMARY SCREEN ===== -->
+        <section id="summaryScreen" class="hidden my-auto py-1 sm:py-4 flex-1 flex-col min-h-0">
+            <div class="max-w-3xl w-full mx-auto bg-white border border-slate-200 rounded-2xl p-3 sm:p-8 shadow-sm flex flex-col justify-between gap-2.5 sm:gap-6 flex-1 min-h-0">
+                <div class="text-center space-y-1 sm:space-y-2 border-b border-slate-200 pb-2.5 sm:pb-6 shrink-0">
+                    <h2 class="text-sm sm:text-2xl font-bold text-slate-900" data-i18n="summaryTitle">全5ラウンド 結果</h2>
+                    <div>
+                        <div class="text-2xl sm:text-5xl font-mono font-extrabold text-slate-900 leading-tight">
+                            <span id="finalTotalScore">0</span>
+                            <span class="text-xs sm:text-xl text-slate-400 font-normal">/ 25,000 pts</span>
+                        </div>
+                    </div>
+                    <div class="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs sm:text-sm font-bold max-w-full">
+                        <i class="fa-solid fa-medal text-amber-600 shrink-0"></i><span id="finalRankTitle" class="truncate">-</span>
+                    </div>
+                    <p id="finalRankComment" class="text-[11px] sm:text-sm text-slate-600 max-w-lg mx-auto leading-snug sm:leading-relaxed line-clamp-1 sm:line-clamp-none"></p>
+                    <div class="flex flex-wrap justify-center gap-3 sm:gap-4 text-[11px] sm:text-xs font-mono text-slate-500">
+                        <span><span data-i18n="avgYearError">平均 年誤差</span>: <b id="avgYearDiff" class="text-slate-900">-</b></span>
+                        <span><span data-i18n="avgSeasonError">平均 季節誤差</span>: <b id="avgSeasonDiff" class="text-slate-900">-</b></span>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 sm:space-y-2.5 flex-1 min-h-0 flex flex-col">
+                    <h3 class="text-[11px] sm:text-xs font-bold text-slate-500 shrink-0" data-i18n="summaryListHeading">出題された街並み（全5問）</h3>
+                    <div id="summaryRoundsList" class="space-y-1.5 sm:space-y-2 flex-1 min-h-0 sm:max-h-96 overflow-y-auto pr-1"></div>
+                </div>
+
+                <div class="pt-2.5 sm:pt-4 border-t border-slate-200 grid grid-cols-2 sm:flex sm:flex-row items-stretch sm:items-center justify-center gap-2 sm:gap-3 shrink-0">
+                    <button onclick="startNewGame()" class="w-full sm:w-auto px-3 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold text-xs sm:text-base shadow-sm transition flex items-center justify-center gap-1.5 sm:gap-2">
+                        <i class="fa-solid fa-rotate-right"></i><span class="truncate" data-i18n="playAgainBtn">もう一度プレイ</span>
+                    </button>
+                    <button onclick="openModeSelect()" class="w-full sm:w-auto px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold text-xs sm:text-base transition flex items-center justify-center gap-1.5 sm:gap-2">
+                        <i class="fa-solid fa-sliders"></i><span class="truncate" data-i18n="backToModeBtn">モード選択に戻る</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="hidden sm:block border-t border-slate-200 bg-white py-3 px-4 text-center text-xs text-slate-500 shrink-0">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span class="font-medium text-slate-600">Chronoguesser - Streetscape Date Guessing Game</span>
+            <span>Photos: Wikimedia Commons</span>
+        </div>
+    </footer>
+
+    <!-- ================= APPLICATION LOGIC ================= -->
+    <script>
+        const MIN_YEAR = 1850;
+        const MAX_YEAR = new Date().getFullYear();
+        const YEAR_MAX_PTS = 3500;
+        const DATE_MAX_PTS = 1500;
+        const HINT_PENALTY = { location: 0.10, decade: 0.30 };
+        const WEEKDAYS_JA = ['日', '月', '火', '水', '木', '金', '土'];
+
+        let currentLang = 'ja';
+
+        const I18N = {
+            ja: {
+                hudRound: 'ラウンド', hudScore: 'スコア',
+                tagline: '世界の街並み写真から、撮影された「年・月・日」を推理するゲーム（全5問）',
+                challengeBadge: '全年代・全都市', challengeTitle: 'チャレンジモード',
+                challengeRange: (min, max) => `${min}年 〜 ${max}年 ／ すべての都市`,
+                challengeDesc: '19世紀の街角から2020年代の現代ストリートまで、世界中のあらゆる都市・年代から幅広く出題されます。',
+                challengeStartBtn: 'チャレンジモードで始める',
+                filterBadge: 'カスタム出題', filterTitle: '絞り込みモード',
+                filterDesc: '出題される「開始年代」や「都市」を絞り込んでプレイできます。',
+                startDecadeLabel: '開始年代', cityLabel: '都市',
+                allDecadesOpt: (min, max) => `全年代（${min}〜${max}）`,
+                decadeOpt: (d, max) => `${d}年代以降（${d}〜${max}）`,
+                allDecadesPreset: '全年代',
+                decadePreset: d => `${d}年代〜`,
+                decadeLabelShort: d => `${d}年代以降`,
+                startFilterBtn: (dText, cText) => `${dText} × ${cText} で始める`,
+                activeModeAll: (min, max) => `チャレンジモード (${min}〜${max})`,
+                activeModeDecade: (min, max) => `${min}年代以降 (${min}〜${max})`,
+                activeModeCustom: (era, city) => `${era}・${city}`,
+                skipBtn: '別の街並みに切替', skipTitle: '別の写真を読み込む',
+                zoomOutTitle: '縮小', zoomInTitle: '拡大', zoomResetTitle: 'リセット',
+                backToModeTitle: 'モード選択に戻る',
+                loadingStreet: '街並み写真を読み込んでいます...',
+                searchingArchive: '世界の街並みアーカイブから撮影日の確かな写真を検索中...',
+                developingPhoto: '街並み写真を現像中...',
+                loadingAnother: '別の街並み写真を読み込んでいます...',
+                imageLoadFailed: '画像を読み込めませんでした', imageLoadFailedHint: '「別の街並みに切替」を押して、別の写真をお試しください。',
+                noPhotoTitle: '条件に合う写真が見つかりませんでした', noPhotoDesc: 'もう一度検索するか、年代や都市の条件をゆるめてください。', retryBtn: 'もう一度検索',
+                dateSourceNote: '※ 撮影日は Wikimedia Commons の記録に基づきます',
+                yourGuessDate: 'あなたの予想日',
+                yearLabel: '年', monthLabel: '月', dayLabel: '日',
+                monthDayLabel: '月日', hintLabel: 'ヒント',
+                locHintBtn: '場所ヒント (-10%)', decHintBtn: '年代ヒント (-30%)',
+                unknownNoPenalty: '不明（減点なし）', unknownLoc: '不明',
+                noDesc: '（説明文なし）',
+                decadeHintVal: d => `${d}年代`,
+                submitBtn: 'この日付で回答する',
+                yourGuessShort: 'あなたの予想', actualDateShort: '正解の撮影日',
+                sourceLink: '元ページ',
+                nextRoundBtn: '次のラウンドへ', finalResultBtn: '最終結果を見る',
+                summaryTitle: '全5ラウンド 結果',
+                avgYearError: '平均 年誤差', avgSeasonError: '平均 季節誤差',
+                summaryListHeading: '出題された街並み（全5問）',
+                playAgainBtn: 'もう一度プレイ', backToModeBtn: 'モード選択に戻る',
+                seasonBarLabels: ['1月', '4月', '7月', '10月', '12月'],
+                monthsShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                weekdays: ['日', '月', '火', '水', '木', '金', '土'],
+                weekdaysLong: ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'],
+                seasons: { winter: '冬', spring: '春', summer: '夏', autumn: '秋' },
+                dayUnit: d => `${d}日`,
+                yearUnit: y => `${y}年`,
+                daysUnit: d => `${d}日`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? '月日ピタリ！' : `季節のずれ <b class="text-slate-900">${sDiff}日</b>`;
+                    return `年の誤差 <b class="text-slate-900">${yDiff}年</b> ／ ${sTxt}<br><span class="text-slate-400">実際の撮影日まで通算 ${totalDays.toLocaleString()}日</span>`;
+                },
+                badgePerfect: 'PERFECT! 撮影日ピタリ的中！',
+                badgeNear: '驚異的なニアピン！',
+                badgeGoodBoth: '年代も季節もほぼ正解！',
+                badgeGoodYear: '年代は的確！季節は惜しい',
+                badgeGoodSeason: '季節は見抜いた！年代は要研究',
+                badgeMiss: '時代を読み違えたかも？',
+                creditPrefix: '出典', licensePrefix: 'ライセンス',
+                rankS: ['Sランク：伝説の街角タイムトラベラー', '車種・看板・服装から年を、木々や光、人々の装いから季節まで見抜く驚異の観察眼です。'],
+                rankA: ['Aランク：敏腕ストリートアーキビスト', '都市の変遷と季節感をよく捉えています。影の長さや樹木の葉にも注目するとさらに伸びます。'],
+                rankB: ['Bランク：街並み鑑賞家', '時代感覚は掴めています。コートや半袖、葉の有無など季節の手がかりを拡大して探しましょう。'],
+                rankC: ['Cランク：タイムトラベル見習い', 'まずは自動車の形とファッションで年代を、木と服装で季節を絞り込んでみましょう！'],
+                summaryGuessPrefix: '予想',
+                summaryStats: (yDiff, sDiff, usedHint) => `年差 ${yDiff}年 / 季節差 ${sDiff}日${usedHint ? ' / ヒント使用' : ''}`
+            },
+            en: {
+                hudRound: 'Round', hudScore: 'Score',
+                tagline: 'Guess the exact Year, Month & Day a streetscape photo was taken (5 rounds)',
+                challengeBadge: 'All Eras • All Cities', challengeTitle: 'Challenge Mode',
+                challengeRange: (min, max) => `${min} – ${max} / All Cities`,
+                challengeDesc: 'From 19th-century street corners to 2020s modern avenues, photos are drawn from cities and eras across the globe.',
+                challengeStartBtn: 'Start Challenge Mode',
+                filterBadge: 'Custom Filter', filterTitle: 'Filter Mode',
+                filterDesc: 'Narrow down the starting decade or specific city to play.',
+                startDecadeLabel: 'From Decade', cityLabel: 'City',
+                allDecadesOpt: (min, max) => `All Eras (${min}–${max})`,
+                decadeOpt: (d, max) => `${d}s & later (${d}–${max})`,
+                allDecadesPreset: 'All Eras',
+                decadePreset: d => `${d}s+`,
+                decadeLabelShort: d => `${d}s+`,
+                startFilterBtn: (dText, cText) => `Start (${dText} × ${cText})`,
+                activeModeAll: (min, max) => `Challenge Mode (${min}–${max})`,
+                activeModeDecade: (min, max) => `${min}s & later (${min}–${max})`,
+                activeModeCustom: (era, city) => `${era} • ${city}`,
+                skipBtn: 'Switch Street', skipTitle: 'Load another photo',
+                zoomOutTitle: 'Zoom out', zoomInTitle: 'Zoom in', zoomResetTitle: 'Reset zoom',
+                backToModeTitle: 'Back to mode select',
+                loadingStreet: 'Loading streetscape photo...',
+                searchingArchive: 'Searching world street archives for dated photos...',
+                developingPhoto: 'Developing streetscape photo...',
+                loadingAnother: 'Loading another streetscape photo...',
+                imageLoadFailed: 'Image could not be loaded', imageLoadFailedHint: 'Press "Switch Street" to try another photo.',
+                noPhotoTitle: 'No photos found for these filters', noPhotoDesc: 'Search again, or loosen the decade or city filter.', retryBtn: 'Search again',
+                dateSourceNote: '* Capture dates are based on Wikimedia Commons records.',
+                yourGuessDate: 'Your Guessed Date',
+                yearLabel: 'Year', monthLabel: 'Month', dayLabel: 'Day',
+                monthDayLabel: 'Date', hintLabel: 'Hint',
+                locHintBtn: 'Location Hint (-10%)', decHintBtn: 'Decade Hint (-30%)',
+                unknownNoPenalty: 'Unknown (No penalty)', unknownLoc: 'Unknown',
+                noDesc: '(No description available)',
+                decadeHintVal: d => `${d}s`,
+                submitBtn: 'Submit This Date',
+                yourGuessShort: 'Your Guess', actualDateShort: 'Actual Date',
+                sourceLink: 'Source',
+                nextRoundBtn: 'Next Round', finalResultBtn: 'View Final Results',
+                summaryTitle: '5-Round Final Results',
+                avgYearError: 'Avg Year Error', avgSeasonError: 'Avg Season Error',
+                summaryListHeading: 'Streetscapes Played (5 Rounds)',
+                playAgainBtn: 'Play Again', backToModeBtn: 'Mode Select',
+                seasonBarLabels: ['Jan', 'Apr', 'Jul', 'Oct', 'Dec'],
+                monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                weekdaysLong: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                seasons: { winter: 'Winter', spring: 'Spring', summer: 'Summer', autumn: 'Autumn' },
+                dayUnit: d => `${d}`,
+                yearUnit: y => `${y} yrs`,
+                daysUnit: d => `${d} days`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? 'Exact date!' : `Season off by <b class="text-slate-900">${sDiff}d</b>`;
+                    return `Year off by <b class="text-slate-900">${yDiff}y</b> / ${sTxt}<br><span class="text-slate-400">${totalDays.toLocaleString()} days total difference</span>`;
+                },
+                badgePerfect: 'PERFECT! Exact Date Match!',
+                badgeNear: 'Incredible Near Pin!',
+                badgeGoodBoth: 'Great Decade & Season!',
+                badgeGoodYear: 'Spot-on Era! Close Season',
+                badgeGoodSeason: 'Nailed the Season!',
+                badgeMiss: 'Tricky Era to Read!',
+                creditPrefix: 'Source', licensePrefix: 'License',
+                rankS: ['Rank S: Legendary Street Time-Traveler', 'Phenomenal eye for cars, signs, foliage, lighting, and clothing across eras and seasons!'],
+                rankA: ['Rank A: Master Street Archivist', 'Great grasp of urban history and seasons. Watch shadow lengths and tree leaves to go even higher!'],
+                rankB: ['Rank B: Streetscape Connoisseur', 'Solid sense of era. Zoom in on coats, short sleeves, and trees for seasonal clues!'],
+                rankC: ['Rank C: Apprentice Time-Traveler', 'Try narrowing down the decade from car shapes and fashion, and the season from trees and outfits!'],
+                summaryGuessPrefix: 'Guess',
+                summaryStats: (yDiff, sDiff, usedHint) => `Year ±${yDiff}y / Season ±${sDiff}d${usedHint ? ' / Hint used' : ''}`
+            },
+            ko: {
+                hudRound: '라운드', hudScore: '점수',
+                tagline: '전 세계 거리 사진으로 촬영된 "연·월·일"을 추리하는 게임 (총 5문제)',
+                challengeBadge: '전 연대 · 전 도시', challengeTitle: '챌린지 모드',
+                challengeRange: (min, max) => `${min}년 ~ ${max}년 / 모든 도시`,
+                challengeDesc: '19세기 거리에서 2020년대 현대 스트리트까지 전 세계 모든 도시와 연대에서 폭넓게 출제됩니다.',
+                challengeStartBtn: '챌린지 모드로 시작',
+                filterBadge: '맞춤 출제', filterTitle: '필터 모드',
+                filterDesc: '출제되는 "시작 연대"나 "도시"를 선택하여 플레이할 수 있습니다.',
+                startDecadeLabel: '시작 연대', cityLabel: '도시',
+                allDecadesOpt: (min, max) => `전 연대 (${min}~${max})`,
+                decadeOpt: (d, max) => `${d}년대 이후 (${d}~${max})`,
+                allDecadesPreset: '전 연대',
+                decadePreset: d => `${d}년대~`,
+                decadeLabelShort: d => `${d}년대 이후`,
+                startFilterBtn: (dText, cText) => `${dText} × ${cText} 시작`,
+                activeModeAll: (min, max) => `챌린지 모드 (${min}~${max})`,
+                activeModeDecade: (min, max) => `${min}년대 이후 (${min}~${max})`,
+                activeModeCustom: (era, city) => `${era} · ${city}`,
+                skipBtn: '다른 거리로 전환', skipTitle: '다른 사진 불러오기',
+                zoomOutTitle: '축소', zoomInTitle: '확대', zoomResetTitle: '초기화',
+                backToModeTitle: '모드 선택으로 돌아가기',
+                loadingStreet: '거리 사진을 불러오는 중...',
+                searchingArchive: '전 세계 거리 아카이브에서 촬영일이 확인된 사진을 검색 중...',
+                developingPhoto: '거리 사진을 현상하는 중...',
+                loadingAnother: '다른 거리 사진을 불러오는 중...',
+                imageLoadFailed: '이미지를 불러올 수 없습니다', imageLoadFailedHint: '"다른 거리로 전환"을 눌러 다른 사진을 시도해 주세요.',
+                noPhotoTitle: '조건에 맞는 사진을 찾지 못했습니다', noPhotoDesc: '다시 검색하거나 연대·도시 조건을 완화해 주세요.', retryBtn: '다시 검색',
+                dateSourceNote: '※ 촬영일은 Wikimedia Commons의 기록에 근거합니다.',
+                yourGuessDate: '예상 날짜',
+                yearLabel: '연도', monthLabel: '월', dayLabel: '일',
+                monthDayLabel: '월일', hintLabel: '힌트',
+                locHintBtn: '장소 힌트 (-10%)', decHintBtn: '연대 힌트 (-30%)',
+                unknownNoPenalty: '불명 (감점 없음)', unknownLoc: '불명',
+                noDesc: '(설명 없음)',
+                decadeHintVal: d => `${d}년대`,
+                submitBtn: '이 날짜로 정답 제출',
+                yourGuessShort: '나의 예상', actualDateShort: '실제 촬영일',
+                sourceLink: '원본 페이지',
+                nextRoundBtn: '다음 라운드로', finalResultBtn: '최종 결과 보기',
+                summaryTitle: '전체 5라운드 결과',
+                avgYearError: '평균 연도 오차', avgSeasonError: '평균 계절 오차',
+                summaryListHeading: '출제된 거리 풍경 (총 5문제)',
+                playAgainBtn: '다시 플레이', backToModeBtn: '모드 선택으로',
+                seasonBarLabels: ['1월', '4월', '7월', '10월', '12월'],
+                monthsShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                weekdays: ['일', '월', '화', '수', '목', '금', '토'],
+                weekdaysLong: ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'],
+                seasons: { winter: '겨울', spring: '봄', summer: '여름', autumn: '가을' },
+                dayUnit: d => `${d}일`,
+                yearUnit: y => `${y}년`,
+                daysUnit: d => `${d}일`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? '월일 정확히 일치!' : `계절 오차 <b class="text-slate-900">${sDiff}일</b>`;
+                    return `연도 오차 <b class="text-slate-900">${yDiff}년</b> / ${sTxt}<br><span class="text-slate-400">실제 촬영일까지 총 ${totalDays.toLocaleString()}일 차이</span>`;
+                },
+                badgePerfect: 'PERFECT! 촬영일 완벽 적중!',
+                badgeNear: '놀라운 근접 추리!',
+                badgeGoodBoth: '연대와 계절 모두 거의 정답!',
+                badgeGoodYear: '연대는 정확! 계절은 아깝네요',
+                badgeGoodSeason: '계절은 간파! 연대는 조금 더 연구',
+                badgeMiss: '시대를 잘못 읽었을지도?',
+                creditPrefix: '출처', licensePrefix: '라이선스',
+                rankS: ['S랭크: 전설의 길거리 타임트래블러', '차종·간판·복장으로 연도를, 나무와 빛·옷차림으로 계절까지 꿰뚫어 보는 놀라운 관찰력입니다!'],
+                rankA: ['A랭크: 베테랑 스트리트 아키비스트', '도시의 변천사와 계절감을 잘 포착했습니다. 그림자 길이와 나뭇잎에도 주목해 보세요.'],
+                rankB: ['B랭크: 거리 풍경 감상가', '시대 감각이 좋습니다. 코트나 반팔, 나뭇잎 유무 등 계절 단서를 확대해서 찾아보세요.'],
+                rankC: ['C랭크: 타임트래블 견습생', '먼저 자동차 모양과 패션으로 연대를, 나무와 옷차림으로 계절을 좁혀 보세요!'],
+                summaryGuessPrefix: '예상',
+                summaryStats: (yDiff, sDiff, usedHint) => `연도차 ${yDiff}년 / 계절차 ${sDiff}일${usedHint ? ' / 힌트 사용' : ''}`
+            },
+            'zh-TW': {
+                hudRound: '回合', hudScore: '分數',
+                tagline: '從世界街景照片推理拍攝「年、月、日」的遊戲（共5題）',
+                challengeBadge: '全年代・全城市', challengeTitle: '挑戰模式',
+                challengeRange: (min, max) => `${min}年 ～ ${max}年 ／ 所有城市`,
+                challengeDesc: '從19世紀的街角到2020年代的現代街道，廣泛涵蓋世界各地的城市與年代。',
+                challengeStartBtn: '開始挑戰模式',
+                filterBadge: '自訂出題', filterTitle: '篩選模式',
+                filterDesc: '可篩選出題的「起始年代」或「城市」進行遊玩。',
+                startDecadeLabel: '起始年代', cityLabel: '城市',
+                allDecadesOpt: (min, max) => `全年代（${min}～${max}）`,
+                decadeOpt: (d, max) => `${d}年代起（${d}～${max}）`,
+                allDecadesPreset: '全年代',
+                decadePreset: d => `${d}年代起`,
+                decadeLabelShort: d => `${d}年代起`,
+                startFilterBtn: (dText, cText) => `以 ${dText} × ${cText} 開始`,
+                activeModeAll: (min, max) => `挑戰模式 (${min}～${max})`,
+                activeModeDecade: (min, max) => `${min}年代起 (${min}～${max})`,
+                activeModeCustom: (era, city) => `${era}・${city}`,
+                skipBtn: '切換其他街景', skipTitle: '載入其他照片',
+                zoomOutTitle: '縮小', zoomInTitle: '放大', zoomResetTitle: '重設',
+                backToModeTitle: '返回模式選擇',
+                loadingStreet: '正在載入街景照片...',
+                searchingArchive: '正在從世界街景檔案庫搜尋具備確切拍攝日期的照片...',
+                developingPhoto: '正在顯影街景照片...',
+                loadingAnother: '正在載入另一張街景照片...',
+                imageLoadFailed: '無法載入圖片', imageLoadFailedHint: '請按「切換其他街景」嘗試其他照片。',
+                noPhotoTitle: '找不到符合條件的照片', noPhotoDesc: '請再搜尋一次，或放寬年代與城市條件。', retryBtn: '再次搜尋',
+                dateSourceNote: '※ 拍攝日期依據 Wikimedia Commons 的紀錄。',
+                yourGuessDate: '你的預測日期',
+                yearLabel: '年', monthLabel: '月', dayLabel: '日',
+                monthDayLabel: '月日', hintLabel: '提示',
+                locHintBtn: '地點提示 (-10%)', decHintBtn: '年代提示 (-30%)',
+                unknownNoPenalty: '未知（不扣分）', unknownLoc: '未知',
+                noDesc: '（無說明文字）',
+                decadeHintVal: d => `${d}年代`,
+                submitBtn: '以此日期作答',
+                yourGuessShort: '你的預測', actualDateShort: '實際拍攝日',
+                sourceLink: '原始頁面',
+                nextRoundBtn: '下一回合', finalResultBtn: '查看最終結果',
+                summaryTitle: '全5回合 結果',
+                avgYearError: '平均年份誤差', avgSeasonError: '平均季節誤差',
+                summaryListHeading: '出題街景一覽（共5題）',
+                playAgainBtn: '再玩一次', backToModeBtn: '返回模式選擇',
+                seasonBarLabels: ['1月', '4月', '7月', '10月', '12月'],
+                monthsShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                weekdays: ['日', '一', '二', '三', '四', '五', '六'],
+                weekdaysLong: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+                seasons: { winter: '冬', spring: '春', summer: '夏', autumn: '秋' },
+                dayUnit: d => `${d}日`,
+                yearUnit: y => `${y}年`,
+                daysUnit: d => `${d}天`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? '月日完全命中！' : `季節誤差 <b class="text-slate-900">${sDiff}天</b>`;
+                    return `年份誤差 <b class="text-slate-900">${yDiff}年</b> ／ ${sTxt}<br><span class="text-slate-400">與實際拍攝日共相差 ${totalDays.toLocaleString()}天</span>`;
+                },
+                badgePerfect: 'PERFECT! 拍攝日完全命中！',
+                badgeNear: '驚人的神準預測！',
+                badgeGoodBoth: '年代與季節都幾乎正確！',
+                badgeGoodYear: '年代精準！季節差一點',
+                badgeGoodSeason: '看穿了季節！年代仍需研究',
+                badgeMiss: '可能看錯時代了？',
+                creditPrefix: '來源', licensePrefix: '授權',
+                rankS: ['S級：傳奇街角時空旅人', '能從車型、招牌與服裝看穿年份，並從樹木、光影與穿搭看穿季節的驚人觀察力！'],
+                rankA: ['A級：敏銳街景檔案學家', '很好地掌握了城市變遷與季節感。若再留意影子長度與樹葉狀態會更上一層樓。'],
+                rankB: ['B級：街景鑑賞家', '已掌握時代感。試著放大觀察大衣、短袖或樹葉等季節線索吧！'],
+                rankC: ['C級：時空旅行見習生', '先試著從汽車外型與服裝縮小年代範圍，再從樹木與穿搭推測季節吧！'],
+                summaryGuessPrefix: '預測',
+                summaryStats: (yDiff, sDiff, usedHint) => `年差 ${yDiff}年 / 季節差 ${sDiff}天${usedHint ? ' / 使用提示' : ''}`
+            },
+            'zh-CN': {
+                hudRound: '回合', hudScore: '分数',
+                tagline: '从世界街景照片推理拍摄“年、月、日”的游戏（共5题）',
+                challengeBadge: '全年代・全城市', challengeTitle: '挑战模式',
+                challengeRange: (min, max) => `${min}年 ～ ${max}年 ／ 所有城市`,
+                challengeDesc: '从19世纪的街角到2020年代的现代街道，广泛涵盖世界各地的城市与年代。',
+                challengeStartBtn: '开始挑战模式',
+                filterBadge: '自定义出题', filterTitle: '筛选模式',
+                filterDesc: '可筛选出题的“起始年代”或“城市”进行游玩。',
+                startDecadeLabel: '起始年代', cityLabel: '城市',
+                allDecadesOpt: (min, max) => `全年代（${min}～${max}）`,
+                decadeOpt: (d, max) => `${d}年代起（${d}～${max}）`,
+                allDecadesPreset: '全年代',
+                decadePreset: d => `${d}年代起`,
+                decadeLabelShort: d => `${d}年代起`,
+                startFilterBtn: (dText, cText) => `以 ${dText} × ${cText} 开始`,
+                activeModeAll: (min, max) => `挑战模式 (${min}～${max})`,
+                activeModeDecade: (min, max) => `${min}年代起 (${min}～${max})`,
+                activeModeCustom: (era, city) => `${era}・${city}`,
+                skipBtn: '切换其他街景', skipTitle: '加载其他照片',
+                zoomOutTitle: '缩小', zoomInTitle: '放大', zoomResetTitle: '重置',
+                backToModeTitle: '返回模式选择',
+                loadingStreet: '正在加载街景照片...',
+                searchingArchive: '正在从世界街景档案库搜索具有确切拍摄日期的照片...',
+                developingPhoto: '正在显影街景照片...',
+                loadingAnother: '正在加载另一张街景照片...',
+                imageLoadFailed: '无法加载图片', imageLoadFailedHint: '请点击“切换其他街景”尝试其他照片。',
+                noPhotoTitle: '找不到符合条件的照片', noPhotoDesc: '请再搜索一次，或放宽年代与城市条件。', retryBtn: '再次搜索',
+                dateSourceNote: '※ 拍摄日期依据 Wikimedia Commons 的记录。',
+                yourGuessDate: '你的预测日期',
+                yearLabel: '年', monthLabel: '月', dayLabel: '日',
+                monthDayLabel: '月日', hintLabel: '提示',
+                locHintBtn: '地点提示 (-10%)', decHintBtn: '年代提示 (-30%)',
+                unknownNoPenalty: '未知（不扣分）', unknownLoc: '未知',
+                noDesc: '（无说明文字）',
+                decadeHintVal: d => `${d}年代`,
+                submitBtn: '以此日期作答',
+                yourGuessShort: '你的预测', actualDateShort: '实际拍摄日',
+                sourceLink: '原始页面',
+                nextRoundBtn: '下一回合', finalResultBtn: '查看最终结果',
+                summaryTitle: '全5回合 结果',
+                avgYearError: '平均年份误差', avgSeasonError: '平均季节误差',
+                summaryListHeading: '出题街景一览（共5题）',
+                playAgainBtn: '再玩一次', backToModeBtn: '返回模式选择',
+                seasonBarLabels: ['1月', '4月', '7月', '10月', '12月'],
+                monthsShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                weekdays: ['日', '一', '二', '三', '四', '五', '六'],
+                weekdaysLong: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+                seasons: { winter: '冬', spring: '春', summer: '夏', autumn: '秋' },
+                dayUnit: d => `${d}日`,
+                yearUnit: y => `${y}年`,
+                daysUnit: d => `${d}天`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? '月日完全命中！' : `季节误差 <b class="text-slate-900">${sDiff}天</b>`;
+                    return `年份误差 <b class="text-slate-900">${yDiff}年</b> ／ ${sTxt}<br><span class="text-slate-400">与实际拍摄日共相差 ${totalDays.toLocaleString()}天</span>`;
+                },
+                badgePerfect: 'PERFECT! 拍摄日完全命中！',
+                badgeNear: '惊人的神准预测！',
+                badgeGoodBoth: '年代与季节都几乎正确！',
+                badgeGoodYear: '年代精准！季节差一点',
+                badgeGoodSeason: '看穿了季节！年代仍需研究',
+                badgeMiss: '可能看错时代了？',
+                creditPrefix: '来源', licensePrefix: '许可',
+                rankS: ['S级：传奇街角时空旅人', '能从车型、招牌与服装看穿年份，并从树木、光影与穿搭看穿季节的惊人观察力！'],
+                rankA: ['A级：敏锐街景档案学家', '很好地掌握了城市变迁与季节感。若再留意影子长度与树叶状态会更上一层楼。'],
+                rankB: ['B级：街景鉴赏家', '已掌握时代感。试着放大观察大衣、短袖或树叶等季节线索吧！'],
+                rankC: ['C级：时空旅行见习生', '先试着从汽车外形与服装缩小年代范围，再从树木与穿搭推测季节吧！'],
+                summaryGuessPrefix: '预测',
+                summaryStats: (yDiff, sDiff, usedHint) => `年差 ${yDiff}年 / 季节差 ${sDiff}天${usedHint ? ' / 使用提示' : ''}`
+            },
+            es: {
+                hudRound: 'Ronda', hudScore: 'Puntos',
+                tagline: 'Adivina el año, mes y día exactos en que se tomó cada foto urbana (5 rondas)',
+                challengeBadge: 'Todas las épocas y ciudades', challengeTitle: 'Modo Desafío',
+                challengeRange: (min, max) => `${min} – ${max} / Todas las ciudades`,
+                challengeDesc: 'Desde calles del siglo XIX hasta avenidas modernas de los años 2020 en ciudades de todo el mundo.',
+                challengeStartBtn: 'Empezar Modo Desafío',
+                filterBadge: 'Filtro personalizado', filterTitle: 'Modo Filtro',
+                filterDesc: 'Filtra por década inicial o por ciudad para jugar.',
+                startDecadeLabel: 'Década inicial', cityLabel: 'Ciudad',
+                allDecadesOpt: (min, max) => `Todas las épocas (${min}–${max})`,
+                decadeOpt: (d, max) => `Desde los ${d} (${d}–${max})`,
+                allDecadesPreset: 'Todas',
+                decadePreset: d => `${d}+`,
+                decadeLabelShort: d => `Desde ${d}`,
+                startFilterBtn: (dText, cText) => `Jugar (${dText} × ${cText})`,
+                activeModeAll: (min, max) => `Modo Desafío (${min}–${max})`,
+                activeModeDecade: (min, max) => `Desde ${min} (${min}–${max})`,
+                activeModeCustom: (era, city) => `${era} • ${city}`,
+                skipBtn: 'Cambiar calle', skipTitle: 'Cargar otra foto',
+                zoomOutTitle: 'Alejar', zoomInTitle: 'Acercar', zoomResetTitle: 'Restablecer',
+                backToModeTitle: 'Volver a selección de modo',
+                loadingStreet: 'Cargando foto urbana...',
+                searchingArchive: 'Buscando fotos fechadas en archivos urbanos del mundo...',
+                developingPhoto: 'Revelando fotografía urbana...',
+                loadingAnother: 'Cargando otra fotografía urbana...',
+                imageLoadFailed: 'No se pudo cargar la imagen', imageLoadFailedHint: 'Pulsa «Cambiar calle» para probar otra foto.',
+                noPhotoTitle: 'No se encontraron fotos con estos filtros', noPhotoDesc: 'Vuelve a buscar o amplía la década o la ciudad.', retryBtn: 'Buscar de nuevo',
+                dateSourceNote: '* Las fechas se basan en los registros de Wikimedia Commons.',
+                yourGuessDate: 'Tu fecha estimada',
+                yearLabel: 'Año', monthLabel: 'Mes', dayLabel: 'Día',
+                monthDayLabel: 'Fecha', hintLabel: 'Pista',
+                locHintBtn: 'Pista de lugar (-10%)', decHintBtn: 'Pista de década (-30%)',
+                unknownNoPenalty: 'Desconocido (sin penalización)', unknownLoc: 'Desconocido',
+                noDesc: '(Sin descripción)',
+                decadeHintVal: d => `Años ${d}`,
+                submitBtn: 'Confirmar esta fecha',
+                yourGuessShort: 'Tu estimación', actualDateShort: 'Fecha real',
+                sourceLink: 'Fuente',
+                nextRoundBtn: 'Siguiente ronda', finalResultBtn: 'Ver resultados finales',
+                summaryTitle: 'Resultados de las 5 rondas',
+                avgYearError: 'Error medio (años)', avgSeasonError: 'Error medio (estación)',
+                summaryListHeading: 'Calles jugadas (5 rondas)',
+                playAgainBtn: 'Jugar de nuevo', backToModeBtn: 'Selección de modo',
+                seasonBarLabels: ['Ene', 'Abr', 'Jul', 'Oct', 'Dic'],
+                monthsShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                weekdays: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+                weekdaysLong: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+                seasons: { winter: 'Invierno', spring: 'Primavera', summer: 'Verano', autumn: 'Otoño' },
+                dayUnit: d => `${d}`,
+                yearUnit: y => `${y} años`,
+                daysUnit: d => `${d} días`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? '¡Fecha exacta!' : `Desfase estacional <b class="text-slate-900">${sDiff}d</b>`;
+                    return `Error de año <b class="text-slate-900">${yDiff}a</b> / ${sTxt}<br><span class="text-slate-400">${totalDays.toLocaleString()} días de diferencia total</span>`;
+                },
+                badgePerfect: '¡PERFECTO! ¡Fecha exacta!',
+                badgeNear: '¡Increíblemente cerca!',
+                badgeGoodBoth: '¡Década y estación casi exactas!',
+                badgeGoodYear: '¡Época acertada! Estación cercana',
+                badgeGoodSeason: '¡Estación acertada!',
+                badgeMiss: '¡Época difícil de leer!',
+                creditPrefix: 'Fuente', licensePrefix: 'Licencia',
+                rankS: ['Rango S: Viajero del Tiempo Legendario', '¡Increíble ojo para deducir el año por los coches y carteles, y la estación por los árboles y la ropa!'],
+                rankA: ['Rango A: Archivista Urbano Experto', 'Gran dominio de la historia urbana y las estaciones. ¡Fíjate en las sombras y el follaje para mejorar aún más!'],
+                rankB: ['Rango B: Conocedor de Calles', 'Buen sentido de la época. ¡Amplía la imagen para buscar abrigos, mangas cortas o ramas sin hojas!'],
+                rankC: ['Rango C: Aprendiz de Viajero del Tiempo', '¡Intenta acotar la década por los automóviles y la moda, y la estación por los árboles y la ropa!'],
+                summaryGuessPrefix: 'Estimación',
+                summaryStats: (yDiff, sDiff, usedHint) => `Año ±${yDiff}a / Estación ±${sDiff}d${usedHint ? ' / Con pista' : ''}`
+            },
+            fr: {
+                hudRound: 'Manche', hudScore: 'Score',
+                tagline: 'Devinez l’année, le mois et le jour exacts où la photo de rue a été prise (5 manches)',
+                challengeBadge: 'Toutes époques • Toutes villes', challengeTitle: 'Mode Défi',
+                challengeRange: (min, max) => `${min} – ${max} / Toutes les villes`,
+                challengeDesc: 'Des coins de rue du XIXe siècle aux avenues modernes des années 2020 à travers le monde entier.',
+                challengeStartBtn: 'Lancer le Mode Défi',
+                filterBadge: 'Filtre personnalisé', filterTitle: 'Mode Filtré',
+                filterDesc: 'Filtrez la décennie de départ ou la ville pour jouer.',
+                startDecadeLabel: 'Décennie de départ', cityLabel: 'Ville',
+                allDecadesOpt: (min, max) => `Toutes époques (${min}–${max})`,
+                decadeOpt: (d, max) => `Années ${d} et + (${d}–${max})`,
+                allDecadesPreset: 'Toutes',
+                decadePreset: d => `${d}+`,
+                decadeLabelShort: d => `Dès ${d}`,
+                startFilterBtn: (dText, cText) => `Jouer (${dText} × ${cText})`,
+                activeModeAll: (min, max) => `Mode Défi (${min}–${max})`,
+                activeModeDecade: (min, max) => `Dès ${min} (${min}–${max})`,
+                activeModeCustom: (era, city) => `${era} • ${city}`,
+                skipBtn: 'Changer de rue', skipTitle: 'Charger une autre photo',
+                zoomOutTitle: 'Dézoomer', zoomInTitle: 'Zoomer', zoomResetTitle: 'Réinitialiser',
+                backToModeTitle: 'Retour au choix du mode',
+                loadingStreet: 'Chargement de la photo de rue...',
+                searchingArchive: 'Recherche de photos datées dans les archives mondiales...',
+                developingPhoto: 'Développement de la photo...',
+                loadingAnother: 'Chargement d’une autre photo de rue...',
+                imageLoadFailed: 'Impossible de charger l’image', imageLoadFailedHint: 'Appuyez sur « Changer de rue » pour essayer une autre photo.',
+                noPhotoTitle: 'Aucune photo ne correspond à ces filtres', noPhotoDesc: 'Relancez la recherche ou élargissez la décennie ou la ville.', retryBtn: 'Relancer la recherche',
+                dateSourceNote: '* Les dates proviennent des archives de Wikimedia Commons.',
+                yourGuessDate: 'Votre date estimée',
+                yearLabel: 'Année', monthLabel: 'Mois', dayLabel: 'Jour',
+                monthDayLabel: 'Date', hintLabel: 'Indice',
+                locHintBtn: 'Indice lieu (-10%)', decHintBtn: 'Indice décennie (-30%)',
+                unknownNoPenalty: 'Inconnu (sans pénalité)', unknownLoc: 'Inconnu',
+                noDesc: '(Aucune description)',
+                decadeHintVal: d => `Années ${d}`,
+                submitBtn: 'Valider cette date',
+                yourGuessShort: 'Votre choix', actualDateShort: 'Date réelle',
+                sourceLink: 'Source',
+                nextRoundBtn: 'Manche suivante', finalResultBtn: 'Voir le résultat final',
+                summaryTitle: 'Résultats des 5 manches',
+                avgYearError: 'Erreur moy. (années)', avgSeasonError: 'Erreur moy. (saison)',
+                summaryListHeading: 'Rues présentées (5 manches)',
+                playAgainBtn: 'Rejouer', backToModeBtn: 'Choix du mode',
+                seasonBarLabels: ['Jan', 'Avr', 'Juil', 'Oct', 'Déc'],
+                monthsShort: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+                weekdays: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
+                weekdaysLong: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
+                seasons: { winter: 'Hiver', spring: 'Printemps', summer: 'Été', autumn: 'Automne' },
+                dayUnit: d => `${d}`,
+                yearUnit: y => `${y} ans`,
+                daysUnit: d => `${d} j`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? 'Date exacte !' : `Écart saisonnier <b class="text-slate-900">${sDiff} j</b>`;
+                    return `Écart d’année <b class="text-slate-900">${yDiff} an(s)</b> / ${sTxt}<br><span class="text-slate-400">${totalDays.toLocaleString()} jours d’écart au total</span>`;
+                },
+                badgePerfect: 'PARFAIT ! Date exacte !',
+                badgeNear: 'Incroyablement proche !',
+                badgeGoodBoth: 'Décennie et saison quasi exactes !',
+                badgeGoodYear: 'Bonne époque ! Saison proche',
+                badgeGoodSeason: 'Saison bien vue !',
+                badgeMiss: 'Époque difficile à cerner !',
+                creditPrefix: 'Source', licensePrefix: 'Licence',
+                rankS: ['Rang S : Voyageur Temporel Légendaire', 'Un œil exceptionnel pour déduire l’année via les voitures et enseignes, et la saison via les arbres et tenues !'],
+                rankA: ['Rang A : Archiviste Urbain Expert', 'Excellente maîtrise de l’histoire urbaine et des saisons. Observez aussi les ombres et le feuillage !'],
+                rankB: ['Rang B : Connaisseur Urbain', 'Bon sens de l’époque. Zoomez sur les manteaux, manches courtes et arbres pour trouver la saison !'],
+                rankC: ['Rang C : Apprenti Voyageur Temporel', 'Essayez de cibler la décennie grâce aux voitures et à la mode, et la saison grâce aux arbres !'],
+                summaryGuessPrefix: 'Choix',
+                summaryStats: (yDiff, sDiff, usedHint) => `Année ±${yDiff}a / Saison ±${sDiff}j${usedHint ? ' / Indice utilisé' : ''}`
+            },
+            de: {
+                hudRound: 'Runde', hudScore: 'Punkte',
+                tagline: 'Errate das genaue Jahr, den Monat und den Tag einer Straßenaufnahme (5 Runden)',
+                challengeBadge: 'Alle Epochen • Alle Städte', challengeTitle: 'Challenge-Modus',
+                challengeRange: (min, max) => `${min} – ${max} / Alle Städte`,
+                challengeDesc: 'Von Straßenecken des 19. Jahrhunderts bis zu modernen Straßen der 2020er Jahre aus Städten weltweit.',
+                challengeStartBtn: 'Challenge-Modus starten',
+                filterBadge: 'Eigener Filter', filterTitle: 'Filter-Modus',
+                filterDesc: 'Grenze das Startjahrzehnt oder die Stadt für dein Spiel ein.',
+                startDecadeLabel: 'Ab Jahrzehnt', cityLabel: 'Stadt',
+                allDecadesOpt: (min, max) => `Alle Epochen (${min}–${max})`,
+                decadeOpt: (d, max) => `Ab ${d}er (${d}–${max})`,
+                allDecadesPreset: 'Alle',
+                decadePreset: d => `Ab ${d}er`,
+                decadeLabelShort: d => `Ab ${d}er`,
+                startFilterBtn: (dText, cText) => `Starten (${dText} × ${cText})`,
+                activeModeAll: (min, max) => `Challenge-Modus (${min}–${max})`,
+                activeModeDecade: (min, max) => `Ab ${min}er (${min}–${max})`,
+                activeModeCustom: (era, city) => `${era} • ${city}`,
+                skipBtn: 'Andere Straße', skipTitle: 'Anderes Foto laden',
+                zoomOutTitle: 'Verkleinern', zoomInTitle: 'Vergrößern', zoomResetTitle: 'Zurücksetzen',
+                backToModeTitle: 'Zurück zur Modusauswahl',
+                loadingStreet: 'Straßenfoto wird geladen...',
+                searchingArchive: 'Suche in weltweiten Archiven nach datierten Straßenfotos...',
+                developingPhoto: 'Straßenfoto wird entwickelt...',
+                loadingAnother: 'Ein weiteres Straßenfoto wird geladen...',
+                imageLoadFailed: 'Bild konnte nicht geladen werden', imageLoadFailedHint: 'Tippe auf „Andere Straße“, um ein anderes Foto zu laden.',
+                noPhotoTitle: 'Keine passenden Fotos gefunden', noPhotoDesc: 'Suche erneut oder lockere den Jahrzehnt- bzw. Stadtfilter.', retryBtn: 'Erneut suchen',
+                dateSourceNote: '* Aufnahmedaten basieren auf den Angaben von Wikimedia Commons.',
+                yourGuessDate: 'Dein geschätztes Datum',
+                yearLabel: 'Jahr', monthLabel: 'Monat', dayLabel: 'Tag',
+                monthDayLabel: 'Datum', hintLabel: 'Hinweis',
+                locHintBtn: 'Ort-Hinweis (-10%)', decHintBtn: 'Jahrzehnt-Hinweis (-30%)',
+                unknownNoPenalty: 'Unbekannt (kein Abzug)', unknownLoc: 'Unbekannt',
+                noDesc: '(Keine Beschreibung)',
+                decadeHintVal: d => `${d}er Jahre`,
+                submitBtn: 'Dieses Datum bestätigen',
+                yourGuessShort: 'Dein Tipp', actualDateShort: 'Aufnahmedatum',
+                sourceLink: 'Quelle',
+                nextRoundBtn: 'Nächste Runde', finalResultBtn: 'Endergebnis ansehen',
+                summaryTitle: 'Ergebnis aller 5 Runden',
+                avgYearError: 'Ø Jahresabweichung', avgSeasonError: 'Ø Saisonabweichung',
+                summaryListHeading: 'Gespielte Straßenansichten (5 Runden)',
+                playAgainBtn: 'Nochmal spielen', backToModeBtn: 'Modusauswahl',
+                seasonBarLabels: ['Jan', 'Apr', 'Jul', 'Okt', 'Dez'],
+                monthsShort: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+                weekdays: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+                weekdaysLong: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+                seasons: { winter: 'Winter', spring: 'Frühling', summer: 'Sommer', autumn: 'Herbst' },
+                dayUnit: d => `${d}.`,
+                yearUnit: y => `${y} J.`,
+                daysUnit: d => `${d} T.`,
+                diffLine: (yDiff, sDiff, totalDays) => {
+                    const sTxt = sDiff === 0 ? 'Tag genau getroffen!' : `Jahreszeit um <b class="text-slate-900">${sDiff} T.</b> verfehlt`;
+                    return `Jahr um <b class="text-slate-900">${yDiff} J.</b> verfehlt / ${sTxt}<br><span class="text-slate-400">Insgesamt ${totalDays.toLocaleString()} Tage Differenz</span>`;
+                },
+                badgePerfect: 'PERFEKT! Aufnahmedatum exakt getroffen!',
+                badgeNear: 'Unglaublich nah dran!',
+                badgeGoodBoth: 'Jahrzehnt und Jahreszeit fast perfekt!',
+                badgeGoodYear: 'Epoche getroffen! Jahreszeit knapp',
+                badgeGoodSeason: 'Jahreszeit erkannt!',
+                badgeMiss: 'Schwierige Epoche!',
+                creditPrefix: 'Quelle', licensePrefix: 'Lizenz',
+                rankS: ['Rang S: Legendärer Straßen-Zeitreisender', 'Ein phänomenaler Blick für Autos, Schilder, Kleidung sowie Bäume und Lichtverhältnisse!'],
+                rankA: ['Rang A: Meister-Straßenarchivar', 'Sehr gutes Gespür für Stadtgeschichte und Jahreszeiten. Achte auch auf Schattenlängen und Laub!'],
+                rankB: ['Rang B: Straßenbild-Kenner', 'Gutes Zeitgefühl. Zoome an Mäntel, kurze Ärmel und Bäume heran, um die Jahreszeit zu erkennen!'],
+                rankC: ['Rang C: Zeitreise-Lehrling', 'Versuche zuerst das Jahrzehnt anhand von Autos und Mode und die Jahreszeit anhand von Bäumen einzugrenzen!'],
+                summaryGuessPrefix: 'Tipp',
+                summaryStats: (yDiff, sDiff, usedHint) => `Jahr ±${yDiff}J / Saison ±${sDiff}T${usedHint ? ' / Hinweis' : ''}`
+            }
+        };
+
+        const CITY_I18N = {
+            all: { ja: 'すべての都市', short_ja: '全都市', en: 'All Cities', ko: '모든 도시', 'zh-TW': '所有城市', 'zh-CN': '所有城市', es: 'Todas las ciudades', fr: 'Toutes les villes', de: 'Alle Städte' },
+            tokyo: { ja: '東京', en: 'Tokyo', ko: '도쿄', 'zh-TW': '東京', 'zh-CN': '东京', es: 'Tokio', fr: 'Tokyo', de: 'Tokio' },
+            london: { ja: 'ロンドン', en: 'London', ko: '런던', 'zh-TW': '倫敦', 'zh-CN': '伦敦', es: 'Londres', fr: 'Londres', de: 'London' },
+            paris: { ja: 'パリ', en: 'Paris', ko: '파리', 'zh-TW': '巴黎', 'zh-CN': '巴黎', es: 'París', fr: 'Paris', de: 'Paris' },
+            berlin: { ja: 'ベルリン', en: 'Berlin', ko: '베를린', 'zh-TW': '柏林', 'zh-CN': '柏林', es: 'Berlín', fr: 'Berlin', de: 'Berlin' },
+            amsterdam: { ja: 'アムステルダム', en: 'Amsterdam', ko: '암스테르담', 'zh-TW': '阿姆斯特丹', 'zh-CN': '阿姆斯特丹', es: 'Ámsterdam', fr: 'Amsterdam', de: 'Amsterdam' },
+            newyork: { ja: 'ニューヨーク', en: 'New York', ko: '뉴욕', 'zh-TW': '紐約', 'zh-CN': '纽约', es: 'Nueva York', fr: 'New York', de: 'New York' },
+            toronto: { ja: 'トロント', en: 'Toronto', ko: '토론토', 'zh-TW': '多倫多', 'zh-CN': '多伦多', es: 'Toronto', fr: 'Toronto', de: 'Toronto' },
+            seattle: { ja: 'シアトル', en: 'Seattle', ko: '시애틀', 'zh-TW': '西雅圖', 'zh-CN': '西雅图', es: 'Seattle', fr: 'Seattle', de: 'Seattle' },
+            osaka: { ja: '大阪', en: 'Osaka', ko: '오사카', 'zh-TW': '大阪', 'zh-CN': '大阪', es: 'Osaka', fr: 'Osaka', de: 'Osaka' },
+            manchester: { ja: 'マンチェスター', en: 'Manchester', ko: '맨체스터', 'zh-TW': '曼徹斯特', 'zh-CN': '曼彻斯特', es: 'Mánchester', fr: 'Manchester', de: 'Manchester' },
+            rotterdam: { ja: 'ロッテルダム', en: 'Rotterdam', ko: '로테르담', 'zh-TW': '鹿特丹', 'zh-CN': '鹿特丹', es: 'Róterdam', fr: 'Rotterdam', de: 'Rotterdam' },
+            sanfrancisco: { ja: 'サンフランシスコ', en: 'San Francisco', ko: '샌프란시스코', 'zh-TW': '舊金山', 'zh-CN': '旧金山', es: 'San Francisco', fr: 'San Francisco', de: 'San Francisco' },
+            boston: { ja: 'ボストン', en: 'Boston', ko: '보스턴', 'zh-TW': '波士頓', 'zh-CN': '波士顿', es: 'Boston', fr: 'Boston', de: 'Boston' },
+            vancouver: { ja: 'バンクーバー', en: 'Vancouver', ko: '밴쿠버', 'zh-TW': '溫哥華', 'zh-CN': '温哥华', es: 'Vancouver', fr: 'Vancouver', de: 'Vancouver' },
+            taipei: { ja: '台北', en: 'Taipei', ko: '타이베이', 'zh-TW': '台北', 'zh-CN': '台北', es: 'Taipéi', fr: 'Taipei', de: 'Taipeh' },
+            seoul: { ja: 'ソウル', en: 'Seoul', ko: '서울', 'zh-TW': '首爾', 'zh-CN': '首尔', es: 'Seúl', fr: 'Séoul', de: 'Seoul' },
+            sydney: { ja: 'シドニー', en: 'Sydney', ko: '시드니', 'zh-TW': '雪梨', 'zh-CN': '悉尼', es: 'Sídney', fr: 'Sydney', de: 'Sydney' }
+        };
+
+        const LOCATION_TOKEN_I18N = {
+            '不明': { en: 'Unknown', ko: '불명', 'zh-TW': '未知', 'zh-CN': '未知', es: 'Desconocido', fr: 'Inconnu', de: 'Unbekannt' },
+            '日本': { en: 'Japan', ko: '일본', 'zh-TW': '日本', 'zh-CN': '日本', es: 'Japón', fr: 'Japon', de: 'Japan' },
+            '東京': { en: 'Tokyo', ko: '도쿄', 'zh-TW': '東京', 'zh-CN': '东京', es: 'Tokio', fr: 'Tokyo', de: 'Tokio' },
+            '東京（都心周辺）': { en: 'Tokyo', ko: '도쿄', 'zh-TW': '東京', 'zh-CN': '东京', es: 'Tokio', fr: 'Tokyo', de: 'Tokio' },
+            '大阪': { en: 'Osaka', ko: '오사카', 'zh-TW': '大阪', 'zh-CN': '大阪', es: 'Osaka', fr: 'Osaka', de: 'Osaka' },
+            '大阪（梅田・難波周辺）': { en: 'Osaka', ko: '오사카', 'zh-TW': '大阪', 'zh-CN': '大阪', es: 'Osaka', fr: 'Osaka', de: 'Osaka' },
+            '京都': { en: 'Kyoto', ko: '교토', 'zh-TW': '京都', 'zh-CN': '京都', es: 'Kioto', fr: 'Kyoto', de: 'Kyoto' },
+            '横浜': { en: 'Yokohama', ko: '요코하마', 'zh-TW': '橫濱', 'zh-CN': '横滨', es: 'Yokohama', fr: 'Yokohama', de: 'Yokohama' },
+            '名古屋': { en: 'Nagoya', ko: '나고야', 'zh-TW': '名古屋', 'zh-CN': '名古屋', es: 'Nagoya', fr: 'Nagoya', de: 'Nagoya' },
+            '福岡': { en: 'Fukuoka', ko: '후쿠오카', 'zh-TW': '福岡', 'zh-CN': '福冈', es: 'Fukuoka', fr: 'Fukuoka', de: 'Fukuoka' },
+            '福岡（博多・天神周辺）': { en: 'Fukuoka', ko: '후쿠오카', 'zh-TW': '福岡', 'zh-CN': '福冈', es: 'Fukuoka', fr: 'Fukuoka', de: 'Fukuoka' },
+            '札幌': { en: 'Sapporo', ko: '삿포로', 'zh-TW': '札幌', 'zh-CN': '札幌', es: 'Sapporo', fr: 'Sapporo', de: 'Sapporo' },
+            'イギリス': { en: 'UK', ko: '영국', 'zh-TW': '英國', 'zh-CN': '英国', es: 'Reino Unido', fr: 'Royaume-Uni', de: 'Großbritannien' },
+            'イギリス / アイルランド': { en: 'UK / Ireland', ko: '영국 / 아일랜드', 'zh-TW': '英國／愛爾蘭', 'zh-CN': '英国／爱尔兰', es: 'Reino Unido / Irlanda', fr: 'Royaume-Uni / Irlande', de: 'UK / Irland' },
+            'イギリス・アイルランド': { en: 'UK & Ireland', ko: '영국·아일랜드', 'zh-TW': '英國・愛爾蘭', 'zh-CN': '英国・爱尔兰', es: 'Reino Unido e Irlanda', fr: 'Royaume-Uni et Irlande', de: 'UK & Irland' },
+            'アイルランド': { en: 'Ireland', ko: '아일랜드', 'zh-TW': '愛爾蘭', 'zh-CN': '爱尔兰', es: 'Irlanda', fr: 'Irlande', de: 'Irland' },
+            'ロンドン': { en: 'London', ko: '런던', 'zh-TW': '倫敦', 'zh-CN': '伦敦', es: 'Londres', fr: 'Londres', de: 'London' },
+            'マンチェスター': { en: 'Manchester', ko: '맨체스터', 'zh-TW': '曼徹斯特', 'zh-CN': '曼彻斯特', es: 'Mánchester', fr: 'Manchester', de: 'Manchester' },
+            'ランカシャー州ロッチデール': { en: 'Rochdale, Lancashire', ko: '랭커셔주 로치데일', 'zh-TW': '蘭開夏郡羅奇代爾', 'zh-CN': '兰开夏郡罗奇代尔', es: 'Rochdale, Lancashire', fr: 'Rochdale, Lancashire', de: 'Rochdale, Lancashire' },
+            'エディンバラ': { en: 'Edinburgh', ko: '에든버러', 'zh-TW': '愛丁堡', 'zh-CN': '爱丁堡', es: 'Edimburgo', fr: 'Édimbourg', de: 'Edinburgh' },
+            'グラスゴー': { en: 'Glasgow', ko: '글래스고', 'zh-TW': '格拉斯哥', 'zh-CN': '格拉斯哥', es: 'Glasgow', fr: 'Glasgow', de: 'Glasgow' },
+            'バーミンガム': { en: 'Birmingham', ko: '버밍엄', 'zh-TW': '伯明罕', 'zh-CN': '伯明翰', es: 'Birmingham', fr: 'Birmingham', de: 'Birmingham' },
+            'リヴァプール': { en: 'Liverpool', ko: '리버풀', 'zh-TW': '利物浦', 'zh-CN': '利物浦', es: 'Liverpool', fr: 'Liverpool', de: 'Liverpool' },
+            'ダブリン': { en: 'Dublin', ko: '더블린', 'zh-TW': '都柏林', 'zh-CN': '都柏林', es: 'Dublín', fr: 'Dublin', de: 'Dublin' },
+            'フランス': { en: 'France', ko: '프랑스', 'zh-TW': '法國', 'zh-CN': '法国', es: 'Francia', fr: 'France', de: 'Frankreich' },
+            'パリ': { en: 'Paris', ko: '파리', 'zh-TW': '巴黎', 'zh-CN': '巴黎', es: 'París', fr: 'Paris', de: 'Paris' },
+            'リヨン': { en: 'Lyon', ko: '리옹', 'zh-TW': '里昂', 'zh-CN': '里昂', es: 'Lyon', fr: 'Lyon', de: 'Lyon' },
+            'マルセイユ': { en: 'Marseille', ko: '마르세유', 'zh-TW': '馬賽', 'zh-CN': '马赛', es: 'Marsella', fr: 'Marseille', de: 'Marseille' },
+            'ドイツ': { en: 'Germany', ko: '독일', 'zh-TW': '德國', 'zh-CN': '德国', es: 'Alemania', fr: 'Allemagne', de: 'Deutschland' },
+            'ドイツ（旧東ドイツ）': { en: 'Germany (East Germany)', ko: '독일(구 동독)', 'zh-TW': '德國（前東德）', 'zh-CN': '德国（前东德）', es: 'Alemania (RDA)', fr: 'Allemagne (RDA)', de: 'Deutschland (DDR)' },
+            'ベルリン': { en: 'Berlin', ko: '베를린', 'zh-TW': '柏林', 'zh-CN': '柏林', es: 'Berlín', fr: 'Berlin', de: 'Berlin' },
+            'ミュンヘン': { en: 'Munich', ko: '뮌헨', 'zh-TW': '慕尼黑', 'zh-CN': '慕尼黑', es: 'Múnich', fr: 'Munich', de: 'München' },
+            'ハンブルク': { en: 'Hamburg', ko: '함부르크', 'zh-TW': '漢堡', 'zh-CN': '汉堡', es: 'Hamburgo', fr: 'Hambourg', de: 'Hamburg' },
+            'フランクフルト': { en: 'Frankfurt', ko: '프랑크푸르트', 'zh-TW': '法蘭克福', 'zh-CN': '法兰克福', es: 'Fráncfort', fr: 'Francfort', de: 'Frankfurt' },
+            'ライプツィヒ': { en: 'Leipzig', ko: '라이프치히', 'zh-TW': '萊比錫', 'zh-CN': '莱比锡', es: 'Leipzig', fr: 'Leipzig', de: 'Leipzig' },
+            'ドレスデン': { en: 'Dresden', ko: '드레스덴', 'zh-TW': '德勒斯登', 'zh-CN': '德累斯顿', es: 'Dresde', fr: 'Dresde', de: 'Dresden' },
+            'ヴァイマル': { en: 'Weimar', ko: '바이마르', 'zh-TW': '威瑪', 'zh-CN': '魏玛', es: 'Weimar', fr: 'Weimar', de: 'Weimar' },
+            'クヴェードリンブルク': { en: 'Quedlinburg', ko: '크베들린부르크', 'zh-TW': '奎德林堡', 'zh-CN': '奎德林堡', es: 'Quedlinburg', fr: 'Quedlinbourg', de: 'Quedlinburg' },
+            'ケルン': { en: 'Cologne', ko: '쾰른', 'zh-TW': '科隆', 'zh-CN': '科隆', es: 'Colonia', fr: 'Cologne', de: 'Köln' },
+            'オランダ': { en: 'Netherlands', ko: '네덜란드', 'zh-TW': '荷蘭', 'zh-CN': '荷兰', es: 'Países Bajos', fr: 'Pays-Bas', de: 'Niederlande' },
+            'アムステルダム': { en: 'Amsterdam', ko: '암스테르담', 'zh-TW': '阿姆斯特丹', 'zh-CN': '阿姆斯特丹', es: 'Ámsterdam', fr: 'Amsterdam', de: 'Amsterdam' },
+            'ロッテルダム': { en: 'Rotterdam', ko: '로테르담', 'zh-TW': '鹿特丹', 'zh-CN': '鹿特丹', es: 'Róterdam', fr: 'Rotterdam', de: 'Rotterdam' },
+            'ハーグ': { en: 'The Hague', ko: '헤이그', 'zh-TW': '海牙', 'zh-CN': '海牙', es: 'La Haya', fr: 'La Haye', de: 'Den Haag' },
+            'ユトレヒト': { en: 'Utrecht', ko: '위트레흐트', 'zh-TW': '烏特勒支', 'zh-CN': '乌得勒支', es: 'Utrecht', fr: 'Utrecht', de: 'Utrecht' },
+            'オーファーアイセル州カンペン': { en: 'Kampen, Overijssel', ko: '오베레이설주 캄펜', 'zh-TW': '上愛塞省坎彭', 'zh-CN': '上艾瑟尔省坎彭', es: 'Kampen, Overijssel', fr: 'Kampen, Overijssel', de: 'Kampen, Overijssel' },
+            'アメリカ': { en: 'USA', ko: '미국', 'zh-TW': '美國', 'zh-CN': '美国', es: 'EE. UU.', fr: 'États-Unis', de: 'USA' },
+            'ニューヨーク': { en: 'New York', ko: '뉴욕', 'zh-TW': '紐約', 'zh-CN': '纽约', es: 'Nueva York', fr: 'New York', de: 'New York' },
+            'サンフランシスコ': { en: 'San Francisco', ko: '샌프란시스코', 'zh-TW': '舊金山', 'zh-CN': '旧金山', es: 'San Francisco', fr: 'San Francisco', de: 'San Francisco' },
+            'ロサンゼルス': { en: 'Los Angeles', ko: '로스앤젤레스', 'zh-TW': '洛杉磯', 'zh-CN': '洛杉矶', es: 'Los Ángeles', fr: 'Los Angeles', de: 'Los Angeles' },
+            'シカゴ': { en: 'Chicago', ko: '시카고', 'zh-TW': '芝加哥', 'zh-CN': '芝加哥', es: 'Chicago', fr: 'Chicago', de: 'Chicago' },
+            'シアトル': { en: 'Seattle', ko: '시애틀', 'zh-TW': '西雅圖', 'zh-CN': '西雅图', es: 'Seattle', fr: 'Seattle', de: 'Seattle' },
+            'ボストン': { en: 'Boston', ko: '보스턴', 'zh-TW': '波士頓', 'zh-CN': '波士顿', es: 'Boston', fr: 'Boston', de: 'Boston' },
+            'ボストン周辺': { en: 'Greater Boston', ko: '보스턴 주변', 'zh-TW': '波士頓周邊', 'zh-CN': '波士顿周边', es: 'Gran Boston', fr: 'Grand Boston', de: 'Raum Boston' },
+            'ワシントンD.C.': { en: 'Washington, D.C.', ko: '워싱턴 D.C.', 'zh-TW': '華盛頓特區', 'zh-CN': '华盛顿特区', es: 'Washington D. C.', fr: 'Washington D.C.', de: 'Washington, D.C.' },
+            'カナダ': { en: 'Canada', ko: '캐나다', 'zh-TW': '加拿大', 'zh-CN': '加拿大', es: 'Canadá', fr: 'Canada', de: 'Kanada' },
+            'トロント': { en: 'Toronto', ko: '토론토', 'zh-TW': '多倫多', 'zh-CN': '多伦多', es: 'Toronto', fr: 'Toronto', de: 'Toronto' },
+            'バンクーバー': { en: 'Vancouver', ko: '밴쿠버', 'zh-TW': '溫哥華', 'zh-CN': '温哥华', es: 'Vancouver', fr: 'Vancouver', de: 'Vancouver' },
+            'モントリオール': { en: 'Montreal', ko: '몬트리올', 'zh-TW': '蒙特婁', 'zh-CN': '蒙特利尔', es: 'Montreal', fr: 'Montréal', de: 'Montreal' },
+            'イタリア': { en: 'Italy', ko: '이탈리아', 'zh-TW': '義大利', 'zh-CN': '意大利', es: 'Italia', fr: 'Italie', de: 'Italien' },
+            'ローマ': { en: 'Rome', ko: '로마', 'zh-TW': '羅馬', 'zh-CN': '罗马', es: 'Roma', fr: 'Rome', de: 'Rom' },
+            'ミラノ': { en: 'Milan', ko: '밀라노', 'zh-TW': '米蘭', 'zh-CN': '米兰', es: 'Milán', fr: 'Milan', de: 'Mailand' },
+            'ヴェネツィア': { en: 'Venice', ko: '베네치아', 'zh-TW': '威尼斯', 'zh-CN': '威尼斯', es: 'Venecia', fr: 'Venise', de: 'Venedig' },
+            'フィレンツェ': { en: 'Florence', ko: '피렌체', 'zh-TW': '佛羅倫斯', 'zh-CN': '佛罗伦萨', es: 'Florencia', fr: 'Florence', de: 'Florenz' },
+            'スペイン': { en: 'Spain', ko: '스페인', 'zh-TW': '西班牙', 'zh-CN': '西班牙', es: 'España', fr: 'Espagne', de: 'Spanien' },
+            'マドリード': { en: 'Madrid', ko: '마드리드', 'zh-TW': '馬德里', 'zh-CN': '马德里', es: 'Madrid', fr: 'Madrid', de: 'Madrid' },
+            'バルセロナ': { en: 'Barcelona', ko: '바르셀로나', 'zh-TW': '巴塞隆納', 'zh-CN': '巴塞罗那', es: 'Barcelona', fr: 'Barcelone', de: 'Barcelona' },
+            '台湾': { en: 'Taiwan', ko: '대만', 'zh-TW': '台灣', 'zh-CN': '台湾', es: 'Taiwán', fr: 'Taïwan', de: 'Taiwan' },
+            '台北': { en: 'Taipei', ko: '타이베이', 'zh-TW': '台北', 'zh-CN': '台北', es: 'Taipéi', fr: 'Taipei', de: 'Taipeh' },
+            '韓国': { en: 'South Korea', ko: '대한민국', 'zh-TW': '韓國', 'zh-CN': '韩国', es: 'Corea del Sur', fr: 'Corée du Sud', de: 'Südkorea' },
+            'ソウル': { en: 'Seoul', ko: '서울', 'zh-TW': '首爾', 'zh-CN': '首尔', es: 'Seúl', fr: 'Séoul', de: 'Seoul' },
+            '釜山': { en: 'Busan', ko: '부산', 'zh-TW': '釜山', 'zh-CN': '釜山', es: 'Busan', fr: 'Busan', de: 'Busan' },
+            '香港': { en: 'Hong Kong', ko: '홍콩', 'zh-TW': '香港', 'zh-CN': '香港', es: 'Hong Kong', fr: 'Hong Kong', de: 'Hongkong' },
+            'シンガポール': { en: 'Singapore', ko: '싱가포르', 'zh-TW': '新加坡', 'zh-CN': '新加坡', es: 'Singapur', fr: 'Singapour', de: 'Singapur' },
+            'タイ': { en: 'Thailand', ko: '태국', 'zh-TW': '泰國', 'zh-CN': '泰国', es: 'Tailandia', fr: 'Thaïlande', de: 'Thailand' },
+            'バンコク': { en: 'Bangkok', ko: '방콕', 'zh-TW': '曼谷', 'zh-CN': '曼谷', es: 'Bangkok', fr: 'Bangkok', de: 'Bangkok' },
+            'オーストラリア': { en: 'Australia', ko: '호주', 'zh-TW': '澳洲', 'zh-CN': '澳大利亚', es: 'Australia', fr: 'Australie', de: 'Australien' },
+            'シドニー': { en: 'Sydney', ko: '시드니', 'zh-TW': '雪梨', 'zh-CN': '悉尼', es: 'Sídney', fr: 'Sydney', de: 'Sydney' },
+            'メルボルン': { en: 'Melbourne', ko: '멜버른', 'zh-TW': '墨爾本', 'zh-CN': '墨尔本', es: 'Melbourne', fr: 'Melbourne', de: 'Melbourne' },
+            'インドネシア': { en: 'Indonesia', ko: '인도네시아', 'zh-TW': '印尼', 'zh-CN': '印度尼西亚', es: 'Indonesia', fr: 'Indonésie', de: 'Indonesien' },
+            'ジャカルタ': { en: 'Jakarta', ko: '자카르타', 'zh-TW': '雅加達', 'zh-CN': '雅加达', es: 'Yakarta', fr: 'Jakarta', de: 'Jakarta' },
+            'ブラジル': { en: 'Brazil', ko: '브라질', 'zh-TW': '巴西', 'zh-CN': '巴西', es: 'Brasil', fr: 'Brésil', de: 'Brasilien' },
+            'サンパウロ': { en: 'São Paulo', ko: '상파울루', 'zh-TW': '聖保羅', 'zh-CN': '圣保罗', es: 'São Paulo', fr: 'São Paulo', de: 'São Paulo' },
+            'リオデジャネイロ': { en: 'Rio de Janeiro', ko: '리우데자네이루', 'zh-TW': '里約熱內盧', 'zh-CN': '里约热内卢', es: 'Río de Janeiro', fr: 'Rio de Janeiro', de: 'Rio de Janeiro' },
+            'アルゼンチン': { en: 'Argentina', ko: '아르헨티나', 'zh-TW': '阿根廷', 'zh-CN': '阿根廷', es: 'Argentina', fr: 'Argentine', de: 'Argentinien' },
+            'ブエノスアイレス': { en: 'Buenos Aires', ko: '부에노스아이레스', 'zh-TW': '布宜諾斯艾利斯', 'zh-CN': '布宜诺斯艾利斯', es: 'Buenos Aires', fr: 'Buenos Aires', de: 'Buenos Aires' },
+            'メキシコ': { en: 'Mexico', ko: '멕시코', 'zh-TW': '墨西哥', 'zh-CN': '墨西哥', es: 'México', fr: 'Mexique', de: 'Mexiko' },
+            'メキシコシティ': { en: 'Mexico City', ko: '멕시코시티', 'zh-TW': '墨西哥城', 'zh-CN': '墨西哥城', es: 'Ciudad de México', fr: 'Mexico', de: 'Mexiko-Stadt' }
+        };
+
+        function t(key) {
+            const dict = I18N[currentLang] || I18N.ja;
+            return dict[key] !== undefined ? dict[key] : I18N.ja[key];
+        }
+
+        function getCityLabel(cityObj, short = false) {
+            if (!cityObj) return '';
+            const map = CITY_I18N[cityObj.id];
+            if (!map) return short ? (cityObj.shortLabel || cityObj.label) : cityObj.label;
+            if (short && currentLang === 'ja' && map.short_ja) return map.short_ja;
+            return map[currentLang] || map.en || cityObj.label;
+        }
+
+        function translateLocation(loc) {
+            if (!loc || loc === '不明') return t('unknownLoc');
+            if (currentLang === 'ja') return loc;
+            const parts = String(loc).split('・');
+            const translated = parts.map(p => {
+                const entry = LOCATION_TOKEN_I18N[p];
+                return entry ? (entry[currentLang] || entry.en || p) : p;
+            });
+            const sep = (currentLang === 'zh-TW' || currentLang === 'zh-CN') ? '・' : ', ';
+            if (sep === ', ' && translated.length === 2) {
+                return `${translated[1]}, ${translated[0]}`;
+            }
+            return translated.join(sep);
+        }
+
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        function commonsFileUrl(filename, width = 1280) {
+            return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}?width=${width}`;
+        }
+        function commonsPageUrl(filename) {
+            return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(filename.replace(/ /g, '_'))}`;
+        }
+        function stripHtml(s) {
+            return String(s || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/\s+/g, ' ').trim();
+        }
+        function escapeHtml(s) {
+            return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+        }
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+        function daysInMonth(year, month) {
+            return new Date(year, month, 0).getDate();
+        }
+        function weekdayIndex(y, m, d) {
+            const dt = new Date(Date.UTC(2000, m - 1, d));
+            dt.setUTCFullYear(y);
+            return dt.getUTCDay();
+        }
+        function weekdayJa(y, m, d) {
+            const list = t('weekdays');
+            return list[weekdayIndex(y, m, d)];
+        }
+        function formatDateJa(dt, withWeekday = false) {
+            const w = weekdayJa(dt.year, dt.month, dt.day);
+            const months = t('monthsShort');
+            let base;
+            if (currentLang === 'ja' || currentLang === 'zh-TW' || currentLang === 'zh-CN') {
+                base = `${dt.year}年${dt.month}月${dt.day}日`;
+                return withWeekday ? `${base}（${w}）` : base;
+            }
+            if (currentLang === 'ko') {
+                base = `${dt.year}년 ${dt.month}월 ${dt.day}일`;
+                return withWeekday ? `${base} (${w})` : base;
+            }
+            if (currentLang === 'de') {
+                base = `${dt.day}. ${months[dt.month - 1]} ${dt.year}`;
+                return withWeekday ? `${base} (${w})` : base;
+            }
+            if (currentLang === 'es' || currentLang === 'fr') {
+                base = `${dt.day} ${months[dt.month - 1]} ${dt.year}`;
+                return withWeekday ? `${base} (${w})` : base;
+            }
+            base = `${months[dt.month - 1]} ${dt.day}, ${dt.year}`;
+            return withWeekday ? `${base} (${w})` : base;
+        }
+        function seasonKeyOf(month) {
+            if (month === 12 || month <= 2) return 'winter';
+            if (month <= 5) return 'spring';
+            if (month <= 8) return 'summer';
+            return 'autumn';
+        }
+        function seasonOf(month) {
+            const s = t('seasons');
+            return s[seasonKeyOf(month)];
+        }
+        function dayOfYear(month, day) {
+            const d = Math.min(day, daysInMonth(2001, month));
+            return Math.round((Date.UTC(2001, month - 1, d) - Date.UTC(2001, 0, 1)) / 864e5);
+        }
+        function seasonalDiffDays(a, b) {
+            const diff = Math.abs(dayOfYear(a.month, a.day) - dayOfYear(b.month, b.day));
+            return Math.min(diff, 365 - diff);
+        }
+        function absoluteDiffDays(a, b) {
+            const ta = new Date(Date.UTC(2000, a.month - 1, a.day)); ta.setUTCFullYear(a.year);
+            const tb = new Date(Date.UTC(2000, b.month - 1, b.day)); tb.setUTCFullYear(b.year);
+            return Math.round(Math.abs(ta - tb) / 864e5);
+        }
+        function japaneseEra(year) {
+            if (year < 1868) return '江戸末期';
+            if (year < 1912) return `明治${year - 1867}年`;
+            if (year < 1926) return `大正${year - 1911}年`;
+            if (year < 1989) return `昭和${year - 1925}年`;
+            if (year < 2019) return `平成${year - 1988}年`;
+            return `令和${year - 2018}年`;
+        }
+        function eraAndSeasonText(g) {
+            const wLong = t('weekdaysLong')[weekdayIndex(g.year, g.month, g.day)];
+            const sName = seasonOf(g.month);
+            const dec = Math.floor(g.year / 10) * 10;
+            if (currentLang === 'ja') {
+                return `${japaneseEra(g.year)}・${wLong}・${sName}`;
+            }
+            const decTxt = t('decadeHintVal')(dec);
+            return `${decTxt} • ${wLong} • ${sName}`;
+        }
+
+        const CITY_FILTERS = [
+            { id: 'all', label: 'すべての都市', shortLabel: '全都市', preset: true },
+            {
+                id: 'tokyo', label: '東京', locationName: '日本・東京', preset: true,
+                lat: 35.6812, lng: 139.7671,
+                matchRe: /\b(Tokyo|Shinjuku|Shibuya|Ginza|Asakusa|Akihabara|Ueno|Ikebukuro|Harajuku|Roppongi|Shinagawa|Chiyoda|Chuo|Minato|Taito|東京|新宿|渋谷|銀座|浅草|秋葉原|上野|池袋)\b/i,
+                queries: [
+                    'filetype:bitmap "Tokyo" (street OR road OR avenue OR crossing OR intersection OR Shibuya OR Shinjuku OR Ginza)',
+                    'filetype:bitmap "panoramio" Tokyo (street OR road OR Shinjuku OR Shibuya OR Ginza)'
+                ]
+            },
+            {
+                id: 'london', label: 'ロンドン', locationName: 'イギリス・ロンドン', preset: true,
+                lat: 51.5074, lng: -0.1278,
+                matchRe: /\b(London|Westminster|Camden|Kensington|Chelsea|Islington|Hackney|Southwark|Lambeth|Tower Hamlets|Greenwich|Soho|Piccadilly|Oxford Street|Regent Street|Strand|Whitehall|Fleet Street)\b/i,
+                queries: [
+                    'filetype:bitmap "geograph.org.uk" London (Street OR Road OR Square OR Lane OR Avenue)',
+                    'filetype:bitmap "London" (street OR road OR square OR Piccadilly OR Strand OR Oxford Street)'
+                ]
+            },
+            {
+                id: 'paris', label: 'パリ', locationName: 'フランス・パリ', preset: true,
+                lat: 48.8566, lng: 2.3522,
+                matchRe: /\b(Paris|Montmartre|Champs-Élysées|Champs-Elysees|Rivoli|Haussmann|Saint-Germain|Bastille|Pigalle|Marais)\b/i,
+                queries: [
+                    'filetype:bitmap "Paris" (rue OR avenue OR boulevard OR place OR street)',
+                    'filetype:bitmap "panoramio" Paris (rue OR avenue OR boulevard OR street)'
+                ]
+            },
+            {
+                id: 'berlin', label: 'ベルリン', locationName: 'ドイツ・ベルリン', preset: true,
+                lat: 52.5200, lng: 13.4050,
+                matchRe: /\b(Berlin|Alexanderplatz|Unter den Linden|Friedrichstraße|Friedrichstrasse|Kurfürstendamm|Potsdamer Platz|Kreuzberg|Charlottenburg|Prenzlauer Berg)\b/i,
+                queries: [
+                    'filetype:bitmap "Bundesarchiv Bild" Berlin (Straße OR Platz OR Verkehr OR Straßenbahn OR Alexanderplatz OR Friedrichstraße)',
+                    'filetype:bitmap "Berlin" (Straße OR Platz OR Alexanderplatz OR Friedrichstraße OR Kurfürstendamm)'
+                ]
+            },
+            {
+                id: 'amsterdam', label: 'アムステルダム', locationName: 'オランダ・アムステルダム', preset: true,
+                lat: 52.3676, lng: 4.9041,
+                matchRe: /\b(Amsterdam|Amsterdamse|Damrak|Kalverstraat|Leidsestraat|Leidseplein|Rembrandtplein|Rokin|Vijzelstraat|Prinsengracht|Keizersgracht|Herengracht|Singel)\b/i,
+                queries: [
+                    'filetype:bitmap Bestanddeelnr Amsterdam (straat OR plein OR gracht OR verkeer OR tram OR Damrak OR Kalverstraat)',
+                    'filetype:bitmap "Amsterdam" (straat OR gracht OR plein OR Damrak OR Kalverstraat)'
+                ]
+            },
+            {
+                id: 'newyork', label: 'ニューヨーク', locationName: 'アメリカ・ニューヨーク', preset: true,
+                lat: 40.7580, lng: -73.9855,
+                matchRe: /\b(New York|Manhattan|Brooklyn|Queens|Bronx|Broadway|Fifth Avenue|5th Avenue|Times Square|Wall Street|Harlem|SoHo|Chinatown)\b/i,
+                queries: [
+                    'filetype:bitmap "New York" (street OR avenue OR Broadway OR Manhattan OR Brooklyn OR intersection)',
+                    'filetype:bitmap "panoramio" "New York" (street OR avenue OR Broadway OR Manhattan)'
+                ]
+            },
+            {
+                id: 'toronto', label: 'トロント', locationName: 'カナダ・トロント', preset: true,
+                lat: 43.6532, lng: -79.3832,
+                matchRe: /\b(Toronto|Yonge|Queen Street|King Street|Bloor|Dundas|Spadina|Front Street|Bay Street)\b/i,
+                queries: [
+                    'filetype:bitmap "City of Toronto Archives" (street OR avenue OR Yonge OR Queen OR King)',
+                    'filetype:bitmap "Toronto" (street OR avenue OR Yonge OR Queen Street OR King Street)'
+                ]
+            },
+            {
+                id: 'seattle', label: 'シアトル', locationName: 'アメリカ・シアトル', preset: false,
+                lat: 47.6062, lng: -122.3321,
+                matchRe: /\b(Seattle|Rainier|Pike|Pine Street|Madison Street|Yesler|Alaskan Way|Ballard|Fremont|Capitol Hill)\b/i,
+                queries: [
+                    'filetype:bitmap "Seattle Municipal Archives" (street OR avenue OR boulevard OR traffic OR intersection)',
+                    'filetype:bitmap "Seattle" (street OR avenue OR Pike OR Broadway OR downtown)'
+                ]
+            },
+            {
+                id: 'osaka', label: '大阪', locationName: '日本・大阪', preset: false,
+                lat: 34.6937, lng: 135.5023,
+                matchRe: /\b(Osaka|Umeda|Namba|Shinsaibashi|Dotonbori|Shinsekai|Tennoji|Midosuji|大阪|梅田|難波|心斎橋|道頓堀|御堂筋)\b/i,
+                queries: [
+                    'filetype:bitmap "Osaka" (street OR road OR Umeda OR Namba OR Dotonbori OR Shinsaibashi)',
+                    'filetype:bitmap "panoramio" Osaka'
+                ]
+            },
+            {
+                id: 'manchester', label: 'マンチェスター', locationName: 'イギリス・マンチェスター', preset: false,
+                lat: 53.4808, lng: -2.2426,
+                matchRe: /\b(Manchester|Salford|Deansgate|Mosley Street|Market Street|Oxford Road|Piccadilly)\b/i,
+                queries: [
+                    'filetype:bitmap "geograph.org.uk" Manchester (Street OR Road OR Square)',
+                    'filetype:bitmap "Manchester" (Street OR Road OR Square OR Deansgate)'
+                ]
+            },
+            {
+                id: 'rotterdam', label: 'ロッテルダム', locationName: 'オランダ・ロッテルダム', preset: false,
+                lat: 51.9244, lng: 4.4777,
+                matchRe: /\b(Rotterdam|Coolsingel|Lijnbaan|Hofplein|Blaak|Witte de Withstraat)\b/i,
+                queries: [
+                    'filetype:bitmap Bestanddeelnr Rotterdam (straat OR plein OR Coolsingel OR verkeer OR tram)',
+                    'filetype:bitmap "Rotterdam" (straat OR plein OR Coolsingel)'
+                ]
+            },
+            {
+                id: 'sanfrancisco', label: 'サンフランシスコ', locationName: 'アメリカ・サンフランシスコ', preset: false,
+                lat: 37.7749, lng: -122.4194,
+                matchRe: /\b(San Francisco|Market Street|Mission Street|Geary|Powell Street|Lombard Street|Embarcadero)\b/i,
+                queries: [
+                    'filetype:bitmap "San Francisco" (street OR avenue OR Market Street OR cable car OR intersection)',
+                    'filetype:bitmap "panoramio" "San Francisco" (street OR avenue)'
+                ]
+            },
+            {
+                id: 'boston', label: 'ボストン', locationName: 'アメリカ・ボストン', preset: false,
+                lat: 42.3601, lng: -71.0589,
+                matchRe: /\b(Boston|Boylston|Tremont|Beacon Street|Newbury Street|Commonwealth Avenue|Washington Street)\b/i,
+                queries: [
+                    'filetype:bitmap "Boston Public Library" (street OR square OR avenue)',
+                    'filetype:bitmap "Boston" (street OR avenue OR Boylston OR Tremont OR Beacon Street)'
+                ]
+            },
+            {
+                id: 'vancouver', label: 'バンクーバー', locationName: 'カナダ・バンクーバー', preset: false,
+                lat: 49.2827, lng: -123.1207,
+                matchRe: /\b(Vancouver|Granville|Hastings|Robson Street|Burrard|Cambie|Gastown)\b/i,
+                queries: [
+                    'filetype:bitmap "City of Vancouver Archives" (street OR avenue OR Granville OR Hastings)',
+                    'filetype:bitmap "Vancouver" (street OR avenue OR Granville OR Hastings OR Robson)'
+                ]
+            },
+            {
+                id: 'taipei', label: '台北', locationName: '台湾・台北', preset: false,
+                lat: 25.0330, lng: 121.5654,
+                matchRe: /\b(Taipei|Ximending|Zhongxiao|Nanjing East|Xinyi|台北|臺北)\b/i,
+                queries: [
+                    'filetype:bitmap "Taipei" (street OR road OR boulevard OR intersection OR Ximending)',
+                    'filetype:bitmap "panoramio" Taipei'
+                ]
+            },
+            {
+                id: 'seoul', label: 'ソウル', locationName: '韓国・ソウル', preset: false,
+                lat: 37.5665, lng: 126.9780,
+                matchRe: /\b(Seoul|Gangnam|Myeongdong|Jongno|Itaewon|Hongdae|Insadong|서울|ソウル)\b/i,
+                queries: [
+                    'filetype:bitmap "Seoul" (street OR road OR avenue OR Gangnam OR Myeongdong OR Jongno)',
+                    'filetype:bitmap "panoramio" Seoul'
+                ]
+            },
+            {
+                id: 'sydney', label: 'シドニー', locationName: 'オーストラリア・シドニー', preset: false,
+                lat: -33.8688, lng: 151.2093,
+                matchRe: /\b(Sydney|George Street|Pitt Street|Oxford Street|Parramatta Road|Circular Quay)\b/i,
+                queries: [
+                    'filetype:bitmap "Sydney" (street OR road OR George Street OR Pitt Street OR Oxford Street)',
+                    'filetype:bitmap "panoramio" Sydney (street OR road)'
+                ]
+            }
+        ];
+
+        const gameState = {
+            minYear: MIN_YEAR,
+            cityFilter: 'all',
+            selectedDecade: 2000,
+            selectedCity: 'all',
+            currentRound: 0,
+            totalRounds: 5,
+            totalScore: 0,
+            currentPhoto: null,
+            usedIds: new Set(),
+            usedEventKeys: new Set(),
+            roundHistory: [],
+            guess: { year: 1950, month: 6, day: 15 },
+            hints: { location: false, decade: false },
+            isAnswered: false,
+            loadToken: 0,
+            zoom: 1, panX: 0, panY: 0,
+            isDragging: false, dragStartX: 0, dragStartY: 0,
+            isSpinnerVisible: false,
+            skipCooldownUntil: 0,
+            skipCooldownTimer: null,
+            imageErrorStreak: 0
+        };
+        function getActiveCityObj() {
+            if (!gameState.cityFilter || gameState.cityFilter === 'all') return null;
+            return CITY_FILTERS.find(c => c.id === gameState.cityFilter) || null;
+        }
+
+        function matchesActiveFilters(photo) {
+            if (!photo || !photo.actual) return false;
+            if (photo.actual.year < gameState.minYear || photo.actual.year > MAX_YEAR) return false;
+            const city = getActiveCityObj();
+            if (city && city.matchRe) {
+                const hay = `${photo.title || ''} ${photo.location || ''} ${photo.description || ''}`;
+                if (!city.matchRe.test(hay) && photo.location !== city.locationName) return false;
+            }
+            return true;
+        }
+
+        function createFallbackPlateDataUrl() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 960; canvas.height = 640;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(480, 320, 80, 480, 320, 520);
+            grad.addColorStop(0, '#3a3026'); grad.addColorStop(1, '#17130f');
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, 960, 640);
+            ctx.strokeStyle = '#d97706'; ctx.lineWidth = 4; ctx.strokeRect(30, 30, 900, 580);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fef3c7'; ctx.font = 'bold 30px sans-serif';
+            ctx.fillText(t('imageLoadFailed'), 480, 290, 860);
+            ctx.fillStyle = '#d6d3d1'; ctx.font = '20px sans-serif';
+            ctx.fillText(t('imageLoadFailedHint'), 480, 340, 860);
+            return canvas.toDataURL('image/jpeg', 0.9);
+        }
+
+        // ===== 出題データ（photos.json）=====
+        // 写真は事前に scripts/build-photos.mjs で集めた photos.json から出題します（プレイ中の検索APIは使いません）
+        const PHOTOS_URL = 'photos.json';
+        let photoPoolPromise = null;
+
+        function loadPhotoPool() {
+            if (!photoPoolPromise) {
+                photoPoolPromise = fetch(PHOTOS_URL, { cache: 'no-cache' })
+                    .then(res => {
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return res.json();
+                    })
+                    .then(data => (Array.isArray(data?.photos) ? data.photos : [])
+                        .filter(p => p && p.id && p.actual && p.imageUrl && p.license))
+                    .catch(e => {
+                        console.error('[photos.json]', e.message);
+                        photoPoolPromise = null; // 次回の読み込み時に再試行
+                        return [];
+                    });
+            }
+            return photoPoolPromise;
+        }
+
+        async function getNextPhotoItem() {
+            const pool = await loadPhotoPool();
+            const eligible = pool.filter(p => matchesActiveFilters(p));
+            const unused = eligible.filter(p => !gameState.usedIds.has(p.id) && !(p.eventKey && gameState.usedEventKeys.has(p.eventKey)));
+            if (unused.length) return shuffleArray(unused)[0];
+
+            // 条件に合う写真を出し尽くした場合は、今のゲームで出ていないものから再利用する
+            const playedIds = new Set(gameState.roundHistory.map(r => r.photo.id));
+            if (gameState.currentPhoto) playedIds.add(gameState.currentPhoto.id);
+            const reusable = eligible.filter(p => !playedIds.has(p.id));
+            if (reusable.length) {
+                reusable.forEach(p => {
+                    gameState.usedIds.delete(p.id);
+                    if (p.eventKey) gameState.usedEventKeys.delete(p.eventKey);
+                });
+                return shuffleArray(reusable)[0];
+            }
+            return null;
+        }
+
+        function markUsed(photo) {
+            gameState.usedIds.add(photo.id);
+            if (photo.eventKey) gameState.usedEventKeys.add(photo.eventKey);
+        }
+
+        function updateSkipBtnState() {
+            const btn = document.getElementById('skipBtn');
+            if (!btn) return;
+            const inCooldown = Date.now() < gameState.skipCooldownUntil;
+            btn.disabled = Boolean(gameState.isSpinnerVisible || inCooldown || gameState.isAnswered);
+        }
+
+        function triggerSkipCooldown(ms = 1500) {
+            gameState.skipCooldownUntil = Math.max(gameState.skipCooldownUntil, Date.now() + ms);
+            updateSkipBtnState();
+            if (gameState.skipCooldownTimer) clearTimeout(gameState.skipCooldownTimer);
+            const wait = Math.max(0, gameState.skipCooldownUntil - Date.now()) + 20;
+            gameState.skipCooldownTimer = setTimeout(() => {
+                updateSkipBtnState();
+            }, wait);
+        }
+
+        function setSpinner(visible, text) {
+            const sp = document.getElementById('imageLoadingSpinner');
+            const tx = document.getElementById('imageLoadingText');
+            if (text) tx.textContent = text;
+            sp.classList.toggle('hidden', !visible);
+            gameState.isSpinnerVisible = Boolean(visible);
+            if (!visible) {
+                triggerSkipCooldown(1500);
+            } else {
+                updateSkipBtnState();
+            }
+        }
+
+        function updateCreditOverlay(photo) {
+            const el = document.getElementById('photoCreditOverlay');
+            if (!el) return;
+            if (!photo) { el.classList.add('hidden'); el.textContent = ''; el.title = ''; return; }
+            const provider = photo.collection === 'KartaView (OpenStreetCam)' ? 'KartaView' : 'Wikimedia Commons';
+            const parts = [];
+            if (photo.credit) parts.push(`© ${photo.credit}`);
+            if (photo.license) parts.push(photo.license);
+            parts.push(provider);
+            const text = parts.join(' · ');
+            el.textContent = text;
+            el.title = text;
+            el.classList.remove('hidden');
+        }
+
+        function setNoPhotoOverlay(visible) {
+            const ov = document.getElementById('noPhotoOverlay');
+            if (ov) {
+                ov.classList.toggle('hidden', !visible);
+                ov.classList.toggle('flex', visible);
+            }
+            const submit = document.getElementById('submitBtn');
+            if (submit) submit.disabled = Boolean(visible);
+            if (visible) {
+                const imgEl = document.getElementById('currentPhotoImg');
+                imgEl.onload = imgEl.onerror = null;
+                imgEl.removeAttribute('src');
+                updateCreditOverlay(null);
+            }
+        }
+
+        function showNoPhotoFound() {
+            gameState.currentPhoto = null;
+            setSpinner(false);
+            setNoPhotoOverlay(true);
+        }
+
+        async function retryLoadPhoto() {
+            setNoPhotoOverlay(false);
+            const token = ++gameState.loadToken;
+            gameState.currentPhoto = null;
+            setSpinner(true, t('searchingArchive'));
+            const photo = await getNextPhotoItem();
+            if (token !== gameState.loadToken) return;
+            if (!photo) { showNoPhotoFound(); return; }
+            markUsed(photo);
+            gameState.currentPhoto = photo;
+            resetZoom();
+            displayPhoto(photo);
+        }
+
+        function displayPhoto(photo) {
+            const imgEl = document.getElementById('currentPhotoImg');
+            setNoPhotoOverlay(false);
+            updateCreditOverlay(photo);
+            document.getElementById('photoSourceBadge').textContent =
+                photo.collection === 'KartaView (OpenStreetCam)' ? 'KartaView API v2.0' : 'Wikimedia Commons';
+
+            setSpinner(true, t('developingPhoto'));
+            imgEl.onload = () => {
+                if (!imgEl.src.startsWith('data:')) gameState.imageErrorStreak = 0;
+                setSpinner(false);
+            };
+            imgEl.onerror = async () => {
+                imgEl.onerror = null;
+                const token = gameState.loadToken;
+                // 読み込めない画像は自動で別の写真に差し替える（連続3回まで）
+                if (!gameState.isAnswered && gameState.imageErrorStreak < 3) {
+                    gameState.imageErrorStreak++;
+                    const next = await getNextPhotoItem();
+                    if (token !== gameState.loadToken || gameState.isAnswered) return;
+                    if (next) {
+                        markUsed(next);
+                        gameState.currentPhoto = next;
+                        resetGuessUI();
+                        resetZoom();
+                        displayPhoto(next);
+                        return;
+                    }
+                }
+                imgEl.src = createFallbackPlateDataUrl();
+                setSpinner(false);
+            };
+            imgEl.src = photo.imageUrl;
+        }
+
+        function initModeSelectUI() {
+            const rangeEl = document.getElementById('challengeRangeLabel');
+            if (rangeEl) {
+                rangeEl.textContent = t('challengeRange')(MIN_YEAR, MAX_YEAR);
+            }
+
+            const maxDecade = Math.floor(MAX_YEAR / 10) * 10;
+            const selectEl = document.getElementById('decadeSelect');
+            if (selectEl) {
+                selectEl.innerHTML = '';
+                const allOpt = document.createElement('option');
+                allOpt.value = MIN_YEAR;
+                allOpt.textContent = t('allDecadesOpt')(MIN_YEAR, MAX_YEAR);
+                selectEl.appendChild(allOpt);
+
+                for (let d = 1860; d <= maxDecade; d += 10) {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = t('decadeOpt')(d, MAX_YEAR);
+                    if (d === gameState.selectedDecade) opt.selected = true;
+                    selectEl.appendChild(opt);
+                }
+            }
+
+            const presets = [MIN_YEAR, 1900, 1950, 1970, 1990, 2000, 2010, 2020].filter(d => d <= maxDecade);
+            const gridEl = document.getElementById('decadePresetGrid');
+            if (gridEl) {
+                gridEl.innerHTML = '';
+                presets.forEach(d => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.dataset.decade = d;
+                    btn.onclick = () => selectDecadeFilter(d);
+                    btn.className = 'decade-preset-btn py-1.5 px-1 rounded-xl border text-[11px] font-mono transition';
+                    btn.textContent = d === MIN_YEAR ? t('allDecadesPreset') : t('decadePreset')(d);
+                    gridEl.appendChild(btn);
+                });
+            }
+
+            // Populate City Select & Presets
+            const citySelectEl = document.getElementById('citySelect');
+            if (citySelectEl) {
+                citySelectEl.innerHTML = '';
+                CITY_FILTERS.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = getCityLabel(c, false);
+                    if (c.id === gameState.selectedCity) opt.selected = true;
+                    citySelectEl.appendChild(opt);
+                });
+            }
+
+            const cityPresetIds = ['all', 'tokyo', 'london', 'paris', 'berlin', 'amsterdam', 'newyork', 'osaka'];
+            const cityGridEl = document.getElementById('cityPresetGrid');
+            if (cityGridEl) {
+                cityGridEl.innerHTML = '';
+                cityPresetIds.forEach(cid => {
+                    const c = CITY_FILTERS.find(x => x.id === cid);
+                    if (!c) return;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.dataset.city = c.id;
+                    btn.onclick = () => selectCityFilter(c.id);
+                    btn.className = 'city-preset-btn py-1.5 px-1 rounded-xl border text-[11px] transition truncate';
+                    btn.textContent = getCityLabel(c, true);
+                    cityGridEl.appendChild(btn);
+                });
+            }
+
+            selectDecadeFilter(gameState.selectedDecade);
+            selectCityFilter(gameState.selectedCity);
+        }
+
+        function updateFilterButtonText() {
+            const btnTxt = document.getElementById('startFilterBtnText');
+            if (!btnTxt) return;
+            const dText = gameState.selectedDecade <= MIN_YEAR ? t('allDecadesPreset') : t('decadeLabelShort')(gameState.selectedDecade);
+            const cObj = CITY_FILTERS.find(c => c.id === gameState.selectedCity) || CITY_FILTERS[0];
+            const cLabel = getCityLabel(cObj, true);
+            btnTxt.textContent = t('startFilterBtn')(dText, cLabel);
+        }
+
+        function updateActiveModeHeaderLabel() {
+            const modeLbl = document.getElementById('activeModeLabel');
+            if (!modeLbl) return;
+            const nextMin = gameState.minYear;
+            const nextCity = gameState.cityFilter;
+            const cObj = getActiveCityObj();
+            const eraStr = nextMin <= MIN_YEAR ? t('allDecadesPreset') : t('decadeLabelShort')(nextMin);
+            modeLbl.textContent = nextCity === 'all'
+                ? (nextMin <= MIN_YEAR ? t('activeModeAll')(MIN_YEAR, MAX_YEAR) : t('activeModeDecade')(nextMin, MAX_YEAR))
+                : t('activeModeCustom')(eraStr, cObj ? getCityLabel(cObj, true) : '');
+        }
+
+        function selectDecadeFilter(decade) {
+            gameState.selectedDecade = decade;
+            const selectEl = document.getElementById('decadeSelect');
+            if (selectEl) selectEl.value = String(decade);
+
+            document.querySelectorAll('#decadePresetGrid .decade-preset-btn').forEach(btn => {
+                const active = +btn.dataset.decade === decade;
+                btn.className = active
+                    ? 'decade-preset-btn py-1.5 px-1 rounded-lg border text-[11px] font-mono font-bold bg-amber-400 text-slate-900 border-amber-500 shadow-sm'
+                    : 'decade-preset-btn py-1.5 px-1 rounded-lg border text-[11px] font-mono bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100';
+            });
+            updateFilterButtonText();
+        }
+
+        function selectCityFilter(cityId) {
+            gameState.selectedCity = cityId;
+            const selectEl = document.getElementById('citySelect');
+            if (selectEl) selectEl.value = cityId;
+
+            document.querySelectorAll('#cityPresetGrid .city-preset-btn').forEach(btn => {
+                const active = btn.dataset.city === cityId;
+                btn.className = active
+                    ? 'city-preset-btn py-1.5 px-1 rounded-lg border text-[11px] font-bold bg-amber-400 text-slate-900 border-amber-500 shadow-sm truncate'
+                    : 'city-preset-btn py-1.5 px-1 rounded-lg border text-[11px] bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 truncate';
+            });
+            updateFilterButtonText();
+        }
+
+        function openModeSelect() {
+            gameState.loadToken++;
+            clearScoreEffects();
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('flex');
+            document.getElementById('summaryScreen').classList.add('hidden');
+            document.getElementById('summaryScreen').classList.remove('flex');
+            document.getElementById('modeSelectScreen').classList.remove('hidden');
+            document.getElementById('hudScoreBox').classList.add('hidden');
+            document.getElementById('hudScoreBox').classList.remove('flex');
+            document.getElementById('modeHeaderBtn').classList.add('hidden');
+            document.getElementById('modeHeaderBtn').classList.remove('flex');
+        }
+
+        async function startGameWithFilter(minY, cityId) {
+            const nextMin = Math.max(MIN_YEAR, Math.min(MAX_YEAR, minY));
+            const nextCity = CITY_FILTERS.some(c => c.id === cityId) ? cityId : 'all';
+
+            if (gameState.minYear !== nextMin || gameState.cityFilter !== nextCity) {
+                gameState.minYear = nextMin;
+                gameState.cityFilter = nextCity;
+            }
+            initYearBounds();
+            updateActiveModeHeaderLabel();
+            await startNewGame();
+        }
+
+        async function startAllMode() {
+            await startGameWithFilter(MIN_YEAR, 'all');
+        }
+
+        async function startWithCustomFilter() {
+            await startGameWithFilter(gameState.selectedDecade, gameState.selectedCity);
+        }
+
+        async function startNewGame() {
+            document.getElementById('modeSelectScreen').classList.add('hidden');
+            document.getElementById('summaryScreen').classList.add('hidden');
+            document.getElementById('summaryScreen').classList.remove('flex');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('flex');
+            document.getElementById('hudScoreBox').classList.remove('hidden');
+            document.getElementById('hudScoreBox').classList.add('flex');
+            document.getElementById('modeHeaderBtn').classList.remove('hidden');
+            document.getElementById('modeHeaderBtn').classList.add('flex');
+            gameState.currentRound = 0;
+            gameState.totalScore = 0;
+            gameState.roundHistory = [];
+            await loadRound(0);
+        }
+
+        function resetGuessUI() {
+            const defaultYear = Math.round((gameState.minYear + MAX_YEAR) / 2);
+            gameState.guess = { year: defaultYear, month: 6, day: 15 };
+            gameState.hints = { location: false, decade: false };
+            document.getElementById('hintLocText').classList.add('hidden');
+            document.getElementById('hintDecText').classList.add('hidden');
+            document.getElementById('hintLocBtn').classList.remove('hidden');
+            document.getElementById('hintDecBtn').classList.remove('hidden');
+            renderGuess();
+        }
+
+        function showPanel(which) {
+            const g = document.getElementById('guessControlsPanel');
+            const r = document.getElementById('roundResultPanel');
+            g.classList.toggle('hidden', which !== 'guess');
+            g.classList.toggle('flex', which === 'guess');
+            r.classList.toggle('hidden', which !== 'result');
+            r.classList.toggle('flex', which === 'result');
+            document.getElementById('skipBtn').classList.toggle('hidden', which !== 'guess');
+        }
+
+        async function loadRound(roundIndex) {
+            const token = ++gameState.loadToken;
+            clearScoreEffects();
+            gameState.currentRound = roundIndex;
+            gameState.isAnswered = false;
+            gameState.currentPhoto = null;
+
+            document.getElementById('hudRound').textContent = `${roundIndex + 1} / ${gameState.totalRounds}`;
+            document.getElementById('hudScore').textContent = gameState.totalScore.toLocaleString();
+            showPanel('guess');
+            resetGuessUI();
+            resetZoom();
+
+            setNoPhotoOverlay(false);
+            updateCreditOverlay(null);
+            setSpinner(true, t('searchingArchive'));
+            const photo = await getNextPhotoItem();
+            if (token !== gameState.loadToken) return;
+            if (!photo) { showNoPhotoFound(); return; }
+            markUsed(photo);
+            gameState.currentPhoto = photo;
+            displayPhoto(photo);
+        }
+
+        async function skipCurrentPhoto() {
+            if (gameState.isAnswered || gameState.isSpinnerVisible || Date.now() < gameState.skipCooldownUntil) return;
+            triggerSkipCooldown(1800);
+            const token = ++gameState.loadToken;
+            gameState.currentPhoto = null;
+            setSpinner(true, t('loadingAnother'));
+            resetGuessUI();
+            updateCreditOverlay(null);
+            const photo = await getNextPhotoItem();
+            if (token !== gameState.loadToken) return;
+            if (!photo) { showNoPhotoFound(); return; }
+            markUsed(photo);
+            gameState.currentPhoto = photo;
+            resetZoom();
+            displayPhoto(photo);
+        }
+
+        function refreshHintBadges() {
+            const photo = gameState.currentPhoto;
+            if (!photo) return;
+            const locEl = document.getElementById('hintLocText');
+            if (!locEl.classList.contains('hidden')) {
+                const isUnknown = !photo.location || photo.location === '不明';
+                const labelText = isUnknown ? t('unknownNoPenalty') : translateLocation(photo.location);
+                locEl.innerHTML = `<i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(labelText)}`;
+                locEl.title = labelText;
+            }
+            const decEl = document.getElementById('hintDecText');
+            if (!decEl.classList.contains('hidden')) {
+                const decade = Math.floor(photo.actual.year / 10) * 10;
+                decEl.innerHTML = `<i class="fa-regular fa-hourglass-half mr-1"></i>${escapeHtml(t('decadeHintVal')(decade))}`;
+            }
+        }
+
+        function useHint(kind) {
+            const photo = gameState.currentPhoto;
+            if (!photo || gameState.isAnswered || gameState.hints[kind]) return;
+            if (kind === 'location') {
+                const isUnknown = !photo.location || photo.location === '不明';
+                if (!isUnknown) gameState.hints.location = true;
+                const el = document.getElementById('hintLocText');
+                const labelText = isUnknown ? t('unknownNoPenalty') : translateLocation(photo.location);
+                el.innerHTML = `<i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(labelText)}`;
+                el.title = labelText;
+                el.classList.remove('hidden');
+                document.getElementById('hintLocBtn').classList.add('hidden');
+            } else {
+                gameState.hints.decade = true;
+                const decade = Math.floor(photo.actual.year / 10) * 10;
+                const el = document.getElementById('hintDecText');
+                el.innerHTML = `<i class="fa-regular fa-hourglass-half mr-1"></i>${escapeHtml(t('decadeHintVal')(decade))}`;
+                el.classList.remove('hidden');
+                document.getElementById('hintDecBtn').classList.add('hidden');
+                if (Math.floor(gameState.guess.year / 10) * 10 !== decade) setYear(decade + 5);
+            }
+        }
+
+        const SEASON_KEY_STYLE = {
+            winter: 'border-sky-200 text-sky-800 bg-sky-50 hover:bg-sky-100',
+            spring: 'border-pink-200 text-pink-800 bg-pink-50 hover:bg-pink-100',
+            summer: 'border-emerald-200 text-emerald-800 bg-emerald-50 hover:bg-emerald-100',
+            autumn: 'border-orange-200 text-orange-800 bg-orange-50 hover:bg-orange-100'
+        };
+        function renderMonthGrid() {
+            const grid = document.getElementById('monthGrid');
+            const mLabels = t('monthsShort');
+            grid.innerHTML = '';
+            for (let m = 1; m <= 12; m++) {
+                const btn = document.createElement('button');
+                btn.className = `month-btn py-1 sm:py-1.5 rounded-lg border text-[11px] sm:text-xs font-mono ${SEASON_KEY_STYLE[seasonKeyOf(m)]}`;
+                btn.textContent = mLabels[m - 1];
+                btn.dataset.month = m;
+                btn.onclick = () => setMonth(m);
+                grid.appendChild(btn);
+            }
+        }
+
+        function clampDay() {
+            const g = gameState.guess;
+            g.day = Math.max(1, Math.min(daysInMonth(g.year, g.month), g.day));
+        }
+        function setYear(val) {
+            const y = parseInt(val, 10);
+            const fallback = Math.round((gameState.minYear + MAX_YEAR) / 2);
+            gameState.guess.year = Math.max(gameState.minYear, Math.min(MAX_YEAR, isNaN(y) ? fallback : y));
+            clampDay();
+            renderGuess();
+        }
+        function stepYear(delta) { setYear(gameState.guess.year + delta); }
+        function setMonth(m) {
+            gameState.guess.month = Math.max(1, Math.min(12, m));
+            clampDay();
+            renderGuess();
+        }
+        function setDay(val) {
+            const d = parseInt(val, 10);
+            gameState.guess.day = isNaN(d) ? 15 : d;
+            clampDay();
+            renderGuess();
+        }
+        function stepDay(delta) {
+            const g = gameState.guess;
+            let d = g.day + delta, m = g.month;
+            if (d < 1) { m = m === 1 ? 12 : m - 1; d = daysInMonth(g.year, m); }
+            else if (d > daysInMonth(g.year, m)) { m = m === 12 ? 1 : m + 1; d = 1; }
+            g.month = m; g.day = d;
+            renderGuess();
+        }
+
+        function renderGuess() {
+            const g = gameState.guess;
+            const maxD = daysInMonth(g.year, g.month);
+            document.getElementById('yearRangeSlider').value = g.year;
+            document.getElementById('yearNumberInput').value = g.year;
+            const daySlider = document.getElementById('dayRangeSlider');
+            daySlider.max = maxD;
+            daySlider.value = g.day;
+            document.getElementById('dayValueText').textContent = t('dayUnit')(g.day);
+            const maxLbl = document.getElementById('dayMaxLabel');
+            maxLbl.textContent = `${maxD}`;
+            maxLbl.onclick = () => setDay(maxD);
+            document.querySelectorAll('#monthGrid .month-btn').forEach(b => b.classList.toggle('active', +b.dataset.month === g.month));
+            document.getElementById('guessDatePreview').textContent = formatDateJa(g);
+            document.getElementById('eraLabel').textContent = eraAndSeasonText(g);
+        }
+
+        function computeScore(guess, actual, hints) {
+            const yearDiff = Math.abs(guess.year - actual.year);
+            const seasonDiff = seasonalDiffDays(guess, actual);
+            const totalDiff = absoluteDiffDays(guess, actual);
+
+            // 選択中のモードの年代幅（MAX_YEAR - minYear）に応じて年代スコアの減衰スケールを動的に調整
+            // 幅が広い（全年代 1850〜など）ほど数年の誤差に寛容になり、幅が狭い（2010〜・2020〜など）ほど1年の誤差でもシビアに減点
+            const activeSpan = Math.max(5, MAX_YEAR - (gameState.minYear || MIN_YEAR));
+            const charYears = Math.max(1.2, activeSpan * 0.14);
+            let yearPts = yearDiff === 0
+                ? YEAR_MAX_PTS
+                : Math.round(YEAR_MAX_PTS * Math.exp(-yearDiff / charYears));
+            let datePts = Math.round(DATE_MAX_PTS * Math.exp(-seasonDiff / 35));
+            if (seasonDiff === 0) datePts = DATE_MAX_PTS;
+            const raw = yearPts + datePts;
+            const penaltyRate = (hints.location ? HINT_PENALTY.location : 0) + (hints.decade ? HINT_PENALTY.decade : 0);
+            const penalty = Math.round(raw * penaltyRate);
+            return { yearDiff, seasonDiff, totalDiff, yearPts, datePts, penalty, points: Math.max(0, raw - penalty) };
+        }
+
+        function renderRoundResult(entry) {
+            if (!entry) return;
+            const { photo, guess, actual } = entry;
+            const s = entry;
+
+            document.getElementById('hudScore').textContent = gameState.totalScore.toLocaleString();
+            document.getElementById('roundPointsText').textContent = s.points.toLocaleString();
+            document.getElementById('yearPtsText').textContent = `${s.yearPts.toLocaleString()} / ${YEAR_MAX_PTS.toLocaleString()}`;
+            document.getElementById('datePtsText').textContent = `${s.datePts.toLocaleString()} / ${DATE_MAX_PTS.toLocaleString()}`;
+            document.getElementById('penaltyText').textContent = s.penalty ? `-${s.penalty.toLocaleString()}` : '0';
+            document.getElementById('revealedGuessDate').textContent = formatDateJa(guess, true);
+            document.getElementById('revealedActualDate').textContent = formatDateJa(actual, true);
+
+            document.getElementById('diffText').innerHTML = t('diffLine')(s.yearDiff, s.seasonDiff, s.totalDiff);
+
+            document.getElementById('seasonGuessMarker').style.left = `calc(${(dayOfYear(guess.month, guess.day) / 364) * 100}% - 2px)`;
+            document.getElementById('seasonActualMarker').style.left = `calc(${(dayOfYear(actual.month, actual.day) / 364) * 100}% - 2px)`;
+
+            const badgeEl = document.getElementById('accuracyBadge');
+            const base = 'inline-block px-2.5 sm:px-3 py-0.5 rounded-full text-[11px] sm:text-xs font-bold sm:mb-1 border truncate ';
+            if (s.yearDiff === 0 && s.seasonDiff === 0) {
+                badgeEl.textContent = t('badgePerfect');
+                badgeEl.className = base + 'bg-emerald-100 text-emerald-800 border-emerald-300';
+            } else if (s.yearPts >= YEAR_MAX_PTS * 0.80 && s.seasonDiff <= 30) {
+                badgeEl.textContent = t('badgeNear');
+                badgeEl.className = base + 'bg-amber-100 text-amber-800 border-amber-300';
+            } else if (s.yearPts >= YEAR_MAX_PTS * 0.40) {
+                badgeEl.textContent = s.seasonDiff <= 45 ? t('badgeGoodBoth') : t('badgeGoodYear');
+                badgeEl.className = base + 'bg-sky-100 text-sky-800 border-sky-300';
+            } else if (s.seasonDiff <= 30) {
+                badgeEl.textContent = t('badgeGoodSeason');
+                badgeEl.className = base + 'bg-pink-100 text-pink-800 border-pink-300';
+            } else {
+                badgeEl.textContent = t('badgeMiss');
+                badgeEl.className = base + 'bg-slate-100 text-slate-700 border-slate-300';
+            }
+
+            document.getElementById('photoTitleText').textContent = photo.title;
+            document.getElementById('photoLocationText').textContent = translateLocation(photo.location);
+            document.getElementById('photoDescriptionText').textContent =
+                photo.description === '（説明文なし）' ? t('noDesc') : photo.description;
+            const providerSuffix = photo.collection === 'KartaView (OpenStreetCam)' ? '' : ' — Wikimedia Commons';
+            const licenseStr = photo.license ? ` / ${t('licensePrefix')}: ${photo.license}` : '';
+            document.getElementById('photoCreditText').textContent =
+                `${t('creditPrefix')}: ${photo.collection}${photo.credit ? ' / ' + photo.credit : ''}${licenseStr}${providerSuffix}`;
+            document.getElementById('photoSourceLink').href = photo.sourceUrl || photo.imageUrl || '#';
+            document.getElementById('photoSourceBadge').textContent = photo.collection;
+
+            const nextBtn = document.getElementById('nextRoundBtn');
+            nextBtn.innerHTML = gameState.currentRound + 1 >= gameState.totalRounds
+                ? `<span>${escapeHtml(t('finalResultBtn'))}</span><i class="fa-solid fa-flag-checkered"></i>`
+                : `<span>${escapeHtml(t('nextRoundBtn'))}</span><i class="fa-solid fa-arrow-right"></i>`;
+        }
+
+        const fxState = {
+            rafId: null,
+            timers: [],
+            particles: [],
+            gloomLines: [],
+            gloomOverlayAlpha: 0,
+            gloomOverlayDecay: 0,
+            countRafId: null
+        };
+
+        function clearScoreEffects() {
+            if (fxState.rafId) {
+                cancelAnimationFrame(fxState.rafId);
+                fxState.rafId = null;
+            }
+            if (fxState.countRafId) {
+                cancelAnimationFrame(fxState.countRafId);
+                fxState.countRafId = null;
+            }
+            fxState.timers.forEach(id => clearTimeout(id));
+            fxState.timers = [];
+            fxState.particles = [];
+            fxState.gloomLines = [];
+            fxState.gloomOverlayAlpha = 0;
+
+            const canvas = document.getElementById('fxCanvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            const card = document.getElementById('roundScoreCard');
+            if (card) {
+                card.classList.remove('fx-card-perfect', 'fx-card-good', 'fx-card-miss');
+            }
+        }
+
+        function animatePointsCounter(targetPoints) {
+            const el = document.getElementById('roundPointsText');
+            if (!el) return;
+            if (fxState.countRafId) cancelAnimationFrame(fxState.countRafId);
+            if (targetPoints <= 0) {
+                el.textContent = '0';
+                return;
+            }
+            const start = performance.now();
+            const duration = 520;
+            function step(now) {
+                const tNorm = Math.min(1, (now - start) / duration);
+                const eased = 1 - Math.pow(1 - tNorm, 3);
+                const current = Math.round(targetPoints * eased);
+                el.textContent = current.toLocaleString();
+                if (tNorm < 1) {
+                    fxState.countRafId = requestAnimationFrame(step);
+                } else {
+                    el.textContent = targetPoints.toLocaleString();
+                    fxState.countRafId = null;
+                }
+            }
+            fxState.countRafId = requestAnimationFrame(step);
+        }
+
+        function ensureFxCanvasSize() {
+            const canvas = document.getElementById('fxCanvas');
+            if (!canvas) return null;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
+                canvas.width = Math.floor(w * dpr);
+                canvas.height = Math.floor(h * dpr);
+            }
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            return { canvas, ctx, w, h };
+        }
+
+        function spawnPopperBurst(originX, originY, baseAngle, spread, count, palette, intensity = 1) {
+            for (let i = 0; i < count; i++) {
+                const angle = baseAngle + (Math.random() - 0.5) * spread;
+                const speed = (9 + Math.random() * 14) * intensity;
+                const isStreamer = i < Math.floor(count * 0.16);
+                const isStar = !isStreamer && i < Math.floor(count * 0.30);
+                const color = palette[Math.floor(Math.random() * palette.length)];
+                fxState.particles.push({
+                    kind: isStreamer ? 'streamer' : (isStar ? 'star' : 'confetti'),
+                    x: originX,
+                    y: originY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    gravity: isStreamer ? 0.22 : (0.28 + Math.random() * 0.12),
+                    drag: isStreamer ? 0.962 : 0.972,
+                    size: isStreamer ? (16 + Math.random() * 12) : (isStar ? (7 + Math.random() * 5) : (6 + Math.random() * 6)),
+                    color,
+                    rotation: Math.random() * Math.PI * 2,
+                    vRot: (Math.random() - 0.5) * 0.24,
+                    tilt: Math.random() * Math.PI * 2,
+                    vTilt: 0.12 + Math.random() * 0.18,
+                    wobble: Math.random() * Math.PI * 2,
+                    vWobble: 0.08 + Math.random() * 0.08,
+                    alpha: 1,
+                    decay: 0.008 + Math.random() * 0.007
+                });
+            }
+            // Popper flash ring at origin
+            fxState.particles.push({
+                kind: 'ring',
+                x: originX,
+                y: originY,
+                vx: 0,
+                vy: 0,
+                gravity: 0,
+                drag: 1,
+                size: 8,
+                maxSize: 58 * intensity,
+                color: '#FACC15',
+                alpha: 0.9,
+                decay: 0.06
+            });
+        }
+
+        function spawnMissGloom(w, h) {
+            fxState.gloomOverlayAlpha = 0.55;
+            fxState.gloomOverlayDecay = 0.007;
+
+            // Vertical manga-style gloom lines descending from the top
+            const lineCount = Math.max(18, Math.floor(w / 28));
+            for (let i = 0; i < lineCount; i++) {
+                const x = (w / lineCount) * (i + 0.2 + Math.random() * 0.6);
+                fxState.gloomLines.push({
+                    x,
+                    len: 0,
+                    maxLen: 70 + Math.random() * (Math.min(h * 0.36, 170)),
+                    speed: 5 + Math.random() * 5,
+                    width: 1.5 + Math.random() * 2,
+                    alpha: 0.45 + Math.random() * 0.3,
+                    hold: 24 + Math.floor(Math.random() * 18),
+                    decay: 0.016 + Math.random() * 0.01
+                });
+            }
+
+            // Heavy sweat/rain drops & grey dust falling downward
+            const dropCount = 34;
+            for (let i = 0; i < dropCount; i++) {
+                const isDrop = i < 22;
+                fxState.particles.push({
+                    kind: isDrop ? 'drop' : 'dust',
+                    x: w * (0.1 + Math.random() * 0.8),
+                    y: -10 + Math.random() * (h * 0.35),
+                    vx: (Math.random() - 0.5) * (isDrop ? 0.6 : 1.5),
+                    vy: isDrop ? (3.5 + Math.random() * 4.5) : (1.2 + Math.random() * 2.0),
+                    gravity: isDrop ? 0.18 : 0.04,
+                    drag: 0.992,
+                    size: isDrop ? (7 + Math.random() * 5) : (5 + Math.random() * 5),
+                    color: isDrop ? '#64748B' : '#94A3B8',
+                    rotation: Math.random() * Math.PI * 2,
+                    vRot: (Math.random() - 0.5) * 0.06,
+                    wobble: Math.random() * Math.PI * 2,
+                    vWobble: 0.05 + Math.random() * 0.04,
+                    alpha: 0.85,
+                    decay: 0.011 + Math.random() * 0.008
+                });
+            }
+        }
+
+        function drawStarPath(ctx, r) {
+            ctx.beginPath();
+            for (let i = 0; i < 10; i++) {
+                const rad = i % 2 === 0 ? r : r * 0.44;
+                const a = (i * Math.PI) / 5 - Math.PI / 2;
+                if (i === 0) ctx.moveTo(Math.cos(a) * rad, Math.sin(a) * rad);
+                else ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function startFxLoop() {
+            if (fxState.rafId) return;
+            function frame() {
+                const env = ensureFxCanvasSize();
+                if (!env) {
+                    fxState.rafId = null;
+                    return;
+                }
+                const { ctx, w, h } = env;
+                ctx.clearRect(0, 0, w, h);
+
+                // Top gloom gradient for miss effect
+                if (fxState.gloomOverlayAlpha > 0) {
+                    const grad = ctx.createLinearGradient(0, 0, 0, Math.min(h * 0.48, 280));
+                    grad.addColorStop(0, `rgba(30, 41, 59, ${fxState.gloomOverlayAlpha * 0.42})`);
+                    grad.addColorStop(0.6, `rgba(71, 85, 105, ${fxState.gloomOverlayAlpha * 0.16})`);
+                    grad.addColorStop(1, 'rgba(71, 85, 105, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, w, Math.min(h * 0.48, 280));
+                    fxState.gloomOverlayAlpha = Math.max(0, fxState.gloomOverlayAlpha - fxState.gloomOverlayDecay);
+                }
+
+                // Vertical gloom lines
+                for (let i = fxState.gloomLines.length - 1; i >= 0; i--) {
+                    const g = fxState.gloomLines[i];
+                    if (g.len < g.maxLen) {
+                        g.len = Math.min(g.maxLen, g.len + g.speed);
+                    } else if (g.hold > 0) {
+                        g.hold--;
+                    } else {
+                        g.alpha -= g.decay;
+                    }
+                    if (g.alpha <= 0) {
+                        fxState.gloomLines.splice(i, 1);
+                        continue;
+                    }
+                    ctx.save();
+                    ctx.strokeStyle = `rgba(51, 65, 85, ${g.alpha})`;
+                    ctx.lineWidth = g.width;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(g.x, 0);
+                    ctx.lineTo(g.x, g.len);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // Particles (confetti, streamers, stars, rings, drops, dust)
+                for (let i = fxState.particles.length - 1; i >= 0; i--) {
+                    const p = fxState.particles[i];
+                    if (p.kind === 'ring') {
+                        p.size += (p.maxSize - p.size) * 0.25;
+                        p.alpha -= p.decay;
+                        if (p.alpha <= 0) {
+                            fxState.particles.splice(i, 1);
+                            continue;
+                        }
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, p.alpha);
+                        ctx.strokeStyle = p.color;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                        continue;
+                    }
+
+                    p.vx *= p.drag;
+                    p.vy = p.vy * p.drag + p.gravity;
+                    p.wobble += p.vWobble || 0;
+                    p.x += p.vx + Math.sin(p.wobble) * (p.kind === 'drop' ? 0.15 : 0.9);
+                    p.y += p.vy;
+                    p.rotation += p.vRot || 0;
+                    if (p.vTilt) p.tilt += p.vTilt;
+                    p.alpha -= p.decay;
+
+                    if (p.alpha <= 0 || p.y > h + 40) {
+                        fxState.particles.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
+                    ctx.translate(p.x, p.y);
+
+                    if (p.kind === 'confetti') {
+                        ctx.rotate(p.rotation);
+                        const scaleY = Math.cos(p.tilt);
+                        ctx.scale(1, scaleY);
+                        ctx.fillStyle = p.color;
+                        ctx.fillRect(-p.size * 0.6, -p.size * 0.38, p.size * 1.2, p.size * 0.76);
+                    } else if (p.kind === 'streamer') {
+                        ctx.rotate(p.rotation);
+                        ctx.strokeStyle = p.color;
+                        ctx.lineWidth = 3.2;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        for (let s = -p.size; s <= p.size; s += 4) {
+                            const sy = Math.sin(s * 0.25 + p.wobble * 2) * 3.5;
+                            if (s === -p.size) ctx.moveTo(s, sy);
+                            else ctx.lineTo(s, sy);
+                        }
+                        ctx.stroke();
+                    } else if (p.kind === 'star') {
+                        ctx.rotate(p.rotation);
+                        ctx.fillStyle = p.color;
+                        drawStarPath(ctx, p.size);
+                    } else if (p.kind === 'drop') {
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.moveTo(0, -p.size);
+                        ctx.bezierCurveTo(p.size * 0.65, 0, p.size * 0.55, p.size * 0.85, 0, p.size * 0.85);
+                        ctx.bezierCurveTo(-p.size * 0.55, p.size * 0.85, -p.size * 0.65, 0, 0, -p.size);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else if (p.kind === 'dust') {
+                        ctx.rotate(p.rotation);
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, p.size * 0.7, p.size * 0.35, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                if (fxState.particles.length > 0 || fxState.gloomLines.length > 0 || fxState.gloomOverlayAlpha > 0) {
+                    fxState.rafId = requestAnimationFrame(frame);
+                } else {
+                    ctx.clearRect(0, 0, w, h);
+                    fxState.rafId = null;
+                }
+            }
+            fxState.rafId = requestAnimationFrame(frame);
+        }
+
+        function triggerRoundEffect(s) {
+            clearScoreEffects();
+            const env = ensureFxCanvasSize();
+            const card = document.getElementById('roundScoreCard');
+            animatePointsCounter(s.points);
+
+            const isPerfect = s.yearDiff === 0 && s.seasonDiff === 0;
+            const isNear = (s.yearPts >= YEAR_MAX_PTS * 0.80 && s.seasonDiff <= 30) || s.points >= 4000;
+            const isGood = s.yearPts >= YEAR_MAX_PTS * 0.40 || s.points >= 2500;
+            const isSeasonOnly = s.seasonDiff <= 30;
+
+            const festivePalette = ['#FACC15', '#EF4444', '#38BDF8', '#34D399', '#F472B6', '#FB923C', '#A855F7'];
+
+            if (isPerfect || isNear) {
+                if (card) {
+                    void card.offsetWidth;
+                    card.classList.add('fx-card-perfect');
+                }
+                if (env) {
+                    const { w, h } = env;
+                    // Left & Right party poppers firing diagonally inward and upward
+                    spawnPopperBurst(w * 0.06, h * 0.76, -Math.PI * 0.32, 0.65, isPerfect ? 75 : 52, festivePalette, isPerfect ? 1.18 : 1.0);
+                    spawnPopperBurst(w * 0.94, h * 0.76, -Math.PI * 0.68, 0.65, isPerfect ? 75 : 52, festivePalette, isPerfect ? 1.18 : 1.0);
+                    if (isPerfect) {
+                        const tid = setTimeout(() => {
+                            const env2 = ensureFxCanvasSize();
+                            if (!env2) return;
+                            spawnPopperBurst(env2.w * 0.5, env2.h * 0.32, -Math.PI * 0.5, Math.PI * 1.4, 70, festivePalette, 0.95);
+                            startFxLoop();
+                        }, 320);
+                        fxState.timers.push(tid);
+                    }
+                    startFxLoop();
+                }
+            } else if (isGood || isSeasonOnly) {
+                if (card) {
+                    void card.offsetWidth;
+                    card.classList.add('fx-card-good');
+                }
+                if (env && s.points >= 2200) {
+                    const { w, h } = env;
+                    spawnPopperBurst(w * 0.1, h * 0.78, -Math.PI * 0.34, 0.55, 28, festivePalette, 0.85);
+                    spawnPopperBurst(w * 0.9, h * 0.78, -Math.PI * 0.66, 0.55, 28, festivePalette, 0.85);
+                    startFxLoop();
+                }
+            } else {
+                // Disappointing / Miss effect
+                if (card) {
+                    void card.offsetWidth;
+                    card.classList.add('fx-card-miss');
+                }
+                if (env) {
+                    spawnMissGloom(env.w, env.h);
+                    startFxLoop();
+                }
+            }
+        }
+
+        function triggerSummaryEffect(totalScore) {
+            clearScoreEffects();
+            const env = ensureFxCanvasSize();
+            if (!env) return;
+            const { w, h } = env;
+            const festivePalette = ['#FACC15', '#EF4444', '#38BDF8', '#34D399', '#F472B6', '#FB923C', '#A855F7'];
+            if (totalScore >= 21000) {
+                spawnPopperBurst(w * 0.06, h * 0.78, -Math.PI * 0.32, 0.65, 65, festivePalette, 1.12);
+                spawnPopperBurst(w * 0.94, h * 0.78, -Math.PI * 0.68, 0.65, 65, festivePalette, 1.12);
+                startFxLoop();
+            } else if (totalScore >= 16000) {
+                spawnPopperBurst(w * 0.08, h * 0.78, -Math.PI * 0.34, 0.55, 36, festivePalette, 0.92);
+                spawnPopperBurst(w * 0.92, h * 0.78, -Math.PI * 0.66, 0.55, 36, festivePalette, 0.92);
+                startFxLoop();
+            } else if (totalScore < 11000) {
+                spawnMissGloom(w, h);
+                startFxLoop();
+            }
+        }
+
+        function submitGuess() {
+            if (gameState.isAnswered || !gameState.currentPhoto) return;
+            gameState.isAnswered = true;
+
+            const photo = gameState.currentPhoto;
+            const guess = { ...gameState.guess };
+            const actual = photo.actual;
+            const s = computeScore(guess, actual, gameState.hints);
+
+            gameState.totalScore += s.points;
+            const entry = { photo, guess, actual, ...s, hints: { ...gameState.hints } };
+            gameState.roundHistory.push(entry);
+
+            renderRoundResult(entry);
+            showPanel('result');
+            triggerRoundEffect(s);
+        }
+
+        function nextRound() {
+            if (gameState.currentRound + 1 >= gameState.totalRounds) showFinalSummary();
+            else loadRound(gameState.currentRound + 1);
+        }
+
+        function showFinalSummary(skipEffect = false) {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('flex');
+            document.getElementById('summaryScreen').classList.remove('hidden');
+            document.getElementById('summaryScreen').classList.add('flex');
+
+            const score = gameState.totalScore;
+            document.getElementById('finalTotalScore').textContent = score.toLocaleString();
+            if (!skipEffect) triggerSummaryEffect(score);
+
+            const h = gameState.roundHistory;
+            const avgY = h.reduce((s, r) => s + r.yearDiff, 0) / Math.max(1, h.length);
+            const avgS = h.reduce((s, r) => s + r.seasonDiff, 0) / Math.max(1, h.length);
+            document.getElementById('avgYearDiff').textContent = t('yearUnit')(avgY.toFixed(1));
+            document.getElementById('avgSeasonDiff').textContent = t('daysUnit')(Math.round(avgS));
+
+            let rankPair;
+            if (score >= 21000) rankPair = t('rankS');
+            else if (score >= 16000) rankPair = t('rankA');
+            else if (score >= 11000) rankPair = t('rankB');
+            else rankPair = t('rankC');
+
+            document.getElementById('finalRankTitle').textContent = rankPair[0];
+            document.getElementById('finalRankComment').textContent = rankPair[1];
+
+            const listEl = document.getElementById('summaryRoundsList');
+            listEl.innerHTML = '';
+            h.forEach((item, idx) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl bg-slate-50 border border-slate-200';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                        <a href="${escapeHtml(item.photo.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="shrink-0">
+                            <img src="${escapeHtml(item.photo.imageUrl)}" referrerpolicy="no-referrer" alt="Round ${idx + 1}" class="w-12 sm:w-20 h-10 sm:h-14 object-cover rounded-lg border border-slate-200">
+                        </a>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[10px] sm:text-[11px] font-mono font-bold text-amber-600 truncate">R${idx + 1} • ${formatDateJa(item.actual, true)}</div>
+                            <div class="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">${escapeHtml(item.photo.title)}</div>
+                            <div class="text-[10px] sm:text-[11px] text-slate-500 line-clamp-1"><i class="fa-solid fa-location-dot mr-1 text-red-500"></i>${escapeHtml(translateLocation(item.photo.location))}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
+                        <div class="text-right font-mono text-[10px] sm:text-[11px] leading-snug">
+                            <div class="text-slate-600">${escapeHtml(t('summaryGuessPrefix'))}: ${formatDateJa(item.guess)}</div>
+                            <div class="hidden sm:block text-slate-400">${escapeHtml(t('summaryStats')(item.yearDiff, item.seasonDiff, Boolean(item.penalty)))}</div>
+                        </div>
+                        <div class="px-2 sm:px-3 py-1 rounded-lg bg-amber-100 border border-amber-300 font-mono font-bold text-xs sm:text-sm text-amber-900 min-w-[64px] sm:min-w-[84px] text-right">
+                            +${item.points.toLocaleString()}
+                        </div>
+                    </div>`;
+                listEl.appendChild(row);
+            });
+        }
+
+        function applyTranslations() {
+            document.documentElement.lang = currentLang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const val = t(key);
+                if (typeof val === 'string') {
+                    el.textContent = val;
+                }
+            });
+
+            const logoBtn = document.getElementById('logoHeaderBtn');
+            if (logoBtn) logoBtn.title = t('backToModeTitle');
+            const skipBtn = document.getElementById('skipBtn');
+            if (skipBtn) skipBtn.title = t('skipTitle');
+            const zOut = document.getElementById('zoomOutBtn');
+            if (zOut) zOut.title = t('zoomOutTitle');
+            const zIn = document.getElementById('zoomInBtn');
+            if (zIn) zIn.title = t('zoomInTitle');
+            const zReset = document.getElementById('zoomResetBtn');
+            if (zReset) zReset.title = t('zoomResetTitle');
+
+            const barEl = document.getElementById('seasonBarMonths');
+            if (barEl) {
+                const labels = t('seasonBarLabels');
+                barEl.innerHTML = labels.map(l => `<span>${escapeHtml(l)}</span>`).join('');
+            }
+
+            initModeSelectUI();
+            updateActiveModeHeaderLabel();
+            renderMonthGrid();
+            renderGuess();
+            refreshHintBadges();
+
+            if (gameState.isAnswered && gameState.roundHistory.length > 0) {
+                renderRoundResult(gameState.roundHistory[gameState.roundHistory.length - 1]);
+            }
+            if (!document.getElementById('summaryScreen').classList.contains('hidden')) {
+                showFinalSummary(true);
+            }
+        }
+
+        function setLanguage(lang) {
+            if (!I18N[lang]) return;
+            currentLang = lang;
+            const sel = document.getElementById('langSelect');
+            if (sel && sel.value !== lang) sel.value = lang;
+            try { localStorage.setItem('chronoguesser_lang', lang); } catch {}
+            applyTranslations();
+        }
+
+        function updatePhotoTransform() {
+            document.getElementById('photoTransformLayer').style.transform =
+                `translate(${gameState.panX}px, ${gameState.panY}px) scale(${gameState.zoom})`;
+            document.getElementById('zoomLevelText').textContent = `${Math.round(gameState.zoom * 100)}%`;
+            const vp = document.getElementById('photoViewport');
+            if (vp) vp.classList.toggle('is-zoomed', gameState.zoom > 1);
+        }
+        function adjustZoom(delta) {
+            const next = Math.max(1, Math.min(5, +(gameState.zoom + delta).toFixed(2)));
+            gameState.zoom = next;
+            if (next === 1) { gameState.panX = 0; gameState.panY = 0; }
+            updatePhotoTransform();
+        }
+        function resetZoom() {
+            gameState.zoom = 1; gameState.panX = 0; gameState.panY = 0;
+            updatePhotoTransform();
+        }
+
+        function initYearBounds() {
+            const minY = gameState.minYear;
+            const numInput = document.getElementById('yearNumberInput');
+            const slider = document.getElementById('yearRangeSlider');
+            numInput.min = minY;
+            numInput.max = MAX_YEAR;
+            slider.min = minY;
+            slider.max = MAX_YEAR;
+
+            const ticksEl = document.getElementById('yearTicks');
+            if (ticksEl) {
+                const span = MAX_YEAR - minY;
+                const years = [...new Set([
+                    minY,
+                    Math.round(minY + span * 0.25),
+                    Math.round(minY + span * 0.5),
+                    Math.round(minY + span * 0.75),
+                    MAX_YEAR
+                ])];
+                ticksEl.innerHTML = years
+                    .map(y => `<span class="cursor-pointer hover:text-amber-600" onclick="setYear(${y})">${y}</span>`)
+                    .join('');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            let savedLang = 'ja';
+            try {
+                const stored = localStorage.getItem('chronoguesser_lang');
+                if (stored && I18N[stored]) savedLang = stored;
+            } catch {}
+            setLanguage(savedLang);
+            initYearBounds();
+            openModeSelect();
+            loadPhotoPool();
+
+            const viewport = document.getElementById('photoViewport');
+            viewport.addEventListener('wheel', e => {
+                e.preventDefault();
+                adjustZoom(e.deltaY < 0 ? 0.25 : -0.25);
+            }, { passive: false });
+
+            viewport.addEventListener('mousedown', e => {
+                if (gameState.zoom <= 1) return;
+                gameState.isDragging = true;
+                gameState.dragStartX = e.clientX - gameState.panX;
+                gameState.dragStartY = e.clientY - gameState.panY;
+            });
+            window.addEventListener('mousemove', e => {
+                if (!gameState.isDragging) return;
+                gameState.panX = e.clientX - gameState.dragStartX;
+                gameState.panY = e.clientY - gameState.dragStartY;
+                updatePhotoTransform();
+            });
+            window.addEventListener('mouseup', () => { gameState.isDragging = false; });
+
+            let pinchStartDist = 0;
+            let pinchStartZoom = 1;
+            let lastTapTime = 0;
+
+            function getTouchDist(touches) {
+                const dx = touches[0].clientX - touches[1].clientX;
+                const dy = touches[0].clientY - touches[1].clientY;
+                return Math.hypot(dx, dy);
+            }
+
+            viewport.addEventListener('touchstart', e => {
+                if (e.touches.length === 2) {
+                    gameState.isDragging = false;
+                    pinchStartDist = getTouchDist(e.touches);
+                    pinchStartZoom = gameState.zoom;
+                } else if (e.touches.length === 1) {
+                    const now = Date.now();
+                    if (now - lastTapTime < 280) {
+                        if (gameState.zoom > 1) resetZoom();
+                        else { gameState.zoom = 2.2; updatePhotoTransform(); }
+                        lastTapTime = 0;
+                        return;
+                    }
+                    lastTapTime = now;
+                    if (gameState.zoom <= 1) return;
+                    gameState.isDragging = true;
+                    gameState.dragStartX = e.touches[0].clientX - gameState.panX;
+                    gameState.dragStartY = e.touches[0].clientY - gameState.panY;
+                }
+            }, { passive: true });
+
+            viewport.addEventListener('touchmove', e => {
+                if (e.touches.length === 2 && pinchStartDist > 0) {
+                    e.preventDefault();
+                    const dist = getTouchDist(e.touches);
+                    const next = Math.max(1, Math.min(5, +(pinchStartZoom * (dist / pinchStartDist)).toFixed(2)));
+                    gameState.zoom = next;
+                    if (next === 1) { gameState.panX = 0; gameState.panY = 0; }
+                    updatePhotoTransform();
+                } else if (gameState.isDragging && e.touches.length === 1 && gameState.zoom > 1) {
+                    e.preventDefault();
+                    gameState.panX = e.touches[0].clientX - gameState.dragStartX;
+                    gameState.panY = e.touches[0].clientY - gameState.dragStartY;
+                    updatePhotoTransform();
+                }
+            }, { passive: false });
+
+            viewport.addEventListener('touchend', e => {
+                if (e.touches.length < 2) pinchStartDist = 0;
+                if (e.touches.length === 0) gameState.isDragging = false;
+            });
+
+            window.addEventListener('keydown', e => {
+                if (e.key !== 'Enter') return;
+                if (!document.getElementById('modeSelectScreen').classList.contains('hidden')) return;
+                if (document.activeElement && document.activeElement.id === 'yearNumberInput') {
+                    setYear(document.activeElement.value);
+                    document.activeElement.blur();
+                    return;
+                }
+                if (!document.getElementById('summaryScreen').classList.contains('hidden')) return;
+                if (gameState.isAnswered) nextRound();
+                else submitGuess();
+            });
+        });
+    </script>
+</body>
+</html>
