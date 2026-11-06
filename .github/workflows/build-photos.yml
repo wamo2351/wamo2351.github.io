@@ -2,8 +2,8 @@ name: Build photos.json
 
 on:
   schedule:
-    - cron: '17 3 1 * *'   # 毎月1日 03:17 UTC（日本時間 12:17）
-  workflow_dispatch:         # Actions タブから手動実行もできる
+    - cron: '17 3 * * 1'   # 毎週月曜 03:17 UTC（日本時間 12:17）に確認だけする
+  workflow_dispatch:         # Actions タブから手動実行もできる（この場合は日数に関係なく必ず作り直す）
 
 permissions:
   contents: write
@@ -11,6 +11,9 @@ permissions:
 concurrency:
   group: build-photos
   cancel-in-progress: false
+
+env:
+  REBUILD_AFTER_DAYS: 55     # 前回の作成からこの日数が過ぎていたら作り直す（60日未満にしておく）
 
 jobs:
   build:
@@ -22,14 +25,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check age of photos.json
+        id: age
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ ! -f photos.json ]; then
+            echo "rebuild=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          node -e '
+            const d = JSON.parse(require("fs").readFileSync("photos.json", "utf8"));
+            const days = (Date.now() - Date.parse(d.generatedAt)) / 86400000;
+            const limit = Number(process.env.REBUILD_AFTER_DAYS);
+            console.log(`前回の作成から ${Math.floor(days)} 日（${limit} 日で作り直し）`);
+            require("fs").appendFileSync(process.env.GITHUB_OUTPUT, `rebuild=${!(days < limit)}\n`);
+          '
+
       - uses: actions/setup-node@v4
+        if: steps.age.outputs.rebuild == 'true'
         with:
           node-version: 20
 
       - name: Build photos.json from Wikimedia Commons
+        if: steps.age.outputs.rebuild == 'true'
         run: node scripts/build-photos.mjs
 
       - name: Commit if changed
+        if: steps.age.outputs.rebuild == 'true'
         run: |
           if git diff --quiet -- photos.json && git ls-files --error-unmatch photos.json >/dev/null 2>&1; then
             echo "photos.json に変更はありません"
