@@ -263,6 +263,7 @@
         .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
         .disabled\:pointer-events-none:disabled { pointer-events: none; }
         @media (min-width: 640px) {
+            .sm\:hidden { display: none; }
             .sm\:block { display: block; }
             .sm\:inline { display: inline; }
             .sm\:flex { display: flex; }
@@ -353,6 +354,42 @@
                 overscroll-behavior: none;
             }
             body.min-h-screen { min-height: 0; }
+            header > div {
+                padding: 0.375rem 0.5rem;
+                gap: 0.375rem;
+            }
+            #logoHeaderBtn img {
+                height: 1.25rem;
+            }
+            #modeHeaderBtn {
+                padding: 0.25rem 0.4rem;
+                font-size: 11px;
+                line-height: 1rem;
+                flex-shrink: 1;
+            }
+            #activeModeLabel {
+                max-width: 78px;
+            }
+            #hudScoreBox {
+                padding: 0.25rem 0.4rem;
+                gap: 0.375rem;
+            }
+            #hudRound, #hudScore {
+                font-size: 11px;
+                line-height: 1rem;
+            }
+            #langBox {
+                position: relative;
+                padding: 0.25rem 0.4rem;
+                gap: 0.25rem;
+            }
+            #langSelect {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                opacity: 0;
+            }
             main {
                 flex: 1 1 0%;
                 min-height: 0;
@@ -679,10 +716,10 @@
     <header class="border-b border-slate-200 bg-white sticky top-0 z-30 shrink-0">
         <div class="max-w-6xl mx-auto px-2.5 sm:px-4 py-1.5 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
             <div class="flex items-center gap-2 cursor-pointer shrink-0" onclick="openModeSelect()" id="logoHeaderBtn" title="モード選択に戻る">
-                <img src="logo.png" alt="Chronoguesser" class="h-7 sm:h-9 w-auto logo-shadow">
+                <img src="logo.png" alt="Chronoguesser" class="h-5 sm:h-9 w-auto logo-shadow">
             </div>
 
-            <div class="flex items-center justify-end gap-1.5 sm:gap-3 min-w-0">
+            <div class="flex items-center justify-end gap-1 sm:gap-3 min-w-0 flex-1">
                 <button id="modeHeaderBtn" onclick="openModeSelect()" class="hidden items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-medium text-slate-700 transition max-w-full min-w-0">
                     <i class="fa-solid fa-sliders text-amber-500 shrink-0"></i>
                     <span id="activeModeLabel" class="font-bold text-slate-800 max-w-[110px] sm:max-w-[240px] truncate">チャレンジモード</span>
@@ -698,8 +735,9 @@
                         <span id="hudScore" class="font-mono font-bold text-xs sm:text-sm text-amber-600">0</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-1 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 shrink-0">
-                    <i class="fa-solid fa-globe text-xs text-slate-500"></i>
+                <div id="langBox" class="relative flex items-center gap-1 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 shrink-0">
+                    <i class="fa-solid fa-globe text-xs text-slate-500 pointer-events-none"></i>
+                    <span id="langShortLabel" class="sm:hidden font-mono text-[11px] font-bold text-slate-700 pointer-events-none">JA</span>
                     <select id="langSelect" onchange="setLanguage(this.value)" aria-label="Language" class="bg-transparent text-xs font-medium text-slate-700 focus:outline-none cursor-pointer">
                         <option value="ja">日本語</option>
                         <option value="en">English</option>
@@ -3156,11 +3194,17 @@
             }
         }
 
+        const LANG_SHORT_LABELS = {
+            ja: 'JA', en: 'EN', ko: 'KO', 'zh-TW': 'TW', 'zh-CN': 'CN', es: 'ES', fr: 'FR', de: 'DE'
+        };
+
         function setLanguage(lang) {
             if (!I18N[lang]) return;
             currentLang = lang;
             const sel = document.getElementById('langSelect');
             if (sel && sel.value !== lang) sel.value = lang;
+            const shortLbl = document.getElementById('langShortLabel');
+            if (shortLbl) shortLbl.textContent = LANG_SHORT_LABELS[lang] || lang.toUpperCase();
             try { localStorage.setItem('chronoguesser_lang', lang); } catch {}
             applyTranslations();
         }
